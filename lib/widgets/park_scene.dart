@@ -70,7 +70,7 @@ class ParkScene extends FlameGame {
   late final _TrackComponent _track;
   late final _TrainComponent _train;
   late final _BoothComponent _booth;
-  late final _QueueComponent _queue;
+  late final List<Sprite> _guestSprites;
 
   void setExternalState({
     required double cycleProgress,
@@ -87,11 +87,39 @@ class ParkScene extends FlameGame {
 
   @override
   Future<void> onLoad() async {
+    _guestSprites = await Future.wait<Sprite>([
+      loadSprite('kenney/characters/female_adventurer_idle.png'),
+      loadSprite('kenney/characters/female_person_idle.png'),
+      loadSprite('kenney/characters/male_adventurer_idle.png'),
+      loadSprite('kenney/characters/male_person_idle.png'),
+      loadSprite('kenney/characters/robot_idle.png'),
+    ]);
     _track = _TrackComponent();
     _train = _TrainComponent();
     _booth = _BoothComponent();
-    _queue = _QueueComponent();
-    addAll([_track, _booth, _queue, _train]);
+    addAll([_track, _booth, _train]);
+    _addQueueGuests();
+  }
+
+  void _addQueueGuests() {
+    final w = size.x;
+    final h = size.y;
+    // Anchor guests at the booth side, queueing toward the platform.
+    // bottomCenter anchor keeps their feet on the same baseline so
+    // the row reads as people standing on the ground, not floating.
+    final baseX = w * 0.30;
+    final baseY = h * 0.92;
+    const guestWidth = 18.0;
+    const guestHeight = 26.0;
+    const spacing = 14.0;
+    for (var i = 0; i < _guestSprites.length; i++) {
+      add(SpriteComponent(
+        sprite: _guestSprites[i],
+        position: Vector2(baseX + i * spacing, baseY),
+        size: Vector2(guestWidth, guestHeight),
+        anchor: Anchor.bottomCenter,
+      ));
+    }
   }
 
   @override
@@ -228,38 +256,5 @@ class _BoothComponent extends Component with HasGameReference<ParkScene> {
   }
 }
 
-class _QueueComponent extends Component with HasGameReference<ParkScene> {
-  @override
-  void render(Canvas canvas) {
-    final w = game.size.x;
-    final h = game.size.y;
-    // A short row of guests waiting next to the booth. Stage 0 is a
-    // sleepy park — five tiny figures is enough to read.
-    const palette = <Color>[
-      Color(0xFFEF5350),
-      Color(0xFF42A5F5),
-      Color(0xFFAB47BC),
-      Color(0xFF66BB6A),
-      Color(0xFFFFCA28),
-    ];
-    final baseX = w * 0.30;
-    final y = h * 0.85;
-    for (var i = 0; i < palette.length; i++) {
-      final cx = baseX + i * 14.0;
-      // Body.
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(cx, y), width: 8, height: 14),
-          const Radius.circular(2),
-        ),
-        Paint()..color = palette[i],
-      );
-      // Head.
-      canvas.drawCircle(
-        Offset(cx, y - 11),
-        4,
-        Paint()..color = const Color(0xFFFFCC80),
-      );
-    }
-  }
-}
+// Guest queue is now a row of Kenney CC0 SpriteComponents added in
+// ParkScene._addQueueGuests().
