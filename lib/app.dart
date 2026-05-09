@@ -10,6 +10,13 @@ import 'widgets/feature_unlock_toast.dart';
 import 'widgets/first_purchase_popup.dart';
 import 'widgets/main_coaster_event_host.dart';
 
+/// Shared navigator key — Hosts that live inside MaterialApp.builder
+/// (FirstPurchasePopupHost, MainCoasterEventHost, …) sit ABOVE the
+/// Navigator the framework injects, so their own BuildContext can't
+/// resolve `Navigator.of(...)`. Routing through this key gives them a
+/// context that's a Navigator descendant.
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 class CosterApp extends ConsumerStatefulWidget {
   const CosterApp({super.key});
 
@@ -55,6 +62,7 @@ class _CosterAppState extends ConsumerState<CosterApp>
 
     return MaterialApp(
       title: '코스터 키우기',
+      navigatorKey: rootNavigatorKey,
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(highContrast: highContrast),
       darkTheme: buildDarkTheme(highContrast: highContrast),

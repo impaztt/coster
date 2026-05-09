@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app.dart';
 import '../core/theme.dart';
 import '../data/main_coaster_enhancement.dart';
 import '../data/main_coaster_evolution.dart';
@@ -45,8 +46,10 @@ class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
     final tierIdx = evt.tierIndex!;
     final tier = mainCoasterTiers[tierIdx];
     if (!mounted) return;
+    final navContext = rootNavigatorKey.currentContext;
+    if (navContext == null) return;
     await showDialog<void>(
-      context: context,
+      context: navContext,
       barrierDismissible: false,
       builder: (ctx) => _TierUpOverlay(
         tierName: tier.name,
@@ -79,9 +82,11 @@ class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
 
   Future<void> _showNamingPrompt() async {
     if (!mounted) return;
+    final navContext = rootNavigatorKey.currentContext;
+    if (navContext == null) return;
     final controller = TextEditingController();
     final picked = await showDialog<String>(
-      context: context,
+      context: navContext,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

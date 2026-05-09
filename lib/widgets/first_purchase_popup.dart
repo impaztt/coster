@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app.dart';
 import '../core/theme.dart';
 import '../providers/game_provider.dart';
 import '../services/iap_service.dart';
@@ -56,8 +57,13 @@ class _FirstPurchasePopupHostState
 
   Future<void> _showPopup() async {
     if (!mounted) return;
+    // Route through rootNavigatorKey because this Host sits inside
+    // MaterialApp.builder, above the framework-injected Navigator —
+    // our own BuildContext can't resolve Navigator.of() from there.
+    final navContext = rootNavigatorKey.currentContext;
+    if (navContext == null) return;
     final purchase = await showDialog<bool>(
-      context: context,
+      context: navContext,
       builder: (ctx) => const _FirstPurchaseDialog(),
     );
     if (purchase == true) {
