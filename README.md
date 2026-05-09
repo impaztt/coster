@@ -1,6 +1,6 @@
-# sw_clicker
+# coster
 
-A new Flutter project.
+코스터 키우기 — 캐주얼 idle 테마파크 운영 게임. Flutter + Flame.
 
 ## Getting Started
 

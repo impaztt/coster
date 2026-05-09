@@ -1,4 +1,4 @@
-package com.example.sw_clicker
+package com.example.coster
 
 import io.flutter.embedding.android.FlutterActivity
 

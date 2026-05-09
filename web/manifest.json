@@ -1,11 +1,11 @@
 {
-    "name": "sw_clicker",
-    "short_name": "sw_clicker",
+    "name": "코스터 키우기",
+    "short_name": "코스터 키우기",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "코스터 키우기 - 캐주얼 idle 테마파크 운영 게임",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

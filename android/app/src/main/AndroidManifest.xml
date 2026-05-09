@@ -5,7 +5,7 @@
     <uses-permission android:name="com.android.vending.BILLING"/>
 
     <application
-        android:label="sw_clicker"
+        android:label="코스터 키우기"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <!--
