@@ -1,6 +1,6 @@
-import '../models/sword.dart';
+import '../models/coaster.dart';
 import 'region_catalog.dart';
-import 'sword_catalog.dart';
+import 'coaster_catalog.dart';
 
 /// Signature metadata for "검세권" and equipped formation.
 ///

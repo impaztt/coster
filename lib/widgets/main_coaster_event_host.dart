@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme.dart';
-import '../data/main_sword_enhancement.dart';
-import '../data/main_sword_evolution.dart';
+import '../data/main_coaster_enhancement.dart';
+import '../data/main_coaster_evolution.dart';
 import '../providers/game_provider.dart';
-import 'main_sword_widget.dart';
+import 'main_coaster_widget.dart';
 
 /// Listens to [mainSwordEventProvider] and displays:
 ///   • A modal evolution overlay when the player crosses into a new tier.

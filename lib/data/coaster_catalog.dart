@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/sword.dart';
+import '../models/coaster.dart';
 
 // ---- Visual palette helpers (tier defaults) ----
 

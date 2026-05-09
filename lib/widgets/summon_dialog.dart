@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
-import '../data/sword_affinities.dart';
-import '../models/sword.dart';
+import '../data/coaster_affinities.dart';
+import '../models/coaster.dart';
 import '../providers/game_provider.dart';
 import '../services/audio_service.dart';
-import 'sword_preview.dart';
+import 'coaster_preview.dart';
 
 Future<void> showSummonDialog(
   BuildContext context,

@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
-import '../models/sword.dart';
+import '../models/coaster.dart';
 
 /// Main sword has 50 enhancement stages grouped into 10 visual tiers, each
 /// 5 substages wide. The "look" of the sword is built parametrically from

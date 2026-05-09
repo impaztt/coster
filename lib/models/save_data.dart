@@ -2,7 +2,7 @@ import 'booster.dart';
 import 'game_stats.dart';
 import 'run_stats.dart';
 import 'stock_market.dart';
-import 'sword.dart';
+import 'coaster.dart';
 
 class SaveData {
   static const currentVersion = 19;

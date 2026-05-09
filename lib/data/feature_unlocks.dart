@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/number_format.dart';
 import '../data/region_catalog.dart';
-import '../data/sword_sets.dart';
+import '../data/coaster_sets.dart';
 import '../providers/game_provider.dart';
 
 /// Feature IDs gated by progression. UI checks

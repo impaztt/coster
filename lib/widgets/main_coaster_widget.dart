@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-import '../data/main_sword_evolution.dart';
-import '../models/sword.dart';
-import 'sword_shape_painter.dart';
+import '../data/main_coaster_evolution.dart';
+import '../models/coaster.dart';
+import 'coaster_shape_painter.dart';
 
 /// Animated rendering of the home-tab main sword. The visual is derived
 /// entirely from `stage` (0..50) — palette/shape come from the tier, while

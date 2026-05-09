@@ -8,7 +8,7 @@ import 'services/audio_service.dart';
 import 'widgets/achievement_toast.dart';
 import 'widgets/feature_unlock_toast.dart';
 import 'widgets/first_purchase_popup.dart';
-import 'widgets/main_sword_event_host.dart';
+import 'widgets/main_coaster_event_host.dart';
 
 class SwClickerApp extends ConsumerStatefulWidget {
   const SwClickerApp({super.key});

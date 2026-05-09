@@ -5,15 +5,15 @@ import '../core/theme.dart';
 import '../data/achievement_catalog.dart';
 import '../data/feature_unlocks.dart';
 import '../data/repeating_achievement_catalog.dart';
-import '../data/sword_affinities.dart';
-import '../data/sword_catalog.dart';
-import '../data/sword_sets.dart';
+import '../data/coaster_affinities.dart';
+import '../data/coaster_catalog.dart';
+import '../data/coaster_sets.dart';
 import '../models/achievement.dart';
 import '../models/repeating_achievement.dart';
-import '../models/sword.dart';
+import '../models/coaster.dart';
 import '../providers/game_provider.dart';
 import '../widgets/summon_dialog.dart';
-import '../widgets/sword_preview.dart';
+import '../widgets/coaster_preview.dart';
 import 'stock_market_screen.dart';
 
 class SwordScreen extends ConsumerStatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../models/sword.dart';
-import 'sword_shape_painter.dart';
+import '../models/coaster.dart';
+import 'coaster_shape_painter.dart';
 
 /// Small static preview of a sword (no tap, no sparkle animation).
 class SwordPreview extends StatelessWidget {

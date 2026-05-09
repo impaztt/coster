@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
-import '../models/sword.dart';
+import '../models/coaster.dart';
 
 /// Resolved colors for one sword draw. Decoupled from [SwordVisual] so the
 /// "locked" preview state can substitute greyed-out colors without forking

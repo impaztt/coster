@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/number_format.dart';
 import '../core/theme.dart';
 import '../data/region_catalog.dart';
-import '../data/sword_affinities.dart';
+import '../data/coaster_affinities.dart';
 import '../models/stock_market.dart';
 import '../providers/game_provider.dart';
 import '../widgets/candle_chart.dart';

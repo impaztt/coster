@@ -2,8 +2,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
-import '../models/sword.dart';
-import 'sword_shape_painter.dart';
+import '../models/coaster.dart';
+import 'coaster_shape_painter.dart';
 
 const _defaultVisual = SwordVisual(
   bladeColor: AppColors.blade,

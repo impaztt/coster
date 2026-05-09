@@ -10,7 +10,7 @@ import '../widgets/onboarding_dialog.dart';
 import 'home_screen.dart';
 import 'prestige_screen.dart';
 import 'settings_screen.dart';
-import 'sword_screen.dart';
+import 'coaster_screen.dart';
 import 'upgrade_screen.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
