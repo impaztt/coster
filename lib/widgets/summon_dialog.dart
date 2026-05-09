@@ -34,10 +34,10 @@ class _SummonRevealDialogState extends State<_SummonRevealDialog>
   late final Animation<double> _revealFade;
   bool _summary = false;
 
-  SwordTier get _highest {
-    SwordTier h = SwordTier.n;
+  CoasterTier get _highest {
+    CoasterTier h = CoasterTier.n;
     for (final r in widget.results) {
-      if (r.sword.tier.index > h.index) h = r.sword.tier;
+      if (r.coaster.tier.index > h.index) h = r.coaster.tier;
     }
     return h;
   }
@@ -150,9 +150,9 @@ class _SingleReveal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tier = result.sword.tier;
-    final role = swordFormationRole(result.sword);
-    final region = swordHomeRegion(result.sword);
+    final tier = result.coaster.tier;
+    final role = coasterFormationRole(result.coaster);
+    final region = coasterHomeRegion(result.coaster);
     return AnimatedBuilder(
       animation: revealScale,
       builder: (_, __) {
@@ -193,15 +193,15 @@ class _SingleReveal extends StatelessWidget {
                     ],
                   ),
                   child: Center(
-                    child: SwordPreview(
-                      visual: result.sword.visual,
+                    child: CoasterPreview(
+                      visual: result.coaster.visual,
                       size: 110,
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  result.sword.name,
+                  result.coaster.name,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -313,7 +313,7 @@ class _MultiCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tier = result.sword.tier;
+    final tier = result.coaster.tier;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
       decoration: BoxDecoration(
@@ -346,7 +346,7 @@ class _MultiCell extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Expanded(
-            child: SwordPreview(visual: result.sword.visual, size: 40),
+            child: CoasterPreview(visual: result.coaster.visual, size: 40),
           ),
           const SizedBox(height: 2),
           if (result.isDuplicate && !result.isMaxed)

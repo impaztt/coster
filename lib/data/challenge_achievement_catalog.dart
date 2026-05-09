@@ -211,7 +211,7 @@ final challengeAchievementCatalog = <AchievementDef>[
     name: '한 런 분해 10',
     description: '한 환생 안에 검 10자루 분해',
     essenceReward: 25,
-    test: (c) => c.run.swordDismantles >= 10,
+    test: (c) => c.run.coasterDismantles >= 10,
   ),
   _challenge(
     id: 'ch_run_producer_lv_500',

@@ -13,7 +13,7 @@ class FeatureUnlocks {
   static const achievementsTab = 'achievements_tab';
   static const boosterShop = 'booster_shop';
   static const prestigeTab = 'prestige_tab';
-  static const swordSetsView = 'sword_sets_view';
+  static const coasterSetsView = 'coaster_sets_view';
   static const stockMarket = 'stock_market';
   static const goldExchange = 'gold_exchange';
 }
@@ -107,12 +107,12 @@ class FeatureUnlockDef {
 }
 
 int _maxOwnedWithinSingleSet(GameState state) {
-  if (state.ownedSwords.isEmpty) return 0;
+  if (state.ownedCoasters.isEmpty) return 0;
   var maxOwned = 0;
-  for (final s in swordSets) {
+  for (final s in coasterSets) {
     var owned = 0;
-    for (final id in s.swordIds) {
-      if ((state.ownedSwords[id] ?? 0) > 0) owned++;
+    for (final id in s.coasterIds) {
+      if ((state.ownedCoasters[id] ?? 0) > 0) owned++;
     }
     if (owned > maxOwned) maxOwned = owned;
   }
@@ -186,7 +186,7 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
     ),
   ),
   FeatureUnlockDef(
-    id: FeatureUnlocks.swordSetsView,
+    id: FeatureUnlocks.coasterSetsView,
     label: '검 세트',
     description: '상점 탭의 무기고 메뉴에 세트가 열립니다. 같은 세트 검을 모으면 세트 보너스가 적용됩니다.',
     icon: Icons.workspaces,

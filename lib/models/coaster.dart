@@ -1,128 +1,128 @@
 import 'package:flutter/material.dart';
 
-enum SwordTier { n, r, sr, ssr, lr, ur }
+enum CoasterTier { n, r, sr, ssr, lr, ur }
 
-const swordFormationSlotCount = 5;
+const coasterFormationSlotCount = 5;
 
-extension SwordTierInfo on SwordTier {
+extension CoasterTierInfo on CoasterTier {
   String get label => switch (this) {
-        SwordTier.n => 'N',
-        SwordTier.r => 'R',
-        SwordTier.sr => 'SR',
-        SwordTier.ssr => 'SSR',
-        SwordTier.lr => 'LR',
-        SwordTier.ur => 'UR',
+        CoasterTier.n => 'N',
+        CoasterTier.r => 'R',
+        CoasterTier.sr => 'SR',
+        CoasterTier.ssr => 'SSR',
+        CoasterTier.lr => 'LR',
+        CoasterTier.ur => 'UR',
       };
 
   String get korLabel => switch (this) {
-        SwordTier.n => '일반',
-        SwordTier.r => '희귀',
-        SwordTier.sr => '초희귀',
-        SwordTier.ssr => '전설',
-        SwordTier.lr => '영웅',
-        SwordTier.ur => '신화',
+        CoasterTier.n => '일반',
+        CoasterTier.r => '희귀',
+        CoasterTier.sr => '초희귀',
+        CoasterTier.ssr => '전설',
+        CoasterTier.lr => '영웅',
+        CoasterTier.ur => '신화',
       };
 
   Color get color => switch (this) {
-        SwordTier.n => const Color(0xFF9E9E9E),
-        SwordTier.r => const Color(0xFF42A5F5),
-        SwordTier.sr => const Color(0xFFAB47BC),
-        SwordTier.ssr => const Color(0xFFFFB300),
-        SwordTier.lr => const Color(0xFF26A69A),
-        SwordTier.ur => const Color(0xFFEF5350),
+        CoasterTier.n => const Color(0xFF9E9E9E),
+        CoasterTier.r => const Color(0xFF42A5F5),
+        CoasterTier.sr => const Color(0xFFAB47BC),
+        CoasterTier.ssr => const Color(0xFFFFB300),
+        CoasterTier.lr => const Color(0xFF26A69A),
+        CoasterTier.ur => const Color(0xFFEF5350),
       };
 
   /// Roll rate as a percent (sum = 100).
   double get rate => switch (this) {
-        SwordTier.n => 55,
-        SwordTier.r => 25,
-        SwordTier.sr => 11,
-        SwordTier.ssr => 6,
-        SwordTier.lr => 2,
-        SwordTier.ur => 1,
+        CoasterTier.n => 55,
+        CoasterTier.r => 25,
+        CoasterTier.sr => 11,
+        CoasterTier.ssr => 6,
+        CoasterTier.lr => 2,
+        CoasterTier.ur => 1,
       };
 
-  /// Per-copy passive bonus a sword of this tier contributes to BOTH tap
+  /// Per-copy passive bonus a coaster of this tier contributes to BOTH tap
   /// power and DPS just by being owned (Lv 1, before level scaling). The
   /// idea: collecting feels rewarding even before you equip, but equipping
   /// is still meaningfully better thanks to the big base multipliers.
   double get ownedBonusBase => switch (this) {
         // Baseline is doubled versus previous tuning.
-        SwordTier.n => 0.010,
-        SwordTier.r => 0.024,
-        SwordTier.sr => 0.050,
-        SwordTier.ssr => 0.100,
-        SwordTier.lr => 0.200,
-        SwordTier.ur => 0.360,
+        CoasterTier.n => 0.010,
+        CoasterTier.r => 0.024,
+        CoasterTier.sr => 0.050,
+        CoasterTier.ssr => 0.100,
+        CoasterTier.lr => 0.200,
+        CoasterTier.ur => 0.360,
       };
 
   /// Per-level scaling for the passive collection bonus.
   /// Higher tiers scale a bit harder so rare pickups feel more impactful.
   double get ownedBonusLevelStep => switch (this) {
-        SwordTier.n => 0.10,
-        SwordTier.r => 0.11,
-        SwordTier.sr => 0.12,
-        SwordTier.ssr => 0.13,
-        SwordTier.lr => 0.14,
-        SwordTier.ur => 0.15,
+        CoasterTier.n => 0.10,
+        CoasterTier.r => 0.11,
+        CoasterTier.sr => 0.12,
+        CoasterTier.ssr => 0.13,
+        CoasterTier.lr => 0.14,
+        CoasterTier.ur => 0.15,
       };
 }
 
-enum SwordFormationRole { vanguard, striker, support, trader, anchor }
+enum CoasterFormationRole { vanguard, striker, support, trader, anchor }
 
-extension SwordFormationRoleInfo on SwordFormationRole {
+extension CoasterFormationRoleInfo on CoasterFormationRole {
   String get label => switch (this) {
-        SwordFormationRole.vanguard => '선봉',
-        SwordFormationRole.striker => '강습',
-        SwordFormationRole.support => '지원',
-        SwordFormationRole.trader => '상권',
-        SwordFormationRole.anchor => '축',
+        CoasterFormationRole.vanguard => '선봉',
+        CoasterFormationRole.striker => '강습',
+        CoasterFormationRole.support => '지원',
+        CoasterFormationRole.trader => '상권',
+        CoasterFormationRole.anchor => '축',
       };
 
   String get description => switch (this) {
-        SwordFormationRole.vanguard => '터치 성장에 강한 착용 역할',
-        SwordFormationRole.striker => '터치와 DPS를 함께 올리는 역할',
-        SwordFormationRole.support => 'DPS 성장에 강한 착용 역할',
-        SwordFormationRole.trader => '검세권과 배당 성장에 강한 역할',
-        SwordFormationRole.anchor => '전체 보너스를 안정적으로 받쳐주는 역할',
+        CoasterFormationRole.vanguard => '터치 성장에 강한 착용 역할',
+        CoasterFormationRole.striker => '터치와 DPS를 함께 올리는 역할',
+        CoasterFormationRole.support => 'DPS 성장에 강한 착용 역할',
+        CoasterFormationRole.trader => '검세권과 배당 성장에 강한 역할',
+        CoasterFormationRole.anchor => '전체 보너스를 안정적으로 받쳐주는 역할',
       };
 
   IconData get icon => switch (this) {
-        SwordFormationRole.vanguard => Icons.shield,
-        SwordFormationRole.striker => Icons.flash_on,
-        SwordFormationRole.support => Icons.bolt,
-        SwordFormationRole.trader => Icons.store,
-        SwordFormationRole.anchor => Icons.adjust,
+        CoasterFormationRole.vanguard => Icons.shield,
+        CoasterFormationRole.striker => Icons.flash_on,
+        CoasterFormationRole.support => Icons.bolt,
+        CoasterFormationRole.trader => Icons.store,
+        CoasterFormationRole.anchor => Icons.adjust,
       };
 
   Color get color => switch (this) {
-        SwordFormationRole.vanguard => const Color(0xFFD32F2F),
-        SwordFormationRole.striker => const Color(0xFFFF8A65),
-        SwordFormationRole.support => const Color(0xFF26A69A),
-        SwordFormationRole.trader => const Color(0xFF7C4DFF),
-        SwordFormationRole.anchor => const Color(0xFF455A64),
+        CoasterFormationRole.vanguard => const Color(0xFFD32F2F),
+        CoasterFormationRole.striker => const Color(0xFFFF8A65),
+        CoasterFormationRole.support => const Color(0xFF26A69A),
+        CoasterFormationRole.trader => const Color(0xFF7C4DFF),
+        CoasterFormationRole.anchor => const Color(0xFF455A64),
       };
 }
 
 enum SparkleStyle { none, dim, bright, orbiting }
 
-/// Distinct silhouette categories used by the sword painter. Default is
-/// [SwordShape.longsword] so existing catalog entries that don't specify a
+/// Distinct silhouette categories used by the coaster painter. Default is
+/// [CoasterShape.longcoaster] so existing catalog entries that don't specify a
 /// shape keep rendering identically to before this enum existed.
-enum SwordShape { dagger, longsword, claymore, katana, rapier, falchion }
+enum CoasterShape { dagger, longcoaster, claymore, katana, rapier, falchion }
 
-extension SwordShapeInfo on SwordShape {
+extension CoasterShapeInfo on CoasterShape {
   String get korLabel => switch (this) {
-        SwordShape.dagger => '단검',
-        SwordShape.longsword => '장검',
-        SwordShape.claymore => '대검',
-        SwordShape.katana => '도',
-        SwordShape.rapier => '세검',
-        SwordShape.falchion => '곡도',
+        CoasterShape.dagger => '단검',
+        CoasterShape.longcoaster => '장검',
+        CoasterShape.claymore => '대검',
+        CoasterShape.katana => '도',
+        CoasterShape.rapier => '세검',
+        CoasterShape.falchion => '곡도',
       };
 }
 
-class SwordVisual {
+class CoasterVisual {
   final Color bladeColor;
   final Color bladeAccent;
   final Color guardColor;
@@ -131,9 +131,9 @@ class SwordVisual {
   final Color auraColor;
   final double auraIntensity;
   final SparkleStyle sparkle;
-  final SwordShape shape;
+  final CoasterShape shape;
 
-  const SwordVisual({
+  const CoasterVisual({
     required this.bladeColor,
     required this.bladeAccent,
     required this.guardColor,
@@ -142,24 +142,24 @@ class SwordVisual {
     required this.auraColor,
     this.auraIntensity = 0.3,
     this.sparkle = SparkleStyle.none,
-    this.shape = SwordShape.longsword,
+    this.shape = CoasterShape.longcoaster,
   });
 }
 
-class SwordDef {
+class CoasterDef {
   static const maxLevel = 10;
 
   final String id;
   final String name;
   final String description;
-  final SwordTier tier;
+  final CoasterTier tier;
   final double baseTapMult;
   final double baseDpsMult;
-  final SwordVisual visual;
+  final CoasterVisual visual;
   final String? setId;
   final String? eventTag;
 
-  const SwordDef({
+  const CoasterDef({
     required this.id,
     required this.name,
     required this.description,
@@ -178,7 +178,7 @@ class SwordDef {
   double dpsMultAt(int level) =>
       baseDpsMult * (1 + (level.clamp(1, maxLevel) - 1) * 0.1);
 
-  /// Passive collection bonus contributed while this sword is owned (even
+  /// Passive collection bonus contributed while this coaster is owned (even
   /// when not equipped). Returns a fraction (e.g. 0.05 = +5%). Scales the
   /// tier base by a tier-specific level curve, so high-rarity upgrades feel
   /// meaningfully stronger in the collection system.

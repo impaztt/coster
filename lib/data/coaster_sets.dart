@@ -1,42 +1,42 @@
-/// Sword set definitions. Owning every member of a set grants the
+/// Coaster set definitions. Owning every member of a set grants the
 /// listed bonuses globally (multiplicative on tap and/or DPS).
-class SwordSet {
+class CoasterSet {
   final String id;
   final String name;
   final String description;
-  final List<String> swordIds;
+  final List<String> coasterIds;
   final double dpsBonus; // 0.10 = +10%
   final double tapBonus;
 
-  const SwordSet({
+  const CoasterSet({
     required this.id,
     required this.name,
     required this.description,
-    required this.swordIds,
+    required this.coasterIds,
     this.dpsBonus = 0,
     this.tapBonus = 0,
   });
 }
 
-const swordSets = <SwordSet>[
-  SwordSet(
+const coasterSets = <CoasterSet>[
+  CoasterSet(
     id: 'iron_path',
     name: '강철의 길',
     description: '평범한 검들의 정점',
-    swordIds: [
-      'iron_shortsword',
-      'iron_longsword',
+    coasterIds: [
+      'iron_shortcoaster',
+      'iron_longcoaster',
       'steel_blade',
       'silvered_blade',
     ],
     tapBonus: 0.05,
     dpsBonus: 0.05,
   ),
-  SwordSet(
+  CoasterSet(
     id: 'elements',
     name: '원소의 정수',
     description: '불·물·바람·번개·대지를 한자리에',
-    swordIds: [
+    coasterIds: [
       'flame_blade',
       'frost_edge',
       'thunder_slicer',
@@ -46,11 +46,11 @@ const swordSets = <SwordSet>[
     dpsBonus: 0.12,
     tapBonus: 0.05,
   ),
-  SwordSet(
+  CoasterSet(
     id: 'celestial_bodies',
     name: '천체의 광휘',
     description: '해, 달, 별을 모두 거느리는 자',
-    swordIds: [
+    coasterIds: [
       'sun_blade',
       'moon_blade',
       'celestial_blade',
@@ -58,11 +58,11 @@ const swordSets = <SwordSet>[
     dpsBonus: 0.15,
     tapBonus: 0.10,
   ),
-  SwordSet(
+  CoasterSet(
     id: 'dragons_grace',
     name: '용의 가호',
     description: '고대 용들의 의지가 한데 모였다',
-    swordIds: [
+    coasterIds: [
       'dragon_tooth',
       'dragon_king',
       'phoenix_blade',
@@ -71,11 +71,11 @@ const swordSets = <SwordSet>[
     dpsBonus: 0.20,
     tapBonus: 0.10,
   ),
-  SwordSet(
+  CoasterSet(
     id: 'legend_heroes',
     name: '전설의 영웅',
     description: '이름만으로도 적이 떨었던 검들',
-    swordIds: [
+    coasterIds: [
       'hero_excalibur',
       'hero_durandal',
       'hero_gram',
@@ -87,22 +87,22 @@ const swordSets = <SwordSet>[
   ),
 ];
 
-SwordSet? swordSetById(String id) {
-  for (final s in swordSets) {
+CoasterSet? coasterSetById(String id) {
+  for (final s in coasterSets) {
     if (s.id == id) return s;
   }
   return null;
 }
 
-/// Set id → set, indexed for fast lookup of which set a sword belongs to.
-final Map<String, SwordSet> _setsBySwordId = () {
-  final m = <String, SwordSet>{};
-  for (final s in swordSets) {
-    for (final id in s.swordIds) {
+/// Set id → set, indexed for fast lookup of which set a coaster belongs to.
+final Map<String, CoasterSet> _setsByCoasterId = () {
+  final m = <String, CoasterSet>{};
+  for (final s in coasterSets) {
+    for (final id in s.coasterIds) {
       m[id] = s;
     }
   }
   return m;
 }();
 
-SwordSet? swordSetForSwordId(String id) => _setsBySwordId[id];
+CoasterSet? coasterSetForCoasterId(String id) => _setsByCoasterId[id];

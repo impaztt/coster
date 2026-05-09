@@ -16,14 +16,14 @@ import '../widgets/summon_dialog.dart';
 import '../widgets/coaster_preview.dart';
 import 'stock_market_screen.dart';
 
-class SwordScreen extends ConsumerStatefulWidget {
-  const SwordScreen({super.key});
+class CoasterScreen extends ConsumerStatefulWidget {
+  const CoasterScreen({super.key});
 
   @override
-  ConsumerState<SwordScreen> createState() => _SwordScreenState();
+  ConsumerState<CoasterScreen> createState() => _CoasterScreenState();
 }
 
-class _SwordScreenState extends ConsumerState<SwordScreen> {
+class _CoasterScreenState extends ConsumerState<CoasterScreen> {
   @override
   Widget build(BuildContext context) {
     final game = ref.watch(gameProvider);
@@ -44,8 +44,8 @@ class _SwordScreenState extends ConsumerState<SwordScreen> {
           tabs: [
             const _StoreHubTab(label: '수집', view: _CollectionView()),
             const _StoreHubTab(label: '착용', view: _FormationView()),
-            if (game.isFeatureUnlocked(FeatureUnlocks.swordSetsView))
-              const _StoreHubTab(label: '세트', view: _SwordSetsView()),
+            if (game.isFeatureUnlocked(FeatureUnlocks.coasterSetsView))
+              const _StoreHubTab(label: '세트', view: _CoasterSetsView()),
           ],
         ),
       ),
@@ -201,8 +201,8 @@ class _HeaderBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final essence = ref.watch(gameProvider).essence;
-    final owned = ref.watch(gameProvider).ownedSwords.length;
-    final total = swordCatalog.length;
+    final owned = ref.watch(gameProvider).ownedCoasters.length;
+    final total = coasterCatalog.length;
     final bonus = ref.read(gameProvider.notifier).collectionBonusFraction;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -335,24 +335,24 @@ class _CollectionView extends ConsumerStatefulWidget {
 }
 
 class _CollectionViewState extends ConsumerState<_CollectionView> {
-  final Set<SwordTier> _collapsed = <SwordTier>{};
+  final Set<CoasterTier> _collapsed = <CoasterTier>{};
 
   @override
   Widget build(BuildContext context) {
     final game = ref.watch(gameProvider);
     // Highest tier first so the showcase grades sit at the top.
-    final tiers = SwordTier.values.reversed.toList();
+    final tiers = CoasterTier.values.reversed.toList();
 
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 16),
       itemCount: tiers.length,
       itemBuilder: (context, i) {
         final tier = tiers[i];
-        final defs = swordCatalog.where((d) => d.tier == tier).toList();
-        final owned = <SwordDef>[];
-        final unowned = <SwordDef>[];
+        final defs = coasterCatalog.where((d) => d.tier == tier).toList();
+        final owned = <CoasterDef>[];
+        final unowned = <CoasterDef>[];
         for (final d in defs) {
-          if (game.ownsSword(d.id)) {
+          if (game.ownsCoaster(d.id)) {
             owned.add(d);
           } else {
             unowned.add(d);
@@ -371,20 +371,20 @@ class _CollectionViewState extends ConsumerState<_CollectionView> {
               _collapsed.add(tier);
             }
           }),
-          equippedId: game.equippedSwordId,
-          levelOf: game.swordLevel,
+          equippedId: game.equippedCoasterId,
+          levelOf: game.coasterLevel,
           onTapCard: (def) => _showDetail(context, def),
         );
       },
     );
   }
 
-  void _showDetail(BuildContext context, SwordDef def) {
+  void _showDetail(BuildContext context, CoasterDef def) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => _SwordDetailSheet(def: def),
+      builder: (_) => _CoasterDetailSheet(def: def),
     );
   }
 }
@@ -396,7 +396,7 @@ class _FormationView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final game = ref.watch(gameProvider);
     final notifier = ref.read(gameProvider.notifier);
-    final slots = notifier.formationSwordIds;
+    final slots = notifier.formationCoasterIds;
     final summary = notifier.formationSummary;
 
     return ListView(
@@ -404,18 +404,18 @@ class _FormationView extends ConsumerWidget {
       children: [
         _FormationSummaryCard(
           summary: summary,
-          onAuto: game.ownedSwords.isEmpty ? null : notifier.autoFillFormation,
+          onAuto: game.ownedCoasters.isEmpty ? null : notifier.autoFillFormation,
           onClear: summary.filledSlots == 0 ? null : notifier.clearFormation,
         ),
         const SizedBox(height: 12),
-        for (var i = 0; i < swordFormationSlotCount; i++)
+        for (var i = 0; i < coasterFormationSlotCount; i++)
           _FormationSlotCard(
             slot: i,
-            swordId: slots[i],
+            coasterId: slots[i],
             onPick: () => _openFormationPicker(context, ref, i),
             onClear: slots[i] == null
                 ? null
-                : () => notifier.setFormationSword(i, null),
+                : () => notifier.setFormationCoaster(i, null),
           ),
         const SizedBox(height: 8),
         _FormationRuleCard(summary: summary),
@@ -566,30 +566,30 @@ class _FormationBonusTile extends StatelessWidget {
 
 class _FormationSlotCard extends StatelessWidget {
   final int slot;
-  final String? swordId;
+  final String? coasterId;
   final VoidCallback onPick;
   final VoidCallback? onClear;
 
   const _FormationSlotCard({
     required this.slot,
-    required this.swordId,
+    required this.coasterId,
     required this.onPick,
     required this.onClear,
   });
 
   @override
   Widget build(BuildContext context) {
-    final id = swordId;
-    SwordDef? sword;
+    final id = coasterId;
+    CoasterDef? coaster;
     if (id != null) {
       try {
-        sword = swordById(id);
+        coaster = coasterById(id);
       } catch (_) {
-        sword = null;
+        coaster = null;
       }
     }
-    final role = sword == null ? null : swordFormationRole(sword);
-    final region = sword == null ? null : swordHomeRegion(sword);
+    final role = coaster == null ? null : coasterFormationRole(coaster);
+    final region = coaster == null ? null : coasterHomeRegion(coaster);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -618,7 +618,7 @@ class _FormationSlotCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
-              child: sword == null
+              child: coaster == null
                   ? Text(
                       '${slot + 1}',
                       style: TextStyle(
@@ -627,12 +627,12 @@ class _FormationSlotCard extends StatelessWidget {
                         fontWeight: FontWeight.w900,
                       ),
                     )
-                  : SwordPreview(visual: sword.visual, size: 34),
+                  : CoasterPreview(visual: coaster.visual, size: 34),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: sword == null
+            child: coaster == null
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -656,7 +656,7 @@ class _FormationSlotCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        sword.name,
+                        coaster.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -792,12 +792,12 @@ class _MiniTag extends StatelessWidget {
 
 void _openFormationPicker(BuildContext context, WidgetRef ref, int slot) {
   final game = ref.read(gameProvider);
-  final selected = ref.read(gameProvider.notifier).formationSwordIds.toSet();
-  final owned = <SwordDef>[];
-  for (final entry in game.ownedSwords.entries) {
+  final selected = ref.read(gameProvider.notifier).formationCoasterIds.toSet();
+  final owned = <CoasterDef>[];
+  for (final entry in game.ownedCoasters.entries) {
     if (entry.value <= 0) continue;
     try {
-      owned.add(swordById(entry.key));
+      owned.add(coasterById(entry.key));
     } catch (_) {}
   }
   owned.sort((a, b) {
@@ -832,15 +832,15 @@ void _openFormationPicker(BuildContext context, WidgetRef ref, int slot) {
               ),
             );
           }
-          final sword = owned[i - 1];
-          final role = swordFormationRole(sword);
-          final region = swordHomeRegion(sword);
-          final alreadySelected = selected.contains(sword.id);
+          final coaster = owned[i - 1];
+          final role = coasterFormationRole(coaster);
+          final region = coasterHomeRegion(coaster);
+          final alreadySelected = selected.contains(coaster.id);
           return ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: SwordPreview(visual: sword.visual, size: 42),
+            leading: CoasterPreview(visual: coaster.visual, size: 42),
             title: Text(
-              sword.name,
+              coaster.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.w900),
@@ -858,9 +858,9 @@ void _openFormationPicker(BuildContext context, WidgetRef ref, int slot) {
             ),
             trailing: alreadySelected
                 ? const Icon(Icons.check_circle, color: AppColors.coral)
-                : Icon(Icons.add_circle_outline, color: sword.tier.color),
+                : Icon(Icons.add_circle_outline, color: coaster.tier.color),
             onTap: () {
-              ref.read(gameProvider.notifier).setFormationSword(slot, sword.id);
+              ref.read(gameProvider.notifier).setFormationCoaster(slot, coaster.id);
               Navigator.of(ctx).pop();
             },
           );
@@ -871,14 +871,14 @@ void _openFormationPicker(BuildContext context, WidgetRef ref, int slot) {
 }
 
 class _TierSection extends StatelessWidget {
-  final SwordTier tier;
-  final List<SwordDef> owned;
-  final List<SwordDef> unowned;
+  final CoasterTier tier;
+  final List<CoasterDef> owned;
+  final List<CoasterDef> unowned;
   final bool collapsed;
   final VoidCallback onToggle;
   final String? equippedId;
   final int Function(String id) levelOf;
-  final void Function(SwordDef def) onTapCard;
+  final void Function(CoasterDef def) onTapCard;
 
   const _TierSection({
     required this.tier,
@@ -1029,10 +1029,10 @@ class _OwnershipSubsection extends StatelessWidget {
   final String label;
   final int count;
   final Color accent;
-  final List<SwordDef> defs;
+  final List<CoasterDef> defs;
   final String? equippedId;
   final int Function(String id) levelOf;
-  final void Function(SwordDef def) onTapCard;
+  final void Function(CoasterDef def) onTapCard;
 
   const _OwnershipSubsection({
     required this.label,
@@ -1091,7 +1091,7 @@ class _OwnershipSubsection extends StatelessWidget {
               final level = levelOf(def.id);
               final owned = level > 0;
               final equipped = equippedId == def.id;
-              return _SwordCard(
+              return _CoasterCard(
                 def: def,
                 level: level,
                 owned: owned,
@@ -1106,14 +1106,14 @@ class _OwnershipSubsection extends StatelessWidget {
   }
 }
 
-class _SwordCard extends StatelessWidget {
-  final SwordDef def;
+class _CoasterCard extends StatelessWidget {
+  final CoasterDef def;
   final int level;
   final bool owned;
   final bool equipped;
   final VoidCallback onTap;
 
-  const _SwordCard({
+  const _CoasterCard({
     required this.def,
     required this.level,
     required this.owned,
@@ -1159,7 +1159,7 @@ class _SwordCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Expanded(
-                child: SwordPreview(
+                child: CoasterPreview(
                   visual: def.visual,
                   locked: !owned,
                   size: 52,
@@ -1207,18 +1207,18 @@ class _SwordCard extends StatelessWidget {
   }
 }
 
-class _SwordDetailSheet extends ConsumerWidget {
-  final SwordDef def;
-  const _SwordDetailSheet({required this.def});
+class _CoasterDetailSheet extends ConsumerWidget {
+  final CoasterDef def;
+  const _CoasterDetailSheet({required this.def});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final game = ref.watch(gameProvider);
-    final level = game.swordLevel(def.id);
+    final level = game.coasterLevel(def.id);
     final owned = level > 0;
-    final equipped = game.equippedSwordId == def.id;
-    final role = swordFormationRole(def);
-    final region = swordHomeRegion(def);
+    final equipped = game.equippedCoasterId == def.id;
+    final role = coasterFormationRole(def);
+    final region = coasterHomeRegion(def);
 
     return Container(
       decoration: const BoxDecoration(
@@ -1240,7 +1240,7 @@ class _SwordDetailSheet extends ConsumerWidget {
           const SizedBox(height: 14),
           Row(
             children: [
-              SwordPreview(visual: def.visual, locked: !owned, size: 90),
+              CoasterPreview(visual: def.visual, locked: !owned, size: 90),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -1305,38 +1305,38 @@ class _SwordDetailSheet extends ConsumerWidget {
             _StatRow(
               label: '장착 시 터치 배율',
               value: '×${def.tapMultAt(level).toStringAsFixed(2)}',
-              sub: level < SwordDef.maxLevel
-                  ? '최대 Lv ${SwordDef.maxLevel}: ×${def.tapMultAt(SwordDef.maxLevel).toStringAsFixed(2)}'
+              sub: level < CoasterDef.maxLevel
+                  ? '최대 Lv ${CoasterDef.maxLevel}: ×${def.tapMultAt(CoasterDef.maxLevel).toStringAsFixed(2)}'
                   : '최대 레벨 달성',
             ),
             const SizedBox(height: 8),
             _StatRow(
               label: '장착 시 DPS 배율',
               value: '×${def.dpsMultAt(level).toStringAsFixed(2)}',
-              sub: level < SwordDef.maxLevel
-                  ? '최대 Lv ${SwordDef.maxLevel}: ×${def.dpsMultAt(SwordDef.maxLevel).toStringAsFixed(2)}'
+              sub: level < CoasterDef.maxLevel
+                  ? '최대 Lv ${CoasterDef.maxLevel}: ×${def.dpsMultAt(CoasterDef.maxLevel).toStringAsFixed(2)}'
                   : '최대 레벨 달성',
             ),
             const SizedBox(height: 8),
             _StatRow(
               label: '보유 효과 (장착 안해도 적용)',
               value: '+${(def.ownedBonusAt(level) * 100).toStringAsFixed(2)}%',
-              sub: level < SwordDef.maxLevel
-                  ? '최대 Lv ${SwordDef.maxLevel}: +${(def.ownedBonusAt(SwordDef.maxLevel) * 100).toStringAsFixed(2)}% — 터치·동료·초월 모두에 적용'
+              sub: level < CoasterDef.maxLevel
+                  ? '최대 Lv ${CoasterDef.maxLevel}: +${(def.ownedBonusAt(CoasterDef.maxLevel) * 100).toStringAsFixed(2)}% — 터치·동료·초월 모두에 적용'
                   : '터치·동료·초월(초당 수입) 모두에 적용',
             ),
             const SizedBox(height: 8),
             _StatRow(
               label: '레벨',
-              value: 'Lv $level / ${SwordDef.maxLevel}',
-              sub: level < SwordDef.maxLevel ? '중복 획득 시 자동 레벨업' : '',
+              value: 'Lv $level / ${CoasterDef.maxLevel}',
+              sub: level < CoasterDef.maxLevel ? '중복 획득 시 자동 레벨업' : '',
             ),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: equipped
                   ? null
                   : () {
-                      ref.read(gameProvider.notifier).equipSword(def.id);
+                      ref.read(gameProvider.notifier).equipCoaster(def.id);
                       Navigator.of(context).pop();
                     },
               style: FilledButton.styleFrom(
@@ -1380,7 +1380,7 @@ class _SwordDetailSheet extends ConsumerWidget {
 }
 
 class _DismantleButton extends ConsumerWidget {
-  final SwordDef def;
+  final CoasterDef def;
   final int level;
   final bool equipped;
   const _DismantleButton({
@@ -1454,7 +1454,7 @@ class _DismantleButton extends ConsumerWidget {
       ),
     );
     if (ok != true) return;
-    final granted = ref.read(gameProvider.notifier).dismantleSword(def.id);
+    final granted = ref.read(gameProvider.notifier).dismantleCoaster(def.id);
     if (granted > 0 && context.mounted) {
       Navigator.of(context).pop(); // close detail sheet
       ScaffoldMessenger.of(context).showSnackBar(
@@ -3349,7 +3349,7 @@ class _SummonView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '중복 획득은 자동 레벨업 (최대 Lv ${SwordDef.maxLevel})',
+                  '중복 획득은 자동 레벨업 (최대 Lv ${CoasterDef.maxLevel})',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 13,
@@ -3518,7 +3518,7 @@ class _SummonButton extends StatelessWidget {
 }
 
 class _RateTable extends StatelessWidget {
-  final Map<SwordTier, double> rates;
+  final Map<CoasterTier, double> rates;
   final int rateLevel;
   final int toNextLevel;
 
@@ -3528,7 +3528,7 @@ class _RateTable extends StatelessWidget {
     required this.toNextLevel,
   });
 
-  String _rateText(SwordTier tier) {
+  String _rateText(CoasterTier tier) {
     final rate = rates[tier] ?? tier.rate;
     final delta = rate - tier.rate;
     if (delta.abs() > 0.0001) {
@@ -3577,7 +3577,7 @@ class _RateTable extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          for (final tier in SwordTier.values.reversed)
+          for (final tier in CoasterTier.values.reversed)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 3),
               child: Row(
@@ -3696,18 +3696,18 @@ class _SourceRow extends StatelessWidget {
   }
 }
 
-class _SwordSetsView extends ConsumerWidget {
-  const _SwordSetsView();
+class _CoasterSetsView extends ConsumerWidget {
+  const _CoasterSetsView();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final game = ref.watch(gameProvider);
-    final completed = <SwordSet>[];
-    final inProgress = <SwordSet>[];
-    final untouched = <SwordSet>[];
-    for (final s in swordSets) {
-      final ownedCount = s.swordIds.where((id) => game.ownsSword(id)).length;
-      if (ownedCount == s.swordIds.length) {
+    final completed = <CoasterSet>[];
+    final inProgress = <CoasterSet>[];
+    final untouched = <CoasterSet>[];
+    for (final s in coasterSets) {
+      final ownedCount = s.coasterIds.where((id) => game.ownsCoaster(id)).length;
+      if (ownedCount == s.coasterIds.length) {
         completed.add(s);
       } else if (ownedCount > 0) {
         inProgress.add(s);
@@ -3722,22 +3722,22 @@ class _SwordSetsView extends ConsumerWidget {
       itemCount: ordered.length + 1,
       itemBuilder: (context, i) {
         if (i == 0) {
-          return _SwordSetsHeader(
+          return _CoasterSetsHeader(
             completed: completed.length,
-            total: swordSets.length,
+            total: coasterSets.length,
           );
         }
         final s = ordered[i - 1];
-        return _SwordSetCard(set: s, game: game);
+        return _CoasterSetCard(set: s, game: game);
       },
     );
   }
 }
 
-class _SwordSetsHeader extends StatelessWidget {
+class _CoasterSetsHeader extends StatelessWidget {
   final int completed;
   final int total;
-  const _SwordSetsHeader({required this.completed, required this.total});
+  const _CoasterSetsHeader({required this.completed, required this.total});
 
   @override
   Widget build(BuildContext context) {
@@ -3788,23 +3788,23 @@ class _SwordSetsHeader extends StatelessWidget {
   }
 }
 
-class _SwordSetCard extends StatelessWidget {
-  final SwordSet set;
+class _CoasterSetCard extends StatelessWidget {
+  final CoasterSet set;
   final GameState game;
-  const _SwordSetCard({required this.set, required this.game});
+  const _CoasterSetCard({required this.set, required this.game});
 
   @override
   Widget build(BuildContext context) {
     final ownedIds = <String>[];
     final missingIds = <String>[];
-    for (final id in set.swordIds) {
-      if (game.ownsSword(id)) {
+    for (final id in set.coasterIds) {
+      if (game.ownsCoaster(id)) {
         ownedIds.add(id);
       } else {
         missingIds.add(id);
       }
     }
-    final ratio = ownedIds.length / set.swordIds.length;
+    final ratio = ownedIds.length / set.coasterIds.length;
     final completed = ratio >= 1.0;
     final accent =
         completed ? const Color(0xFFEC407A) : const Color(0xFF7C4DFF);
@@ -3862,7 +3862,7 @@ class _SwordSetCard extends StatelessWidget {
                 ),
               ),
               Text(
-                '${ownedIds.length} / ${set.swordIds.length}',
+                '${ownedIds.length} / ${set.coasterIds.length}',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w900,
@@ -3917,10 +3917,10 @@ class _SwordSetCard extends StatelessWidget {
             spacing: 6,
             runSpacing: 6,
             children: [
-              for (final id in set.swordIds)
-                _SetSwordChip(
-                  swordId: id,
-                  owned: game.ownsSword(id),
+              for (final id in set.coasterIds)
+                _SetCoasterChip(
+                  coasterId: id,
+                  owned: game.ownsCoaster(id),
                 ),
             ],
           ),
@@ -3974,16 +3974,16 @@ class _BonusChip extends StatelessWidget {
   }
 }
 
-class _SetSwordChip extends StatelessWidget {
-  final String swordId;
+class _SetCoasterChip extends StatelessWidget {
+  final String coasterId;
   final bool owned;
-  const _SetSwordChip({required this.swordId, required this.owned});
+  const _SetCoasterChip({required this.coasterId, required this.owned});
 
   @override
   Widget build(BuildContext context) {
-    final def = swordCatalog.firstWhere(
-      (s) => s.id == swordId,
-      orElse: () => swordCatalog.first,
+    final def = coasterCatalog.firstWhere(
+      (s) => s.id == coasterId,
+      orElse: () => coasterCatalog.first,
     );
     final tierColor = def.tier.color;
     return Container(

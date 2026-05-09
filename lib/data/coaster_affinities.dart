@@ -4,52 +4,52 @@ import 'coaster_catalog.dart';
 
 /// Signature metadata for "검세권" and equipped formation.
 ///
-/// The catalog already contains many fantasy swords, so this layer gives every
-/// sword a permanent regional base and a formation role without rewriting the
-/// whole sword table. The distribution is deterministic from catalog order and
+/// The catalog already contains many fantasy coasters, so this layer gives every
+/// coaster a permanent regional base and a formation role without rewriting the
+/// whole coaster table. The distribution is deterministic from catalog order and
 /// tier, which keeps existing saves stable as long as ids remain stable.
-final Map<String, String> swordRegionAffinities = () {
+final Map<String, String> coasterRegionAffinities = () {
   final map = <String, String>{};
-  for (var i = 0; i < swordCatalog.length; i++) {
-    final sword = swordCatalog[i];
-    final regionIndex = (i * 7 + sword.tier.index * 3) % regionCatalog.length;
-    map[sword.id] = regionCatalog[regionIndex].id;
+  for (var i = 0; i < coasterCatalog.length; i++) {
+    final coaster = coasterCatalog[i];
+    final regionIndex = (i * 7 + coaster.tier.index * 3) % regionCatalog.length;
+    map[coaster.id] = regionCatalog[regionIndex].id;
   }
   return Map<String, String>.unmodifiable(map);
 }();
 
-final Map<String, SwordFormationRole> swordFormationRoles = () {
-  const roles = SwordFormationRole.values;
-  final map = <String, SwordFormationRole>{};
-  for (var i = 0; i < swordCatalog.length; i++) {
-    final sword = swordCatalog[i];
-    final roleIndex = (i + sword.tier.index * 2) % roles.length;
-    map[sword.id] = roles[roleIndex];
+final Map<String, CoasterFormationRole> coasterFormationRoles = () {
+  const roles = CoasterFormationRole.values;
+  final map = <String, CoasterFormationRole>{};
+  for (var i = 0; i < coasterCatalog.length; i++) {
+    final coaster = coasterCatalog[i];
+    final roleIndex = (i + coaster.tier.index * 2) % roles.length;
+    map[coaster.id] = roles[roleIndex];
   }
-  return Map<String, SwordFormationRole>.unmodifiable(map);
+  return Map<String, CoasterFormationRole>.unmodifiable(map);
 }();
 
-String swordRegionId(SwordDef sword) =>
-    swordRegionAffinities[sword.id] ?? regionCatalog.first.id;
+String coasterRegionId(CoasterDef coaster) =>
+    coasterRegionAffinities[coaster.id] ?? regionCatalog.first.id;
 
-RegionDef swordHomeRegion(SwordDef sword) =>
-    regionDefById(swordRegionId(sword));
+RegionDef coasterHomeRegion(CoasterDef coaster) =>
+    regionDefById(coasterRegionId(coaster));
 
-SwordFormationRole swordFormationRole(SwordDef sword) =>
-    swordFormationRoles[sword.id] ?? SwordFormationRole.striker;
+CoasterFormationRole coasterFormationRole(CoasterDef coaster) =>
+    coasterFormationRoles[coaster.id] ?? CoasterFormationRole.striker;
 
-List<SwordDef> swordsForRegion(String regionId) => [
-      for (final sword in swordCatalog)
-        if (swordRegionId(sword) == regionId) sword,
+List<CoasterDef> coastersForRegion(String regionId) => [
+      for (final coaster in coasterCatalog)
+        if (coasterRegionId(coaster) == regionId) coaster,
     ];
 
-int ownedSwordCountForRegion(String regionId, Map<String, int> ownedSwords) {
+int ownedCoasterCountForRegion(String regionId, Map<String, int> ownedCoasters) {
   var count = 0;
-  for (final sword in swordsForRegion(regionId)) {
-    if ((ownedSwords[sword.id] ?? 0) > 0) count++;
+  for (final coaster in coastersForRegion(regionId)) {
+    if ((ownedCoasters[coaster.id] ?? 0) > 0) count++;
   }
   return count;
 }
 
-int totalSwordCountForRegion(String regionId) =>
-    swordsForRegion(regionId).length;
+int totalCoasterCountForRegion(String regionId) =>
+    coastersForRegion(regionId).length;

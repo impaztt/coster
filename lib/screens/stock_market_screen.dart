@@ -392,10 +392,10 @@ class _RegionListTile extends ConsumerWidget {
     final game = ref.watch(gameProvider);
     final notifier = ref.read(gameProvider.notifier);
     final ownership = st.shares / def.totalShares;
-    final districtBonus = notifier.regionSwordDistrictBonusFraction(def.id);
+    final districtBonus = notifier.regionCoasterDistrictBonusFraction(def.id);
     final effectiveYield = notifier.regionEffectiveHourlyYield(def.id);
-    final regionOwned = ownedSwordCountForRegion(def.id, game.ownedSwords);
-    final regionTotal = totalSwordCountForRegion(def.id);
+    final regionOwned = ownedCoasterCountForRegion(def.id, game.ownedCoasters);
+    final regionTotal = totalCoasterCountForRegion(def.id);
     final lastClose = st.recentCandles.isEmpty
         ? (st.formingCandle?.open ?? st.currentPrice)
         : st.recentCandles.last.close;
@@ -762,10 +762,10 @@ class RegionDetailScreen extends ConsumerWidget {
         ? (st.currentPrice - st.avgCost) / st.avgCost * 100
         : 0.0;
     final hourlyEst = notifier.regionHourlyDividendEstimate(regionId);
-    final districtBonus = notifier.regionSwordDistrictBonusFraction(regionId);
+    final districtBonus = notifier.regionCoasterDistrictBonusFraction(regionId);
     final effectiveYield = notifier.regionEffectiveHourlyYield(regionId);
-    final regionOwned = ownedSwordCountForRegion(regionId, game.ownedSwords);
-    final regionTotal = totalSwordCountForRegion(regionId);
+    final regionOwned = ownedCoasterCountForRegion(regionId, game.ownedCoasters);
+    final regionTotal = totalCoasterCountForRegion(regionId);
 
     return Scaffold(
       appBar: AppBar(

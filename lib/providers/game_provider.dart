@@ -50,11 +50,11 @@ const summonRateMinN = 35.0;
 const summonRateMinR = 15.0;
 const summonRateDrainFromNRatio = 0.70;
 
-const _summonRateBoostPerLevel = <SwordTier, double>{
-  SwordTier.sr: 0.20,
-  SwordTier.ssr: 0.11,
-  SwordTier.lr: 0.06,
-  SwordTier.ur: 0.03,
+const _summonRateBoostPerLevel = <CoasterTier, double>{
+  CoasterTier.sr: 0.20,
+  CoasterTier.ssr: 0.11,
+  CoasterTier.lr: 0.06,
+  CoasterTier.ur: 0.03,
 };
 
 int summonRateLevelFor(int totalSummons) {
@@ -69,10 +69,10 @@ int summonsToNextRateLevel(int totalSummons) {
   return max(0, nextTarget - totalSummons);
 }
 
-Map<SwordTier, double> summonRatesForTotalSummons(int totalSummons) {
+Map<CoasterTier, double> summonRatesForTotalSummons(int totalSummons) {
   final level = summonRateLevelFor(totalSummons);
-  final rates = <SwordTier, double>{
-    for (final tier in SwordTier.values) tier: tier.rate,
+  final rates = <CoasterTier, double>{
+    for (final tier in CoasterTier.values) tier: tier.rate,
   };
   if (level <= 0) return rates;
 
@@ -83,18 +83,18 @@ Map<SwordTier, double> summonRatesForTotalSummons(int totalSummons) {
     rates[entry.key] = (rates[entry.key] ?? 0) + gain;
   }
 
-  rates[SwordTier.n] = max(
+  rates[CoasterTier.n] = max(
     summonRateMinN,
-    (rates[SwordTier.n] ?? 0) - boostedTotal * summonRateDrainFromNRatio,
+    (rates[CoasterTier.n] ?? 0) - boostedTotal * summonRateDrainFromNRatio,
   );
-  rates[SwordTier.r] = max(
+  rates[CoasterTier.r] = max(
     summonRateMinR,
-    (rates[SwordTier.r] ?? 0) - boostedTotal * (1 - summonRateDrainFromNRatio),
+    (rates[CoasterTier.r] ?? 0) - boostedTotal * (1 - summonRateDrainFromNRatio),
   );
 
   final total = rates.values.fold<double>(0, (a, b) => a + b);
   if ((total - 100).abs() > 0.0001) {
-    rates[SwordTier.r] = (rates[SwordTier.r] ?? 0) + (100 - total);
+    rates[CoasterTier.r] = (rates[CoasterTier.r] ?? 0) + (100 - total);
   }
   return rates;
 }
@@ -538,11 +538,11 @@ const goldExchangeOffers = <GoldExchangeOffer>[
 /// then their DPS is large enough that fixed packs are noise.
 const goldExchangeFixedHideAfterPrestiges = 3;
 
-// Main sword enhancement types ------------------------------------------------
+// Main coaster enhancement types ------------------------------------------------
 
-enum MainSwordEnhanceCurrency { gold, essence, hybrid }
+enum MainCoasterEnhanceCurrency { gold, essence, hybrid }
 
-enum MainSwordEnhanceFailure {
+enum MainCoasterEnhanceFailure {
   none,
   notEnoughGold,
   notEnoughEssence,
@@ -550,18 +550,18 @@ enum MainSwordEnhanceFailure {
   rolledFailure,
 }
 
-class MainSwordEnhanceAttemptResult {
+class MainCoasterEnhanceAttemptResult {
   final bool ok; // false → couldn't even attempt (cost / cap reasons)
   final bool success; // true → +1 stage applied
   final int previousStage;
   final int newStage;
-  final MainSwordEnhanceFailure reason;
+  final MainCoasterEnhanceFailure reason;
   final int penaltyApplied;
   final double goldSpent;
   final int essenceSpent;
   final bool crossedTierUp;
-  final MainSwordMilestoneReward? milestoneReward;
-  const MainSwordEnhanceAttemptResult({
+  final MainCoasterMilestoneReward? milestoneReward;
+  const MainCoasterEnhanceAttemptResult({
     required this.ok,
     required this.success,
     required this.previousStage,
@@ -575,15 +575,15 @@ class MainSwordEnhanceAttemptResult {
   });
 }
 
-enum MainSwordEventType { tierUp, milestone, namingPrompt }
+enum MainCoasterEventType { tierUp, milestone, namingPrompt }
 
-class MainSwordEvent {
-  final MainSwordEventType type;
+class MainCoasterEvent {
+  final MainCoasterEventType type;
   final int? tierIndex;
   final String? tierName;
   final int? stage;
-  final MainSwordMilestoneReward? milestone;
-  const MainSwordEvent._({
+  final MainCoasterMilestoneReward? milestone;
+  const MainCoasterEvent._({
     required this.type,
     this.tierIndex,
     this.tierName,
@@ -591,30 +591,30 @@ class MainSwordEvent {
     this.milestone,
   });
 
-  const MainSwordEvent.tierUp({
+  const MainCoasterEvent.tierUp({
     required int tierIndex,
     required String tierName,
     required int stage,
   }) : this._(
-          type: MainSwordEventType.tierUp,
+          type: MainCoasterEventType.tierUp,
           tierIndex: tierIndex,
           tierName: tierName,
           stage: stage,
         );
 
-  MainSwordEvent.milestone(MainSwordMilestoneReward reward)
+  MainCoasterEvent.milestone(MainCoasterMilestoneReward reward)
       : this._(
-          type: MainSwordEventType.milestone,
+          type: MainCoasterEventType.milestone,
           milestone: reward,
           stage: reward.stage,
         );
 
-  const MainSwordEvent.namingPrompt()
-      : this._(type: MainSwordEventType.namingPrompt);
+  const MainCoasterEvent.namingPrompt()
+      : this._(type: MainCoasterEventType.namingPrompt);
 }
 
-final mainSwordEventProvider = StreamProvider<MainSwordEvent>(
-  (ref) => ref.watch(gameProvider.notifier).mainSwordEventStream,
+final mainCoasterEventProvider = StreamProvider<MainCoasterEvent>(
+  (ref) => ref.watch(gameProvider.notifier).mainCoasterEventStream,
 );
 
 /// Result of attempting a gold-exchange purchase. Communicates the precise
@@ -843,12 +843,12 @@ const weeklyMissionDefs = <MissionDef>[
 ];
 
 class SummonResult {
-  final SwordDef sword;
+  final CoasterDef coaster;
   final int levelAfter;
   final bool isDuplicate;
   final bool isMaxed;
   SummonResult({
-    required this.sword,
+    required this.coaster,
     required this.levelAfter,
     required this.isDuplicate,
     required this.isMaxed,
@@ -962,8 +962,8 @@ class GameState {
   final double textScale;
   final bool reduceTapHaptics;
   final int essence;
-  final Map<String, int> ownedSwords;
-  final String? equippedSwordId;
+  final Map<String, int> ownedCoasters;
+  final String? equippedCoasterId;
   final int summonsSinceHighRare;
   final Set<String> unlockedAchievements;
   final int combo;
@@ -993,9 +993,9 @@ class GameState {
   final int goldExchangeDailyUsed;
   final int goldExchangePrestigeUsed;
   final bool goldExchangeEightHourUsedToday;
-  final int mainSwordStage;
-  final String? mainSwordName;
-  final int mainSwordHighestStage;
+  final int mainCoasterStage;
+  final String? mainCoasterName;
+  final int mainCoasterHighestStage;
   final bool adsRemoved;
   final DateTime? monthlyPassExpiresAt;
   final DateTime? seasonPassExpiresAt;
@@ -1027,8 +1027,8 @@ class GameState {
     required this.textScale,
     required this.reduceTapHaptics,
     required this.essence,
-    required this.ownedSwords,
-    required this.equippedSwordId,
+    required this.ownedCoasters,
+    required this.equippedCoasterId,
     required this.summonsSinceHighRare,
     required this.unlockedAchievements,
     required this.combo,
@@ -1058,9 +1058,9 @@ class GameState {
     this.goldExchangeDailyUsed = 0,
     this.goldExchangePrestigeUsed = 0,
     this.goldExchangeEightHourUsedToday = false,
-    this.mainSwordStage = 0,
-    this.mainSwordName,
-    this.mainSwordHighestStage = 0,
+    this.mainCoasterStage = 0,
+    this.mainCoasterName,
+    this.mainCoasterHighestStage = 0,
     this.adsRemoved = false,
     this.monthlyPassExpiresAt,
     this.seasonPassExpiresAt,
@@ -1093,8 +1093,8 @@ class GameState {
         textScale: 1.0,
         reduceTapHaptics: false,
         essence: 90,
-        ownedSwords: {},
-        equippedSwordId: null,
+        ownedCoasters: {},
+        equippedCoasterId: null,
         summonsSinceHighRare: 0,
         unlockedAchievements: {},
         combo: 0,
@@ -1154,15 +1154,15 @@ class GameState {
   int producerLevel(String id) => producerLevels[id] ?? 0;
   int tapUpgradeLevel(String id) => tapUpgradeLevels[id] ?? 0;
   int prestigeUpgradeLevel(String id) => prestigeUpgradeLevels[id] ?? 0;
-  int swordLevel(String id) => ownedSwords[id] ?? 0;
-  bool ownsSword(String id) => (ownedSwords[id] ?? 0) > 0;
+  int coasterLevel(String id) => ownedCoasters[id] ?? 0;
+  bool ownsCoaster(String id) => (ownedCoasters[id] ?? 0) > 0;
   bool isFeatureUnlocked(String id) => unlockedFeatures.contains(id);
 
-  SwordDef? get equippedSword {
-    final id = equippedSwordId;
+  CoasterDef? get equippedCoaster {
+    final id = equippedCoasterId;
     if (id == null) return null;
     try {
-      return swordById(id);
+      return coasterById(id);
     } catch (_) {
       return null;
     }
@@ -1187,18 +1187,18 @@ class GameState {
         hasUr = false;
     int maxLv = 0;
     int maxedCount = 0;
-    for (final entry in ownedSwords.entries) {
+    for (final entry in ownedCoasters.entries) {
       if (entry.value <= 0) continue;
       try {
-        final tier = swordById(entry.key).tier;
-        if (tier == SwordTier.r) hasR = true;
-        if (tier == SwordTier.sr) hasSr = true;
-        if (tier == SwordTier.ssr) hasSsr = true;
-        if (tier == SwordTier.lr) hasLr = true;
-        if (tier == SwordTier.ur) hasUr = true;
+        final tier = coasterById(entry.key).tier;
+        if (tier == CoasterTier.r) hasR = true;
+        if (tier == CoasterTier.sr) hasSr = true;
+        if (tier == CoasterTier.ssr) hasSsr = true;
+        if (tier == CoasterTier.lr) hasLr = true;
+        if (tier == CoasterTier.ur) hasUr = true;
       } catch (_) {}
       if (entry.value > maxLv) maxLv = entry.value;
-      if (entry.value >= SwordDef.maxLevel) maxedCount++;
+      if (entry.value >= CoasterDef.maxLevel) maxedCount++;
     }
     // Stock-market derived stats.
     var unlockedRegions = 0;
@@ -1226,21 +1226,21 @@ class GameState {
       totalProducerLevels: totalProducerLv,
       ownedProducerCount: ownedProducers,
       totalProducerCatalogCount: producerCatalog.length,
-      ownedSwords: ownedSwords,
-      ownedSwordCount: ownedSwords.values.where((v) => v > 0).length,
-      totalSwordCatalogCount: swordCatalog.length,
+      ownedCoasters: ownedCoasters,
+      ownedCoasterCount: ownedCoasters.values.where((v) => v > 0).length,
+      totalCoasterCatalogCount: coasterCatalog.length,
       ownsAnyR: hasR,
       ownsAnySr: hasSr,
       ownsAnySsr: hasSsr,
       ownsAnyLr: hasLr,
       ownsAnyUr: hasUr,
-      maxSwordLevel: maxLv,
-      maxedSwordCount: maxedCount,
+      maxCoasterLevel: maxLv,
+      maxedCoasterCount: maxedCount,
       totalSummons: totalSummons,
       prestigeCount: prestigeCount,
       prestigeUpgradeLevels: prestigeUpgradeLevels,
       totalTapUpgradesBought: totalTapUpgradesBought,
-      hasEquippedSword: equippedSwordId != null,
+      hasEquippedCoaster: equippedCoasterId != null,
       totalCrits: totalCrits,
       maxCombo: maxCombo,
       comboBurstCount: comboBurstCount,
@@ -1335,7 +1335,7 @@ class GameNotifier extends Notifier<GameState> {
     _autoTapTimer?.cancel();
     _achievementUnlocks.close();
     _featureUnlocks.close();
-    _mainSwordEvents.close();
+    _mainCoasterEvents.close();
     _iapSub?.cancel();
   }
 
@@ -1477,19 +1477,19 @@ class GameNotifier extends Notifier<GameState> {
         _intClamp(_save.goldExchangeDailyCount, 0, goldExchangeDailyLimit);
     _save.goldExchangePrestigeCount = _intClamp(
         _save.goldExchangePrestigeCount, 0, goldExchangePrestigeLimit);
-    _save.mainSwordStage =
-        _intClamp(_save.mainSwordStage, 0, mainSwordEnhanceMaxStage);
-    _save.mainSwordHighestStage = _intClamp(
-      _save.mainSwordHighestStage,
-      _save.mainSwordStage,
-      mainSwordEnhanceMaxStage,
+    _save.mainCoasterStage =
+        _intClamp(_save.mainCoasterStage, 0, mainCoasterEnhanceMaxStage);
+    _save.mainCoasterHighestStage = _intClamp(
+      _save.mainCoasterHighestStage,
+      _save.mainCoasterStage,
+      mainCoasterEnhanceMaxStage,
     );
-    _save.mainSwordTiersShown.removeWhere(
-      (i) => i < 0 || i >= mainSwordTiers.length,
+    _save.mainCoasterTiersShown.removeWhere(
+      (i) => i < 0 || i >= mainCoasterTiers.length,
     );
-    if (_save.mainSwordCollectionBonusFraction.isNaN ||
-        _save.mainSwordCollectionBonusFraction < 0) {
-      _save.mainSwordCollectionBonusFraction = 0;
+    if (_save.mainCoasterCollectionBonusFraction.isNaN ||
+        _save.mainCoasterCollectionBonusFraction < 0) {
+      _save.mainCoasterCollectionBonusFraction = 0;
     }
     _save.prestigeCoins = _intClamp(_save.prestigeCoins, 0, 2147483647);
     _save.prestigeCount = _intClamp(_save.prestigeCount, 0, 1000000);
@@ -1531,13 +1531,13 @@ class GameNotifier extends Notifier<GameState> {
       maxLevel: 1000000,
     );
     _sanitizeLevelMap(
-      _save.ownedSwords,
-      allowed: swordCatalog.map((e) => e.id).toSet(),
-      maxLevel: SwordDef.maxLevel,
+      _save.ownedCoasters,
+      allowed: coasterCatalog.map((e) => e.id).toSet(),
+      maxLevel: CoasterDef.maxLevel,
     );
-    final equipped = _save.equippedSwordId;
-    if (equipped != null && (_save.ownedSwords[equipped] ?? 0) <= 0) {
-      _save.equippedSwordId = null;
+    final equipped = _save.equippedCoasterId;
+    if (equipped != null && (_save.ownedCoasters[equipped] ?? 0) <= 0) {
+      _save.equippedCoasterId = null;
     }
     _sanitizeFormationSlots();
 
@@ -1576,22 +1576,22 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   void _sanitizeFormationSlots() {
-    final allowed = swordCatalog.map((e) => e.id).toSet();
+    final allowed = coasterCatalog.map((e) => e.id).toSet();
     final seen = <String>{};
-    final slots = List<String?>.filled(swordFormationSlotCount, null);
-    final source = _save.formationSwordIds;
-    final limit = source.length < swordFormationSlotCount
+    final slots = List<String?>.filled(coasterFormationSlotCount, null);
+    final source = _save.formationCoasterIds;
+    final limit = source.length < coasterFormationSlotCount
         ? source.length
-        : swordFormationSlotCount;
+        : coasterFormationSlotCount;
     for (var i = 0; i < limit; i++) {
       final id = source[i];
       if (id == null) continue;
       if (!allowed.contains(id)) continue;
-      if ((_save.ownedSwords[id] ?? 0) <= 0) continue;
+      if ((_save.ownedCoasters[id] ?? 0) <= 0) continue;
       if (!seen.add(id)) continue;
       slots[i] = id;
     }
-    _save.formationSwordIds = slots;
+    _save.formationCoasterIds = slots;
   }
 
   static final Map<String, MissionDef> _dailyMissionById = {
@@ -1719,8 +1719,8 @@ class GameNotifier extends Notifier<GameState> {
       textScale: _save.settings.textScale,
       reduceTapHaptics: _save.settings.reduceTapHaptics,
       essence: _save.essence,
-      ownedSwords: Map.unmodifiable(_save.ownedSwords),
-      equippedSwordId: _save.equippedSwordId,
+      ownedCoasters: Map.unmodifiable(_save.ownedCoasters),
+      equippedCoasterId: _save.equippedCoasterId,
       summonsSinceHighRare: _save.summonsSinceHighRare,
       unlockedAchievements: Set.unmodifiable(_save.unlockedAchievements),
       combo: _combo,
@@ -1754,9 +1754,9 @@ class GameNotifier extends Notifier<GameState> {
       goldExchangePrestigeUsed: _save.goldExchangePrestigeCount,
       goldExchangeEightHourUsedToday:
           _save.goldExchangeEightHourDayKey == _dayKey(DateTime.now()),
-      mainSwordStage: _save.mainSwordStage,
-      mainSwordName: _save.mainSwordName,
-      mainSwordHighestStage: _save.mainSwordHighestStage,
+      mainCoasterStage: _save.mainCoasterStage,
+      mainCoasterName: _save.mainCoasterName,
+      mainCoasterHighestStage: _save.mainCoasterHighestStage,
       adsRemoved: _save.adsRemoved,
       monthlyPassExpiresAt: _save.monthlyPassExpiresAt,
       seasonPassExpiresAt: _save.seasonPassExpiresAt,
@@ -1785,8 +1785,8 @@ class GameNotifier extends Notifier<GameState> {
 
   Set<String> _completedSetIds() {
     final ids = <String>{};
-    for (final s in swordSets) {
-      if (s.swordIds.every((id) => (_save.ownedSwords[id] ?? 0) > 0)) {
+    for (final s in coasterSets) {
+      if (s.coasterIds.every((id) => (_save.ownedCoasters[id] ?? 0) > 0)) {
         ids.add(s.id);
       }
     }
@@ -1796,7 +1796,7 @@ class GameNotifier extends Notifier<GameState> {
   double _setDpsBonus() {
     double bonus = 0;
     final completed = _completedSetIds();
-    for (final s in swordSets) {
+    for (final s in coasterSets) {
       if (completed.contains(s.id)) bonus += s.dpsBonus;
     }
     return 1.0 + bonus;
@@ -1805,7 +1805,7 @@ class GameNotifier extends Notifier<GameState> {
   double _setTapBonus() {
     double bonus = 0;
     final completed = _completedSetIds();
-    for (final s in swordSets) {
+    for (final s in coasterSets) {
       if (completed.contains(s.id)) bonus += s.tapBonus;
     }
     return 1.0 + bonus;
@@ -1897,8 +1897,8 @@ class GameNotifier extends Notifier<GameState> {
         textScale: state.textScale,
         reduceTapHaptics: state.reduceTapHaptics,
         essence: _save.essence,
-        ownedSwords: state.ownedSwords,
-        equippedSwordId: state.equippedSwordId,
+        ownedCoasters: state.ownedCoasters,
+        equippedCoasterId: state.equippedCoasterId,
         summonsSinceHighRare: state.summonsSinceHighRare,
         unlockedAchievements: Set.unmodifiable(_save.unlockedAchievements),
         combo: state.combo,
@@ -1979,8 +1979,8 @@ class GameNotifier extends Notifier<GameState> {
       textScale: state.textScale,
       reduceTapHaptics: state.reduceTapHaptics,
       essence: _save.essence,
-      ownedSwords: state.ownedSwords,
-      equippedSwordId: state.equippedSwordId,
+      ownedCoasters: state.ownedCoasters,
+      equippedCoasterId: state.equippedCoasterId,
       summonsSinceHighRare: state.summonsSinceHighRare,
       unlockedAchievements: state.unlockedAchievements,
       combo: state.combo,
@@ -2051,8 +2051,8 @@ class GameNotifier extends Notifier<GameState> {
       textScale: state.textScale,
       reduceTapHaptics: state.reduceTapHaptics,
       essence: state.essence,
-      ownedSwords: state.ownedSwords,
-      equippedSwordId: state.equippedSwordId,
+      ownedCoasters: state.ownedCoasters,
+      equippedCoasterId: state.equippedCoasterId,
       summonsSinceHighRare: state.summonsSinceHighRare,
       unlockedAchievements: state.unlockedAchievements,
       combo: state.combo,
@@ -2095,65 +2095,65 @@ class GameNotifier extends Notifier<GameState> {
       1.0 + prestigeDpsBonusFraction(_save.prestigeUpgradeLevels);
 
   double _equippedTapMult() {
-    final id = _save.equippedSwordId;
+    final id = _save.equippedCoasterId;
     if (id == null) return 1.0;
-    final lv = _save.ownedSwords[id] ?? 0;
+    final lv = _save.ownedCoasters[id] ?? 0;
     if (lv <= 0) return 1.0;
     try {
-      return swordById(id).tapMultAt(lv);
+      return coasterById(id).tapMultAt(lv);
     } catch (_) {
       return 1.0;
     }
   }
 
   double _equippedDpsMult() {
-    final id = _save.equippedSwordId;
+    final id = _save.equippedCoasterId;
     if (id == null) return 1.0;
-    final lv = _save.ownedSwords[id] ?? 0;
+    final lv = _save.ownedCoasters[id] ?? 0;
     if (lv <= 0) return 1.0;
     try {
-      return swordById(id).dpsMultAt(lv);
+      return coasterById(id).dpsMultAt(lv);
     } catch (_) {
       return 1.0;
     }
   }
 
-  /// Total fractional bonus contributed by every owned sword (incl. the
+  /// Total fractional bonus contributed by every owned coaster (incl. the
   /// equipped one — its big equip multiplier is separate, so this stacks
   /// without "double-dipping" on the same source). Returns the raw sum,
   /// e.g. 0.42 for "+42%" — see [_collectionMult] for the multiplier form.
   double _collectionBonusTotal() {
     double total = 0;
-    _save.ownedSwords.forEach((id, lv) {
+    _save.ownedCoasters.forEach((id, lv) {
       if (lv <= 0) return;
       try {
-        total += swordById(id).ownedBonusAt(lv);
+        total += coasterById(id).ownedBonusAt(lv);
       } catch (_) {}
     });
-    // Permanent collection-bonus boosts unlocked via main sword milestones.
-    total += _save.mainSwordCollectionBonusFraction;
+    // Permanent collection-bonus boosts unlocked via main coaster milestones.
+    total += _save.mainCoasterCollectionBonusFraction;
     return total;
   }
 
   double _collectionMult() => 1.0 + _collectionBonusTotal();
 
-  List<String?> get formationSwordIds {
+  List<String?> get formationCoasterIds {
     _sanitizeFormationSlots();
-    return List.unmodifiable(_save.formationSwordIds);
+    return List.unmodifiable(_save.formationCoasterIds);
   }
 
   FormationSummary get formationSummary => _formationSummary();
 
-  double _formationPower(SwordDef def, int level) {
+  double _formationPower(CoasterDef def, int level) {
     final base = switch (def.tier) {
-      SwordTier.n => 0.006,
-      SwordTier.r => 0.010,
-      SwordTier.sr => 0.016,
-      SwordTier.ssr => 0.024,
-      SwordTier.lr => 0.036,
-      SwordTier.ur => 0.052,
+      CoasterTier.n => 0.006,
+      CoasterTier.r => 0.010,
+      CoasterTier.sr => 0.016,
+      CoasterTier.ssr => 0.024,
+      CoasterTier.lr => 0.036,
+      CoasterTier.ur => 0.052,
     };
-    final levelScale = 1.0 + (level.clamp(1, SwordDef.maxLevel) - 1) * 0.08;
+    final levelScale = 1.0 + (level.clamp(1, CoasterDef.maxLevel) - 1) * 0.08;
     return base * levelScale;
   }
 
@@ -2163,46 +2163,46 @@ class GameNotifier extends Notifier<GameState> {
     var tap = 0.0;
     var dps = 0.0;
     var market = 0.0;
-    final roles = <SwordFormationRole>{};
+    final roles = <CoasterFormationRole>{};
     final regions = <String>{};
     final regionCounts = <String, int>{};
 
-    for (final id in _save.formationSwordIds) {
+    for (final id in _save.formationCoasterIds) {
       if (id == null) continue;
-      final level = _save.ownedSwords[id] ?? 0;
+      final level = _save.ownedCoasters[id] ?? 0;
       if (level <= 0) continue;
-      SwordDef def;
+      CoasterDef def;
       try {
-        def = swordById(id);
+        def = coasterById(id);
       } catch (_) {
         continue;
       }
       filled++;
-      final role = swordFormationRole(def);
-      final regionId = swordRegionId(def);
+      final role = coasterFormationRole(def);
+      final regionId = coasterRegionId(def);
       final power = _formationPower(def, level);
       roles.add(role);
       regions.add(regionId);
       regionCounts[regionId] = (regionCounts[regionId] ?? 0) + 1;
 
       switch (role) {
-        case SwordFormationRole.vanguard:
+        case CoasterFormationRole.vanguard:
           tap += power * 1.25;
           dps += power * 0.20;
           break;
-        case SwordFormationRole.striker:
+        case CoasterFormationRole.striker:
           tap += power * 0.75;
           dps += power * 0.75;
           break;
-        case SwordFormationRole.support:
+        case CoasterFormationRole.support:
           tap += power * 0.20;
           dps += power * 1.25;
           break;
-        case SwordFormationRole.trader:
+        case CoasterFormationRole.trader:
           dps += power * 0.35;
           market += power * 1.50;
           break;
-        case SwordFormationRole.anchor:
+        case CoasterFormationRole.anchor:
           tap += power * 0.55;
           dps += power * 0.55;
           market += power * 0.55;
@@ -2225,12 +2225,12 @@ class GameNotifier extends Notifier<GameState> {
       tap += 0.02;
       dps += 0.02;
     }
-    if (roles.length >= swordFormationSlotCount) {
+    if (roles.length >= coasterFormationSlotCount) {
       tap += 0.015;
       dps += 0.015;
       market += 0.025;
     }
-    if (filled >= swordFormationSlotCount && regions.length >= filled) {
+    if (filled >= coasterFormationSlotCount && regions.length >= filled) {
       market += 0.02;
     }
 
@@ -2263,7 +2263,7 @@ class GameNotifier extends Notifier<GameState> {
         _setTapBonus() *
         _collectionMult() *
         _formationTapMult() *
-        _mainSwordMult();
+        _mainCoasterMult();
   }
 
   double _calcDps() {
@@ -2281,128 +2281,128 @@ class GameNotifier extends Notifier<GameState> {
         _setDpsBonus() *
         _collectionMult() *
         _formationDpsMult() *
-        _mainSwordMult();
+        _mainCoasterMult();
   }
 
-  /// Multiplier from the home-tab main sword's enhancement stage. Applies
-  /// to BOTH tap and DPS so progression on the main sword scales evenly
+  /// Multiplier from the home-tab main coaster's enhancement stage. Applies
+  /// to BOTH tap and DPS so progression on the main coaster scales evenly
   /// with the rest of the build.
-  double _mainSwordMult() => mainSwordStageBonusMult(_save.mainSwordStage);
+  double _mainCoasterMult() => mainCoasterStageBonusMult(_save.mainCoasterStage);
 
   /// Public read so the UI can show "+X% from 메인검 +N단계".
-  double get mainSwordBonusFraction =>
-      _mainSwordMult() - 1.0 + _summonRateBonusFromMainSword();
+  double get mainCoasterBonusFraction =>
+      _mainCoasterMult() - 1.0 + _summonRateBonusFromMainCoaster();
 
   /// Permanent +5% summon-rate bonus from clearing +50.
-  double _summonRateBonusFromMainSword() =>
-      _save.mainSwordHighestStage >= 50 ? 0.05 : 0.0;
+  double _summonRateBonusFromMainCoaster() =>
+      _save.mainCoasterHighestStage >= 50 ? 0.05 : 0.0;
 
   /// Public read for the home screen so it can show "수집 보너스 +X%".
   double get collectionBonusFraction => _collectionBonusTotal();
 
-  bool setFormationSword(int slot, String? swordId) {
-    if (slot < 0 || slot >= swordFormationSlotCount) return false;
+  bool setFormationCoaster(int slot, String? coasterId) {
+    if (slot < 0 || slot >= coasterFormationSlotCount) return false;
     _sanitizeFormationSlots();
-    if (swordId != null) {
-      if ((_save.ownedSwords[swordId] ?? 0) <= 0) return false;
+    if (coasterId != null) {
+      if ((_save.ownedCoasters[coasterId] ?? 0) <= 0) return false;
       try {
-        swordById(swordId);
+        coasterById(coasterId);
       } catch (_) {
         return false;
       }
     }
-    for (var i = 0; i < _save.formationSwordIds.length; i++) {
-      if (i != slot && _save.formationSwordIds[i] == swordId) {
-        _save.formationSwordIds[i] = null;
+    for (var i = 0; i < _save.formationCoasterIds.length; i++) {
+      if (i != slot && _save.formationCoasterIds[i] == coasterId) {
+        _save.formationCoasterIds[i] = null;
       }
     }
-    _save.formationSwordIds[slot] = swordId;
+    _save.formationCoasterIds[slot] = coasterId;
     _emit(loaded: true);
     unawaited(_persist());
     return true;
   }
 
   void clearFormation() {
-    _save.formationSwordIds =
-        List<String?>.filled(swordFormationSlotCount, null);
+    _save.formationCoasterIds =
+        List<String?>.filled(coasterFormationSlotCount, null);
     _emit(loaded: true);
     unawaited(_persist());
   }
 
   void autoFillFormation() {
-    final owned = <SwordDef>[];
-    for (final entry in _save.ownedSwords.entries) {
+    final owned = <CoasterDef>[];
+    for (final entry in _save.ownedCoasters.entries) {
       if (entry.value <= 0) continue;
       try {
-        owned.add(swordById(entry.key));
+        owned.add(coasterById(entry.key));
       } catch (_) {}
     }
     owned.sort((a, b) {
       final tierCmp = b.tier.index.compareTo(a.tier.index);
       if (tierCmp != 0) return tierCmp;
-      final lvCmp = (_save.ownedSwords[b.id] ?? 0)
-          .compareTo(_save.ownedSwords[a.id] ?? 0);
+      final lvCmp = (_save.ownedCoasters[b.id] ?? 0)
+          .compareTo(_save.ownedCoasters[a.id] ?? 0);
       if (lvCmp != 0) return lvCmp;
       return a.id.compareTo(b.id);
     });
 
-    final picked = <SwordDef>[];
-    final usedRoles = <SwordFormationRole>{};
-    for (final sword in owned) {
-      if (picked.length >= swordFormationSlotCount) break;
-      final role = swordFormationRole(sword);
+    final picked = <CoasterDef>[];
+    final usedRoles = <CoasterFormationRole>{};
+    for (final coaster in owned) {
+      if (picked.length >= coasterFormationSlotCount) break;
+      final role = coasterFormationRole(coaster);
       if (usedRoles.contains(role)) continue;
-      picked.add(sword);
+      picked.add(coaster);
       usedRoles.add(role);
     }
-    for (final sword in owned) {
-      if (picked.length >= swordFormationSlotCount) break;
-      if (picked.any((s) => s.id == sword.id)) continue;
-      picked.add(sword);
+    for (final coaster in owned) {
+      if (picked.length >= coasterFormationSlotCount) break;
+      if (picked.any((s) => s.id == coaster.id)) continue;
+      picked.add(coaster);
     }
 
-    _save.formationSwordIds =
-        List<String?>.filled(swordFormationSlotCount, null);
+    _save.formationCoasterIds =
+        List<String?>.filled(coasterFormationSlotCount, null);
     for (var i = 0; i < picked.length; i++) {
-      _save.formationSwordIds[i] = picked[i].id;
+      _save.formationCoasterIds[i] = picked[i].id;
     }
     _emit(loaded: true);
     unawaited(_persist());
   }
 
-  double regionSwordDistrictBonusFraction(String regionId) {
-    final regionSwords = swordsForRegion(regionId);
-    if (regionSwords.isEmpty) return 0;
+  double regionCoasterDistrictBonusFraction(String regionId) {
+    final regionCoasters = coastersForRegion(regionId);
+    if (regionCoasters.isEmpty) return 0;
 
     var owned = 0;
     var levelTotal = 0;
-    for (final sword in regionSwords) {
-      final level = _save.ownedSwords[sword.id] ?? 0;
+    for (final coaster in regionCoasters) {
+      final level = _save.ownedCoasters[coaster.id] ?? 0;
       if (level <= 0) continue;
       owned++;
-      levelTotal += level.clamp(0, SwordDef.maxLevel).toInt();
+      levelTotal += level.clamp(0, CoasterDef.maxLevel).toInt();
     }
 
-    final ownedRatio = owned / regionSwords.length;
-    final levelRatio = levelTotal / (regionSwords.length * SwordDef.maxLevel);
+    final ownedRatio = owned / regionCoasters.length;
+    final levelRatio = levelTotal / (regionCoasters.length * CoasterDef.maxLevel);
     final collectionBonus = ownedRatio * 0.18 + levelRatio * 0.22;
 
     var formationBonus = 0.0;
-    for (final id in _save.formationSwordIds) {
+    for (final id in _save.formationCoasterIds) {
       if (id == null) continue;
-      final level = _save.ownedSwords[id] ?? 0;
+      final level = _save.ownedCoasters[id] ?? 0;
       if (level <= 0) continue;
-      SwordDef def;
+      CoasterDef def;
       try {
-        def = swordById(id);
+        def = coasterById(id);
       } catch (_) {
         continue;
       }
-      if (swordRegionId(def) != regionId) continue;
-      final role = swordFormationRole(def);
+      if (coasterRegionId(def) != regionId) continue;
+      final role = coasterFormationRole(def);
       final roleWeight = switch (role) {
-        SwordFormationRole.trader => 2.00,
-        SwordFormationRole.anchor => 1.15,
+        CoasterFormationRole.trader => 2.00,
+        CoasterFormationRole.anchor => 1.15,
         _ => 0.55,
       };
       formationBonus += _formationPower(def, level) * roleWeight;
@@ -2413,18 +2413,18 @@ class GameNotifier extends Notifier<GameState> {
 
   double regionEffectiveHourlyYield(String regionId) {
     final def = regionDefById(regionId);
-    return def.hourlyYield * (1.0 + regionSwordDistrictBonusFraction(regionId));
+    return def.hourlyYield * (1.0 + regionCoasterDistrictBonusFraction(regionId));
   }
 
   double regionIntrinsicPrice(String regionId) {
     final def = regionDefById(regionId);
     return def.initialPrice *
-        (1.0 + regionSwordDistrictBonusFraction(regionId) * 0.45);
+        (1.0 + regionCoasterDistrictBonusFraction(regionId) * 0.45);
   }
 
   /// All multipliers that turn a producer's raw DPS into the effective DPS
   /// shown on the home screen. Upgrade tiles use this to display the gain
-  /// the player will actually see (e.g. so the sword-collection bonus
+  /// the player will actually see (e.g. so the coaster-collection bonus
   /// visibly improves the "DPS +N" preview on companion/transcendent buys).
   double get dpsMultiplier =>
       _prestigeMult() *
@@ -2743,50 +2743,50 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Main sword enhancement
+  // Main coaster enhancement
   // ─────────────────────────────────────────────────────────────────────────
 
   /// Stream of milestone awards / tier evolutions / first-naming prompts.
-  final _mainSwordEvents = StreamController<MainSwordEvent>.broadcast();
-  Stream<MainSwordEvent> get mainSwordEventStream => _mainSwordEvents.stream;
+  final _mainCoasterEvents = StreamController<MainCoasterEvent>.broadcast();
+  Stream<MainCoasterEvent> get mainCoasterEventStream => _mainCoasterEvents.stream;
 
-  /// Set/replace the main sword's nickname. Empty/whitespace input is
+  /// Set/replace the main coaster's nickname. Empty/whitespace input is
   /// rejected so the UI can default to a placeholder.
-  bool setMainSwordName(String name) {
+  bool setMainCoasterName(String name) {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return false;
-    _save.mainSwordName = trimmed;
+    _save.mainCoasterName = trimmed;
     _emit(loaded: true);
     unawaited(_persist());
     return true;
   }
 
-  /// Attempt one main sword enhancement step.
+  /// Attempt one main coaster enhancement step.
   ///
   /// Stage transitions follow these rules:
-  ///   • Success → +1 stage (clamped at mainSwordEnhanceMaxStage).
+  ///   • Success → +1 stage (clamped at mainCoasterEnhanceMaxStage).
   ///   • Failure on essence path → no stage change.
   ///   • Failure on gold path → −penalty unless [useProtection] is set.
   ///   • Failure on hybrid → splits the difference: gold-track penalty
   ///     applies, but protection is implied (so no stage loss) at the
   ///     cost of full hybrid pricing.
-  MainSwordEnhanceAttemptResult attemptMainSwordEnhance({
-    required MainSwordEnhanceCurrency currency,
-    MainSwordBoostLevel boostLevel = MainSwordBoostLevel.none,
+  MainCoasterEnhanceAttemptResult attemptMainCoasterEnhance({
+    required MainCoasterEnhanceCurrency currency,
+    MainCoasterBoostLevel boostLevel = MainCoasterBoostLevel.none,
     bool useProtection = false,
   }) {
-    final currentStage = _save.mainSwordStage;
-    if (currentStage >= mainSwordEnhanceMaxStage) {
-      return const MainSwordEnhanceAttemptResult(
+    final currentStage = _save.mainCoasterStage;
+    if (currentStage >= mainCoasterEnhanceMaxStage) {
+      return const MainCoasterEnhanceAttemptResult(
         ok: false,
         success: false,
         previousStage: 0,
         newStage: 0,
-        reason: MainSwordEnhanceFailure.alreadyMaxed,
+        reason: MainCoasterEnhanceFailure.alreadyMaxed,
       );
     }
     final targetStage = currentStage + 1;
-    final cost = mainSwordEnhanceCost(targetStage);
+    final cost = mainCoasterEnhanceCost(targetStage);
 
     // Compute final cost based on currency choice.
     double goldCost = 0;
@@ -2795,46 +2795,46 @@ class GameNotifier extends Notifier<GameState> {
     final boost = boostLevel;
     final boostEssenceCost = boost.essenceCost;
     final protection =
-        currency == MainSwordEnhanceCurrency.gold && useProtection;
+        currency == MainCoasterEnhanceCurrency.gold && useProtection;
 
     switch (currency) {
-      case MainSwordEnhanceCurrency.gold:
+      case MainCoasterEnhanceCurrency.gold:
         goldCost = cost.goldCost;
         essenceCost = boostEssenceCost +
-            (protection ? mainSwordProtectionEssenceCost : 0);
+            (protection ? mainCoasterProtectionEssenceCost : 0);
         successRate =
             (cost.goldSuccessBase + boost.successBonus).clamp(0.0, 1.0);
-      case MainSwordEnhanceCurrency.essence:
+      case MainCoasterEnhanceCurrency.essence:
         essenceCost = cost.essenceCost + boostEssenceCost;
         successRate =
             (cost.essenceSuccessBase + boost.successBonus).clamp(0.0, 1.0);
-      case MainSwordEnhanceCurrency.hybrid:
-        goldCost = cost.goldCost * mainSwordHybridGoldMultiplier;
+      case MainCoasterEnhanceCurrency.hybrid:
+        goldCost = cost.goldCost * mainCoasterHybridGoldMultiplier;
         essenceCost =
-            (cost.essenceCost * mainSwordHybridEssenceMultiplier).round() +
+            (cost.essenceCost * mainCoasterHybridEssenceMultiplier).round() +
                 boostEssenceCost;
         successRate = (cost.goldSuccessBase +
-                mainSwordHybridSuccessBonus +
+                mainCoasterHybridSuccessBonus +
                 boost.successBonus)
             .clamp(0.0, 1.0);
     }
 
     if (_save.gold < goldCost) {
-      return MainSwordEnhanceAttemptResult(
+      return MainCoasterEnhanceAttemptResult(
         ok: false,
         success: false,
         previousStage: currentStage,
         newStage: currentStage,
-        reason: MainSwordEnhanceFailure.notEnoughGold,
+        reason: MainCoasterEnhanceFailure.notEnoughGold,
       );
     }
     if (_save.essence < essenceCost) {
-      return MainSwordEnhanceAttemptResult(
+      return MainCoasterEnhanceAttemptResult(
         ok: false,
         success: false,
         previousStage: currentStage,
         newStage: currentStage,
-        reason: MainSwordEnhanceFailure.notEnoughEssence,
+        reason: MainCoasterEnhanceFailure.notEnoughEssence,
       );
     }
 
@@ -2852,69 +2852,69 @@ class GameNotifier extends Notifier<GameState> {
     final success = roll < successRate;
     final previousStage = currentStage;
     final firstEverEnhance =
-        currentStage == 0 && _save.mainSwordHighestStage == 0;
+        currentStage == 0 && _save.mainCoasterHighestStage == 0;
     int newStage = currentStage;
     int penaltyApplied = 0;
     if (success) {
       newStage = currentStage + 1;
-    } else if (currency == MainSwordEnhanceCurrency.essence) {
+    } else if (currency == MainCoasterEnhanceCurrency.essence) {
       // Essence-track failures never lose a stage.
-    } else if (currency == MainSwordEnhanceCurrency.hybrid) {
+    } else if (currency == MainCoasterEnhanceCurrency.hybrid) {
       // Hybrid paid the full price, treat as protected.
     } else if (!protection) {
       penaltyApplied = cost.penaltyOnFail.clamp(0, currentStage);
       newStage = currentStage - penaltyApplied;
     }
-    _save.mainSwordStage = newStage.clamp(0, mainSwordEnhanceMaxStage);
-    _save.mainSwordEnhanceAttempts++;
+    _save.mainCoasterStage = newStage.clamp(0, mainCoasterEnhanceMaxStage);
+    _save.mainCoasterEnhanceAttempts++;
 
     // Milestone + tier-up detection on the *new* stage.
-    final wasNewHigh = _save.mainSwordStage > _save.mainSwordHighestStage;
+    final wasNewHigh = _save.mainCoasterStage > _save.mainCoasterHighestStage;
     if (wasNewHigh) {
-      _save.mainSwordHighestStage = _save.mainSwordStage;
+      _save.mainCoasterHighestStage = _save.mainCoasterStage;
     }
     final crossedTierUp = success &&
-        mainSwordTierIndex(newStage) > mainSwordTierIndex(previousStage);
+        mainCoasterTierIndex(newStage) > mainCoasterTierIndex(previousStage);
     if (crossedTierUp) {
-      final tierIdx = mainSwordTierIndex(newStage);
-      if (!_save.mainSwordTiersShown.contains(tierIdx)) {
-        _save.mainSwordTiersShown.add(tierIdx);
-        _mainSwordEvents.add(
-          MainSwordEvent.tierUp(
+      final tierIdx = mainCoasterTierIndex(newStage);
+      if (!_save.mainCoasterTiersShown.contains(tierIdx)) {
+        _save.mainCoasterTiersShown.add(tierIdx);
+        _mainCoasterEvents.add(
+          MainCoasterEvent.tierUp(
             tierIndex: tierIdx,
-            tierName: mainSwordTiers[tierIdx].name,
+            tierName: mainCoasterTiers[tierIdx].name,
             stage: newStage,
           ),
         );
       }
     }
-    MainSwordMilestoneReward? milestone;
+    MainCoasterMilestoneReward? milestone;
     if (success && wasNewHigh) {
-      milestone = mainSwordMilestoneAt(newStage);
+      milestone = mainCoasterMilestoneAt(newStage);
       if (milestone != null) {
         if (milestone.essence > 0) _save.essence += milestone.essence;
         if (milestone.collectionBonusFraction != null) {
-          _save.mainSwordCollectionBonusFraction +=
+          _save.mainCoasterCollectionBonusFraction +=
               milestone.collectionBonusFraction!;
         }
-        _mainSwordEvents.add(MainSwordEvent.milestone(milestone));
+        _mainCoasterEvents.add(MainCoasterEvent.milestone(milestone));
       }
     }
-    if (firstEverEnhance && success && _save.mainSwordName == null) {
-      _mainSwordEvents.add(const MainSwordEvent.namingPrompt());
+    if (firstEverEnhance && success && _save.mainCoasterName == null) {
+      _mainCoasterEvents.add(const MainCoasterEvent.namingPrompt());
     }
 
     _emit(loaded: true);
     unawaited(_persist());
 
-    return MainSwordEnhanceAttemptResult(
+    return MainCoasterEnhanceAttemptResult(
       ok: true,
       success: success,
       previousStage: previousStage,
       newStage: newStage,
       reason: success
-          ? MainSwordEnhanceFailure.none
-          : MainSwordEnhanceFailure.rolledFailure,
+          ? MainCoasterEnhanceFailure.none
+          : MainCoasterEnhanceFailure.rolledFailure,
       penaltyApplied: penaltyApplied,
       goldSpent: goldCost,
       essenceSpent: essenceCost,
@@ -3609,47 +3609,47 @@ class GameNotifier extends Notifier<GameState> {
   /// finishing it off is worth at the current moment.
   double get slimePreviewReward => _calcTapPower() * slimeRewardTaps;
 
-  // ============ Sword dismantle ============
+  // ============ Coaster dismantle ============
 
-  /// Returns the amount of essence that dismantling [swordId] would refund,
-  /// or 0 if the sword can't be dismantled.
-  int dismantleRefund(String swordId) {
-    final lv = _save.ownedSwords[swordId] ?? 0;
+  /// Returns the amount of essence that dismantling [coasterId] would refund,
+  /// or 0 if the coaster can't be dismantled.
+  int dismantleRefund(String coasterId) {
+    final lv = _save.ownedCoasters[coasterId] ?? 0;
     if (lv <= 0) return 0;
-    if (_save.equippedSwordId == swordId) return 0;
-    final SwordDef def;
+    if (_save.equippedCoasterId == coasterId) return 0;
+    final CoasterDef def;
     try {
-      def = swordById(swordId);
+      def = coasterById(coasterId);
     } catch (_) {
       return 0;
     }
     return _dismantleEssencePerLevel(def.tier) * lv;
   }
 
-  int _dismantleEssencePerLevel(SwordTier tier) {
+  int _dismantleEssencePerLevel(CoasterTier tier) {
     return switch (tier) {
-      SwordTier.n => 2,
-      SwordTier.r => 5,
-      SwordTier.sr => 12,
-      SwordTier.ssr => 25,
-      SwordTier.lr => 40,
-      SwordTier.ur => 60,
+      CoasterTier.n => 2,
+      CoasterTier.r => 5,
+      CoasterTier.sr => 12,
+      CoasterTier.ssr => 25,
+      CoasterTier.lr => 40,
+      CoasterTier.ur => 60,
     };
   }
 
-  /// Dismantle an owned, non-equipped sword. Returns essence granted (0 on
-  /// failure — usually because the sword is equipped or not owned).
-  int dismantleSword(String swordId) {
-    final refund = dismantleRefund(swordId);
+  /// Dismantle an owned, non-equipped coaster. Returns essence granted (0 on
+  /// failure — usually because the coaster is equipped or not owned).
+  int dismantleCoaster(String coasterId) {
+    final refund = dismantleRefund(coasterId);
     if (refund <= 0) return 0;
-    _save.ownedSwords.remove(swordId);
-    for (var i = 0; i < _save.formationSwordIds.length; i++) {
-      if (_save.formationSwordIds[i] == swordId) {
-        _save.formationSwordIds[i] = null;
+    _save.ownedCoasters.remove(coasterId);
+    for (var i = 0; i < _save.formationCoasterIds.length; i++) {
+      if (_save.formationCoasterIds[i] == coasterId) {
+        _save.formationCoasterIds[i] = null;
       }
     }
     _save.essence += refund;
-    _save.run.swordDismantles++;
+    _save.run.coasterDismantles++;
     _emit(loaded: true);
     unawaited(_persist());
     return refund;
@@ -3669,12 +3669,12 @@ class GameNotifier extends Notifier<GameState> {
     await _persist();
   }
 
-  // ============ Sword collection / gacha ============
+  // ============ Coaster collection / gacha ============
 
-  SwordTier _rollTier({required bool forceSrPlus}) {
+  CoasterTier _rollTier({required bool forceSrPlus}) {
     final pool = forceSrPlus
-        ? const [SwordTier.sr, SwordTier.ssr, SwordTier.lr, SwordTier.ur]
-        : SwordTier.values;
+        ? const [CoasterTier.sr, CoasterTier.ssr, CoasterTier.lr, CoasterTier.ur]
+        : CoasterTier.values;
     final rates = summonRatesForTotalSummons(_save.stats.totalSummons);
     final totalWeight =
         pool.map((t) => rates[t] ?? 0).fold<double>(0, (a, b) => a + b);
@@ -3687,8 +3687,8 @@ class GameNotifier extends Notifier<GameState> {
     return pool.last;
   }
 
-  SwordDef _pickRandomOfTier(SwordTier tier) {
-    final pool = swordCatalog.where((s) => s.tier == tier).toList();
+  CoasterDef _pickRandomOfTier(CoasterTier tier) {
+    final pool = coasterCatalog.where((s) => s.tier == tier).toList();
     return pool[_random.nextInt(pool.length)];
   }
 
@@ -3698,34 +3698,34 @@ class GameNotifier extends Notifier<GameState> {
   }) {
     final pityHit =
         !forceSrPlus && _save.summonsSinceHighRare + 1 >= pityThreshold;
-    SwordTier tier;
+    CoasterTier tier;
     if (forceSrPlus || pityHit) {
       tier = _rollTier(forceSrPlus: true);
     } else if (guaranteedRPlus) {
       tier = _rollTier(forceSrPlus: false);
-      if (tier == SwordTier.n) tier = SwordTier.r;
+      if (tier == CoasterTier.n) tier = CoasterTier.r;
     } else {
       tier = _rollTier(forceSrPlus: false);
     }
     final def = _pickRandomOfTier(tier);
-    final oldLv = _save.ownedSwords[def.id] ?? 0;
+    final oldLv = _save.ownedCoasters[def.id] ?? 0;
     final wasOwned = oldLv > 0;
-    final wasMaxed = oldLv >= SwordDef.maxLevel;
-    final newLv = wasMaxed ? SwordDef.maxLevel : (wasOwned ? oldLv + 1 : 1);
-    _save.ownedSwords[def.id] = newLv;
-    _save.equippedSwordId ??= def.id;
-    if (!wasOwned && !_save.formationSwordIds.contains(def.id)) {
-      final emptySlot = _save.formationSwordIds.indexWhere((id) => id == null);
-      if (emptySlot >= 0) _save.formationSwordIds[emptySlot] = def.id;
+    final wasMaxed = oldLv >= CoasterDef.maxLevel;
+    final newLv = wasMaxed ? CoasterDef.maxLevel : (wasOwned ? oldLv + 1 : 1);
+    _save.ownedCoasters[def.id] = newLv;
+    _save.equippedCoasterId ??= def.id;
+    if (!wasOwned && !_save.formationCoasterIds.contains(def.id)) {
+      final emptySlot = _save.formationCoasterIds.indexWhere((id) => id == null);
+      if (emptySlot >= 0) _save.formationCoasterIds[emptySlot] = def.id;
     }
     _save.stats.totalSummons++;
-    if (tier.index >= SwordTier.sr.index) {
+    if (tier.index >= CoasterTier.sr.index) {
       _save.summonsSinceHighRare = 0;
     } else {
       _save.summonsSinceHighRare++;
     }
     return SummonResult(
-      sword: def,
+      coaster: def,
       levelAfter: newLv,
       isDuplicate: wasOwned,
       isMaxed: wasMaxed,
@@ -3776,10 +3776,10 @@ class GameNotifier extends Notifier<GameState> {
     return results;
   }
 
-  void equipSword(String id) {
-    if ((_save.ownedSwords[id] ?? 0) <= 0) return;
-    _save.equippedSwordId = id;
-    _save.run.changedEquippedSword = true;
+  void equipCoaster(String id) {
+    if ((_save.ownedCoasters[id] ?? 0) <= 0) return;
+    _save.equippedCoasterId = id;
+    _save.run.changedEquippedCoaster = true;
     _emit(loaded: true);
     unawaited(_persist());
   }
@@ -3972,7 +3972,7 @@ class GameNotifier extends Notifier<GameState> {
     for (final state in m.regions.values) {
       if (!state.unlocked) continue;
       final def = regionDefById(state.regionId);
-      final districtBonus = regionSwordDistrictBonusFraction(def.id);
+      final districtBonus = regionCoasterDistrictBonusFraction(def.id);
       state.intrinsicPrice = regionIntrinsicPrice(def.id);
       final sigmaPerTick = def.volatilityPerMinute *
           volatilityBoost *

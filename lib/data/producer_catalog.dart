@@ -30,7 +30,7 @@ const producerCatalog = <ProducerDef>[
     baseDps: 60,
   ),
   ProducerDef(
-    id: 'mage_swordsman',
+    id: 'mage_coastersman',
     name: '마검사',
     description: '검에 마법을 입혔어요',
     icon: Icons.auto_fix_high,
@@ -39,7 +39,7 @@ const producerCatalog = <ProducerDef>[
     baseDps: 400,
   ),
   ProducerDef(
-    id: 'sword_saint',
+    id: 'coaster_saint',
     name: '검성',
     description: '한 발자국에 천 리',
     icon: Icons.brightness_7,
@@ -57,7 +57,7 @@ const producerCatalog = <ProducerDef>[
     baseDps: 22000,
   ),
   ProducerDef(
-    id: 'sword_god',
+    id: 'coaster_god',
     name: '검신',
     description: '검 그 자체가 되었습니다',
     icon: Icons.bolt,
@@ -102,7 +102,7 @@ const producerCatalog = <ProducerDef>[
     baseDps: 350000000,
   ),
   ProducerDef(
-    id: 'cosmic_swordmaster',
+    id: 'cosmic_coastermaster',
     name: '우주 검성',
     description: '우주의 진리를 베다',
     icon: Icons.public,
@@ -198,7 +198,7 @@ const producerCatalog = <ProducerDef>[
     growthRate: 1.17,
   ),
   ProducerDef(
-    id: 'worldbreak_swordseer',
+    id: 'worldbreak_coasterseer',
     name: '세계붕괴 검선',
     description: '한 획으로 지형과 운명을 바꾼다',
     icon: Icons.landscape,

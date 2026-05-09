@@ -5,16 +5,16 @@ import '../data/main_coaster_evolution.dart';
 import '../models/coaster.dart';
 import 'coaster_shape_painter.dart';
 
-/// Animated rendering of the home-tab main sword. The visual is derived
+/// Animated rendering of the home-tab main coaster. The visual is derived
 /// entirely from `stage` (0..50) — palette/shape come from the tier, while
 /// substage tweaks aura intensity and sparkle count. Higher tiers add
 /// extra layers (orbiting sparkles, screen vignette, gentle floating).
-class MainSwordWidget extends StatefulWidget {
+class MainCoasterWidget extends StatefulWidget {
   final void Function(Offset globalPosition) onTap;
   final double size;
   final int stage;
 
-  const MainSwordWidget({
+  const MainCoasterWidget({
     super.key,
     required this.onTap,
     required this.stage,
@@ -22,10 +22,10 @@ class MainSwordWidget extends StatefulWidget {
   });
 
   @override
-  State<MainSwordWidget> createState() => _MainSwordWidgetState();
+  State<MainCoasterWidget> createState() => _MainCoasterWidgetState();
 }
 
-class _MainSwordWidgetState extends State<MainSwordWidget>
+class _MainCoasterWidgetState extends State<MainCoasterWidget>
     with TickerProviderStateMixin {
   late final AnimationController _tap;
   late final AnimationController _sparkle;
@@ -74,10 +74,10 @@ class _MainSwordWidgetState extends State<MainSwordWidget>
 
   @override
   Widget build(BuildContext context) {
-    final stage = widget.stage.clamp(0, mainSwordMaxStage);
-    final visual = mainSwordVisualFor(stage);
-    final tier = mainSwordTierFor(stage);
-    final extras = mainSwordSparkleExtras(stage);
+    final stage = widget.stage.clamp(0, mainCoasterMaxStage);
+    final visual = mainCoasterVisualFor(stage);
+    final tier = mainCoasterTierFor(stage);
+    final extras = mainCoasterSparkleExtras(stage);
     final floats = tier.floats;
     return GestureDetector(
       onTapDown: _handleTap,
@@ -153,11 +153,11 @@ class _MainSwordWidgetState extends State<MainSwordWidget>
                             radius: widget.size * 0.42,
                           ),
                         ),
-                      // The sword itself.
+                      // The coaster itself.
                       CustomPaint(
                         size:
                             Size(widget.size * 0.7, widget.size * 0.85),
-                        painter: _MainSwordPainter(visual),
+                        painter: _MainCoasterPainter(visual),
                       ),
                     ],
                   ),
@@ -171,23 +171,23 @@ class _MainSwordWidgetState extends State<MainSwordWidget>
   }
 }
 
-class _MainSwordPainter extends CustomPainter {
-  final SwordVisual v;
-  _MainSwordPainter(this.v);
+class _MainCoasterPainter extends CustomPainter {
+  final CoasterVisual v;
+  _MainCoasterPainter(this.v);
 
   @override
   void paint(Canvas canvas, Size size) {
-    paintSwordShape(
+    paintCoasterShape(
       canvas,
       size,
       v.shape,
-      SwordShapeColors.fromVisual(v),
+      CoasterShapeColors.fromVisual(v),
       outlineWidth: 4,
     );
   }
 
   @override
-  bool shouldRepaint(covariant _MainSwordPainter old) => old.v != v;
+  bool shouldRepaint(covariant _MainCoasterPainter old) => old.v != v;
 }
 
 class _SparkleRingPainter extends CustomPainter {

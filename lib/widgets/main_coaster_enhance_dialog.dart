@@ -8,30 +8,30 @@ import '../data/main_coaster_evolution.dart';
 import '../providers/game_provider.dart';
 import 'main_coaster_widget.dart';
 
-class MainSwordEnhanceDialog extends ConsumerStatefulWidget {
-  const MainSwordEnhanceDialog({super.key});
+class MainCoasterEnhanceDialog extends ConsumerStatefulWidget {
+  const MainCoasterEnhanceDialog({super.key});
 
   @override
-  ConsumerState<MainSwordEnhanceDialog> createState() =>
-      _MainSwordEnhanceDialogState();
+  ConsumerState<MainCoasterEnhanceDialog> createState() =>
+      _MainCoasterEnhanceDialogState();
 }
 
-class _MainSwordEnhanceDialogState
-    extends ConsumerState<MainSwordEnhanceDialog> {
-  MainSwordEnhanceCurrency _currency = MainSwordEnhanceCurrency.gold;
-  MainSwordBoostLevel _boost = MainSwordBoostLevel.none;
+class _MainCoasterEnhanceDialogState
+    extends ConsumerState<MainCoasterEnhanceDialog> {
+  MainCoasterEnhanceCurrency _currency = MainCoasterEnhanceCurrency.gold;
+  MainCoasterBoostLevel _boost = MainCoasterBoostLevel.none;
   bool _useProtection = false;
 
   @override
   Widget build(BuildContext context) {
     final game = ref.watch(gameProvider);
     final notifier = ref.read(gameProvider.notifier);
-    final stage = game.mainSwordStage;
-    final atMax = stage >= mainSwordEnhanceMaxStage;
+    final stage = game.mainCoasterStage;
+    final atMax = stage >= mainCoasterEnhanceMaxStage;
     final targetStage = atMax ? stage : stage + 1;
-    final cost = mainSwordEnhanceCost(targetStage);
-    final tierCurrent = mainSwordTierFor(stage);
-    final tierNext = mainSwordTierFor(targetStage);
+    final cost = mainCoasterEnhanceCost(targetStage);
+    final tierCurrent = mainCoasterTierFor(stage);
+    final tierNext = mainCoasterTierFor(targetStage);
     final selected = _planFor(cost, _currency, _boost, _useProtection);
     final canAfford = game.gold >= selected.goldCost &&
         game.essence >= selected.essenceCost &&
@@ -48,7 +48,7 @@ class _MainSwordEnhanceDialogState
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _Header(
-                name: game.mainSwordName ?? '이름 없는 검',
+                name: game.mainCoasterName ?? '이름 없는 검',
                 stage: stage,
                 tierLabel: tierCurrent.name,
                 essence: game.essence,
@@ -80,7 +80,7 @@ class _MainSwordEnhanceDialogState
                         selected: _currency,
                         plans: {
                           for (final currency
-                              in MainSwordEnhanceCurrency.values)
+                              in MainCoasterEnhanceCurrency.values)
                             currency: _planFor(
                                 cost, currency, _boost, _useProtection),
                         },
@@ -115,15 +115,15 @@ class _MainSwordEnhanceDialogState
   }
 
   _EnhancePlan _planFor(
-    MainSwordEnhanceCost cost,
-    MainSwordEnhanceCurrency currency,
-    MainSwordBoostLevel boost,
+    MainCoasterEnhanceCost cost,
+    MainCoasterEnhanceCurrency currency,
+    MainCoasterBoostLevel boost,
     bool useProtection,
   ) {
     final boostCost = boost.essenceCost;
     final boostBonus = boost.successBonus;
     return switch (currency) {
-      MainSwordEnhanceCurrency.gold => _EnhancePlan(
+      MainCoasterEnhanceCurrency.gold => _EnhancePlan(
           currency: currency,
           title: '골드 강화',
           subtitle: '가장 기본적인 시도',
@@ -131,13 +131,13 @@ class _MainSwordEnhanceDialogState
           color: AppColors.deepCoral,
           goldCost: cost.goldCost,
           essenceCost:
-              boostCost + (useProtection ? mainSwordProtectionEssenceCost : 0),
+              boostCost + (useProtection ? mainCoasterProtectionEssenceCost : 0),
           successRate: (cost.goldSuccessBase + boostBonus).clamp(0.0, 1.0),
           failureLabel:
               useProtection ? '실패 시 단계 유지' : '실패 시 -${cost.penaltyOnFail}강',
           protectedOnFail: useProtection,
         ),
-      MainSwordEnhanceCurrency.essence => _EnhancePlan(
+      MainCoasterEnhanceCurrency.essence => _EnhancePlan(
           currency: currency,
           title: '정수 강화',
           subtitle: '실패해도 단계 유지',
@@ -149,18 +149,18 @@ class _MainSwordEnhanceDialogState
           failureLabel: '실패 시 단계 유지',
           protectedOnFail: true,
         ),
-      MainSwordEnhanceCurrency.hybrid => _EnhancePlan(
+      MainCoasterEnhanceCurrency.hybrid => _EnhancePlan(
           currency: currency,
           title: '하이브리드',
           subtitle: '골드와 정수 모두 사용',
           icon: Icons.auto_awesome,
           color: const Color(0xFFFFB300),
-          goldCost: cost.goldCost * mainSwordHybridGoldMultiplier,
+          goldCost: cost.goldCost * mainCoasterHybridGoldMultiplier,
           essenceCost:
-              (cost.essenceCost * mainSwordHybridEssenceMultiplier).round() +
+              (cost.essenceCost * mainCoasterHybridEssenceMultiplier).round() +
                   boostCost,
           successRate:
-              (cost.goldSuccessBase + mainSwordHybridSuccessBonus + boostBonus)
+              (cost.goldSuccessBase + mainCoasterHybridSuccessBonus + boostBonus)
                   .clamp(0.0, 1.0),
           failureLabel: '실패 시 단계 유지',
           protectedOnFail: true,
@@ -169,7 +169,7 @@ class _MainSwordEnhanceDialogState
   }
 
   Future<void> _attempt(GameNotifier notifier) async {
-    final result = notifier.attemptMainSwordEnhance(
+    final result = notifier.attemptMainCoasterEnhance(
       currency: _currency,
       boostLevel: _boost,
       useProtection: _useProtection,
@@ -199,18 +199,18 @@ class _MainSwordEnhanceDialogState
     );
   }
 
-  String _failureLabel(MainSwordEnhanceFailure reason) => switch (reason) {
-        MainSwordEnhanceFailure.notEnoughGold => '골드가 부족해요',
-        MainSwordEnhanceFailure.notEnoughEssence => '정수가 부족해요',
-        MainSwordEnhanceFailure.alreadyMaxed => '이미 최대 단계입니다',
-        MainSwordEnhanceFailure.rolledFailure ||
-        MainSwordEnhanceFailure.none =>
+  String _failureLabel(MainCoasterEnhanceFailure reason) => switch (reason) {
+        MainCoasterEnhanceFailure.notEnoughGold => '골드가 부족해요',
+        MainCoasterEnhanceFailure.notEnoughEssence => '정수가 부족해요',
+        MainCoasterEnhanceFailure.alreadyMaxed => '이미 최대 단계입니다',
+        MainCoasterEnhanceFailure.rolledFailure ||
+        MainCoasterEnhanceFailure.none =>
           '',
       };
 }
 
 class _EnhancePlan {
-  final MainSwordEnhanceCurrency currency;
+  final MainCoasterEnhanceCurrency currency;
   final String title;
   final String subtitle;
   final IconData icon;
@@ -327,12 +327,12 @@ class _StagePreview extends StatelessWidget {
       height: 116,
       child: Row(
         children: [
-          Expanded(child: _SwordPreviewCard(label: '현재', stage: stage)),
+          Expanded(child: _CoasterPreviewCard(label: '현재', stage: stage)),
           const SizedBox(width: 8),
           const Icon(Icons.arrow_forward, color: AppColors.deepCoral, size: 18),
           const SizedBox(width: 8),
           Expanded(
-            child: _SwordPreviewCard(
+            child: _CoasterPreviewCard(
               label: '다음',
               stage: targetStage,
               highlight: true,
@@ -344,12 +344,12 @@ class _StagePreview extends StatelessWidget {
   }
 }
 
-class _SwordPreviewCard extends StatelessWidget {
+class _CoasterPreviewCard extends StatelessWidget {
   final String label;
   final int stage;
   final bool highlight;
 
-  const _SwordPreviewCard({
+  const _CoasterPreviewCard({
     required this.label,
     required this.stage,
     this.highlight = false,
@@ -379,7 +379,7 @@ class _SwordPreviewCard extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: MainSwordWidget(stage: stage, size: 78, onTap: (_) {}),
+            child: MainCoasterWidget(stage: stage, size: 78, onTap: (_) {}),
           ),
         ],
       ),
@@ -419,10 +419,10 @@ class _NextStageBar extends StatelessWidget {
 }
 
 class _OptionPanel extends StatelessWidget {
-  final MainSwordBoostLevel boost;
+  final MainCoasterBoostLevel boost;
   final bool useProtection;
-  final MainSwordEnhanceCurrency selectedCurrency;
-  final ValueChanged<MainSwordBoostLevel> onBoostChanged;
+  final MainCoasterEnhanceCurrency selectedCurrency;
+  final ValueChanged<MainCoasterBoostLevel> onBoostChanged;
   final ValueChanged<bool> onProtectionChanged;
 
   const _OptionPanel({
@@ -436,7 +436,7 @@ class _OptionPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final protectionRelevant =
-        selectedCurrency == MainSwordEnhanceCurrency.gold;
+        selectedCurrency == MainCoasterEnhanceCurrency.gold;
     return _Panel(
       title: '공통 옵션',
       child: Column(
@@ -446,7 +446,7 @@ class _OptionPanel extends StatelessWidget {
             spacing: 6,
             runSpacing: 6,
             children: [
-              for (final level in MainSwordBoostLevel.values)
+              for (final level in MainCoasterBoostLevel.values)
                 _ChoiceChipButton(
                   label: _boostLabel(level),
                   subLabel: _boostCostLabel(level),
@@ -494,7 +494,7 @@ class _OptionPanel extends StatelessWidget {
                         ),
                         Text(
                           protectionRelevant
-                              ? '골드 강화 실패 시 단계 하락 방지 · 정수 $mainSwordProtectionEssenceCost'
+                              ? '골드 강화 실패 시 단계 하락 방지 · 정수 $mainCoasterProtectionEssenceCost'
                               : '정수/하이브리드는 기본적으로 실패 시 단계가 유지됩니다',
                           style: TextStyle(
                             fontSize: 10,
@@ -514,25 +514,25 @@ class _OptionPanel extends StatelessWidget {
     );
   }
 
-  String _boostLabel(MainSwordBoostLevel level) => switch (level) {
-        MainSwordBoostLevel.none => '부스트 없음',
-        MainSwordBoostLevel.small => '+10%',
-        MainSwordBoostLevel.medium => '+25%',
-        MainSwordBoostLevel.large => '+50%',
+  String _boostLabel(MainCoasterBoostLevel level) => switch (level) {
+        MainCoasterBoostLevel.none => '부스트 없음',
+        MainCoasterBoostLevel.small => '+10%',
+        MainCoasterBoostLevel.medium => '+25%',
+        MainCoasterBoostLevel.large => '+50%',
       };
 
-  String _boostCostLabel(MainSwordBoostLevel level) {
+  String _boostCostLabel(MainCoasterBoostLevel level) {
     if (level.essenceCost <= 0) return '무료';
     return '정수 ${level.essenceCost}';
   }
 }
 
 class _ModeGrid extends StatelessWidget {
-  final MainSwordEnhanceCurrency selected;
-  final Map<MainSwordEnhanceCurrency, _EnhancePlan> plans;
+  final MainCoasterEnhanceCurrency selected;
+  final Map<MainCoasterEnhanceCurrency, _EnhancePlan> plans;
   final double gold;
   final int essence;
-  final ValueChanged<MainSwordEnhanceCurrency> onSelected;
+  final ValueChanged<MainCoasterEnhanceCurrency> onSelected;
 
   const _ModeGrid({
     required this.selected,

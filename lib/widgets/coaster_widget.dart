@@ -5,7 +5,7 @@ import '../core/theme.dart';
 import '../models/coaster.dart';
 import 'coaster_shape_painter.dart';
 
-const _defaultVisual = SwordVisual(
+const _defaultVisual = CoasterVisual(
   bladeColor: AppColors.blade,
   bladeAccent: AppColors.bladeShadow,
   guardColor: AppColors.yellow,
@@ -15,12 +15,12 @@ const _defaultVisual = SwordVisual(
   auraIntensity: 0.3,
 );
 
-class SwordWidget extends StatefulWidget {
+class CoasterWidget extends StatefulWidget {
   final void Function(Offset globalPosition) onTap;
   final double size;
-  final SwordVisual visual;
+  final CoasterVisual visual;
 
-  const SwordWidget({
+  const CoasterWidget({
     super.key,
     required this.onTap,
     this.size = 240,
@@ -28,10 +28,10 @@ class SwordWidget extends StatefulWidget {
   });
 
   @override
-  State<SwordWidget> createState() => _SwordWidgetState();
+  State<CoasterWidget> createState() => _CoasterWidgetState();
 }
 
-class _SwordWidgetState extends State<SwordWidget>
+class _CoasterWidgetState extends State<CoasterWidget>
     with TickerProviderStateMixin {
   late final AnimationController _tapController;
   late final AnimationController _sparkleController;
@@ -114,7 +114,7 @@ class _SwordWidgetState extends State<SwordWidget>
                       ),
                     CustomPaint(
                       size: Size(widget.size * 0.7, widget.size * 0.85),
-                      painter: _SwordPainter(v),
+                      painter: _CoasterPainter(v),
                     ),
                   ],
                 ),
@@ -127,23 +127,23 @@ class _SwordWidgetState extends State<SwordWidget>
   }
 }
 
-class _SwordPainter extends CustomPainter {
-  final SwordVisual v;
-  _SwordPainter(this.v);
+class _CoasterPainter extends CustomPainter {
+  final CoasterVisual v;
+  _CoasterPainter(this.v);
 
   @override
   void paint(Canvas canvas, Size size) {
-    paintSwordShape(
+    paintCoasterShape(
       canvas,
       size,
       v.shape,
-      SwordShapeColors.fromVisual(v),
+      CoasterShapeColors.fromVisual(v),
       outlineWidth: 4,
     );
   }
 
   @override
-  bool shouldRepaint(covariant _SwordPainter oldDelegate) =>
+  bool shouldRepaint(covariant _CoasterPainter oldDelegate) =>
       oldDelegate.v != v;
 }
 

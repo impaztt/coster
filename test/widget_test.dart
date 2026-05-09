@@ -6,7 +6,7 @@ import 'package:coster/app.dart';
 
 void main() {
   testWidgets('app boots without crashing', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: SwClickerApp()));
+    await tester.pumpWidget(const ProviderScope(child: CosterApp()));
     await tester.pump();
     expect(find.byType(MaterialApp), findsOneWidget);
   });

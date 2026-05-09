@@ -22,5 +22,5 @@ Future<void> main() async {
     unawaited(AdService.instance.initialize());
     unawaited(IapService.instance.initialize());
   }
-  runApp(const ProviderScope(child: SwClickerApp()));
+  runApp(const ProviderScope(child: CosterApp()));
 }

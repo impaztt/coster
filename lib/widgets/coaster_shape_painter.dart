@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../models/coaster.dart';
 
-/// Resolved colors for one sword draw. Decoupled from [SwordVisual] so the
+/// Resolved colors for one coaster draw. Decoupled from [CoasterVisual] so the
 /// "locked" preview state can substitute greyed-out colors without forking
 /// the geometry code.
-class SwordShapeColors {
+class CoasterShapeColors {
   final Color blade;
   final Color bladeAccent;
   final Color guard;
   final Color handle;
   final Color pommel;
 
-  const SwordShapeColors({
+  const CoasterShapeColors({
     required this.blade,
     required this.bladeAccent,
     required this.guard,
@@ -21,7 +21,7 @@ class SwordShapeColors {
     required this.pommel,
   });
 
-  factory SwordShapeColors.fromVisual(SwordVisual v) => SwordShapeColors(
+  factory CoasterShapeColors.fromVisual(CoasterVisual v) => CoasterShapeColors(
         blade: v.bladeColor,
         bladeAccent: v.bladeAccent,
         guard: v.guardColor,
@@ -30,14 +30,14 @@ class SwordShapeColors {
       );
 }
 
-/// Render a sword of the requested [shape] inside [size]. The aura, sparkle,
+/// Render a coaster of the requested [shape] inside [size]. The aura, sparkle,
 /// and locked overlay are intentionally not drawn here — callers (the main
-/// [SwordWidget] and the [SwordPreview]) layer those on themselves.
-void paintSwordShape(
+/// [CoasterWidget] and the [CoasterPreview]) layer those on themselves.
+void paintCoasterShape(
   Canvas canvas,
   Size size,
-  SwordShape shape,
-  SwordShapeColors colors, {
+  CoasterShape shape,
+  CoasterShapeColors colors, {
   required double outlineWidth,
 }) {
   final outline = Paint()
@@ -46,17 +46,17 @@ void paintSwordShape(
     ..strokeWidth = outlineWidth
     ..strokeJoin = StrokeJoin.round;
   switch (shape) {
-    case SwordShape.dagger:
+    case CoasterShape.dagger:
       _paintDagger(canvas, size, colors, outline, outlineWidth);
-    case SwordShape.longsword:
-      _paintLongsword(canvas, size, colors, outline, outlineWidth);
-    case SwordShape.claymore:
+    case CoasterShape.longcoaster:
+      _paintLongcoaster(canvas, size, colors, outline, outlineWidth);
+    case CoasterShape.claymore:
       _paintClaymore(canvas, size, colors, outline, outlineWidth);
-    case SwordShape.katana:
+    case CoasterShape.katana:
       _paintKatana(canvas, size, colors, outline, outlineWidth);
-    case SwordShape.rapier:
+    case CoasterShape.rapier:
       _paintRapier(canvas, size, colors, outline, outlineWidth);
-    case SwordShape.falchion:
+    case CoasterShape.falchion:
       _paintFalchion(canvas, size, colors, outline, outlineWidth);
   }
 }
@@ -68,8 +68,8 @@ void paintSwordShape(
 // safe to use without clipping.
 // =============================================================================
 
-void _paintLongsword(
-    Canvas canvas, Size size, SwordShapeColors c, Paint outline, double sw) {
+void _paintLongcoaster(
+    Canvas canvas, Size size, CoasterShapeColors c, Paint outline, double sw) {
   final w = size.width;
   final h = size.height;
   final cx = w / 2;
@@ -137,12 +137,12 @@ void _paintLongsword(
 }
 
 void _paintDagger(
-    Canvas canvas, Size size, SwordShapeColors c, Paint outline, double sw) {
+    Canvas canvas, Size size, CoasterShapeColors c, Paint outline, double sw) {
   final w = size.width;
   final h = size.height;
   final cx = w / 2;
 
-  // Short, leaf-shaped blade — much shorter than longsword.
+  // Short, leaf-shaped blade — much shorter than longcoaster.
   final bladePath = Path()
     ..moveTo(cx, h * 0.20)
     ..lineTo(cx + w * 0.085, h * 0.30)
@@ -210,7 +210,7 @@ void _paintDagger(
 }
 
 void _paintClaymore(
-    Canvas canvas, Size size, SwordShapeColors c, Paint outline, double sw) {
+    Canvas canvas, Size size, CoasterShapeColors c, Paint outline, double sw) {
   final w = size.width;
   final h = size.height;
   final cx = w / 2;
@@ -290,7 +290,7 @@ void _paintClaymore(
 }
 
 void _paintKatana(
-    Canvas canvas, Size size, SwordShapeColors c, Paint outline, double sw) {
+    Canvas canvas, Size size, CoasterShapeColors c, Paint outline, double sw) {
   final w = size.width;
   final h = size.height;
   final cx = w / 2;
@@ -376,7 +376,7 @@ void _paintKatana(
 }
 
 void _paintRapier(
-    Canvas canvas, Size size, SwordShapeColors c, Paint outline, double sw) {
+    Canvas canvas, Size size, CoasterShapeColors c, Paint outline, double sw) {
   final w = size.width;
   final h = size.height;
   final cx = w / 2;
@@ -438,7 +438,7 @@ void _paintRapier(
   canvas.drawRRect(handleRR, Paint()..color = c.handle);
   canvas.drawRRect(handleRR, outline);
 
-  // Sphere pommel, slightly larger than longsword.
+  // Sphere pommel, slightly larger than longcoaster.
   canvas.drawCircle(
     Offset(cx, h * 0.92),
     w * 0.075,
@@ -453,7 +453,7 @@ void _paintRapier(
 }
 
 void _paintFalchion(
-    Canvas canvas, Size size, SwordShapeColors c, Paint outline, double sw) {
+    Canvas canvas, Size size, CoasterShapeColors c, Paint outline, double sw) {
   final w = size.width;
   final h = size.height;
   final cx = w / 2;

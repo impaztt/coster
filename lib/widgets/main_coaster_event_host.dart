@@ -7,32 +7,32 @@ import '../data/main_coaster_evolution.dart';
 import '../providers/game_provider.dart';
 import 'main_coaster_widget.dart';
 
-/// Listens to [mainSwordEventProvider] and displays:
+/// Listens to [mainCoasterEventProvider] and displays:
 ///   • A modal evolution overlay when the player crosses into a new tier.
 ///   • A modal naming prompt the very first time +1 succeeds.
 ///   • A SnackBar for milestone rewards.
-class MainSwordEventHost extends ConsumerStatefulWidget {
+class MainCoasterEventHost extends ConsumerStatefulWidget {
   final Widget child;
-  const MainSwordEventHost({super.key, required this.child});
+  const MainCoasterEventHost({super.key, required this.child});
 
   @override
-  ConsumerState<MainSwordEventHost> createState() =>
-      _MainSwordEventHostState();
+  ConsumerState<MainCoasterEventHost> createState() =>
+      _MainCoasterEventHostState();
 }
 
-class _MainSwordEventHostState extends ConsumerState<MainSwordEventHost> {
+class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<MainSwordEvent>>(
-      mainSwordEventProvider,
+    ref.listen<AsyncValue<MainCoasterEvent>>(
+      mainCoasterEventProvider,
       (prev, next) {
         next.whenData((evt) async {
           switch (evt.type) {
-            case MainSwordEventType.tierUp:
+            case MainCoasterEventType.tierUp:
               await _showTierUp(evt);
-            case MainSwordEventType.milestone:
+            case MainCoasterEventType.milestone:
               _showMilestone(evt.milestone!);
-            case MainSwordEventType.namingPrompt:
+            case MainCoasterEventType.namingPrompt:
               await _showNamingPrompt();
           }
         });
@@ -41,9 +41,9 @@ class _MainSwordEventHostState extends ConsumerState<MainSwordEventHost> {
     return widget.child;
   }
 
-  Future<void> _showTierUp(MainSwordEvent evt) async {
+  Future<void> _showTierUp(MainCoasterEvent evt) async {
     final tierIdx = evt.tierIndex!;
-    final tier = mainSwordTiers[tierIdx];
+    final tier = mainCoasterTiers[tierIdx];
     if (!mounted) return;
     await showDialog<void>(
       context: context,
@@ -56,7 +56,7 @@ class _MainSwordEventHostState extends ConsumerState<MainSwordEventHost> {
     );
   }
 
-  void _showMilestone(MainSwordMilestoneReward reward) {
+  void _showMilestone(MainCoasterMilestoneReward reward) {
     if (!mounted) return;
     final parts = <String>[];
     if (reward.essence > 0) parts.add('정수 +${reward.essence}');
@@ -124,7 +124,7 @@ class _MainSwordEventHostState extends ConsumerState<MainSwordEventHost> {
       ),
     );
     if (picked != null && picked.trim().isNotEmpty) {
-      ref.read(gameProvider.notifier).setMainSwordName(picked);
+      ref.read(gameProvider.notifier).setMainCoasterName(picked);
     }
   }
 }
@@ -191,7 +191,7 @@ class _TierUpOverlayState extends State<_TierUpOverlay>
                 const Spacer(),
                 Transform.scale(
                   scale: scale,
-                  child: MainSwordWidget(
+                  child: MainCoasterWidget(
                     stage: widget.stage,
                     size: 220,
                     onTap: (_) {},

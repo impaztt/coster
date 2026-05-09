@@ -401,94 +401,94 @@ final achievementCatalog = <AchievementDef>[
 
   // ============ 6. 검 수집 (10) ============
   _bool(
-    id: 'sword_first',
+    id: 'coaster_first',
     name: '첫 검',
     description: '검 1자루 획득',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 1,
-    test: (c) => c.ownedSwordCount >= 1,
+    test: (c) => c.ownedCoasterCount >= 1,
   ),
   _num(
-    id: 'sword_5',
+    id: 'coaster_5',
     name: '다섯 자루',
     description: '검 5자루 수집',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 2,
-    current: (c) => c.ownedSwordCount.toDouble(),
+    current: (c) => c.ownedCoasterCount.toDouble(),
     target: 5,
   ),
   _num(
-    id: 'sword_10',
+    id: 'coaster_10',
     name: '수집가 입문',
     description: '검 10자루 수집',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 3,
-    current: (c) => c.ownedSwordCount.toDouble(),
+    current: (c) => c.ownedCoasterCount.toDouble(),
     target: 10,
   ),
   _num(
-    id: 'sword_20',
+    id: 'coaster_20',
     name: '반 이상',
     description: '검 20자루 수집',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 5,
-    current: (c) => c.ownedSwordCount.toDouble(),
+    current: (c) => c.ownedCoasterCount.toDouble(),
     target: 20,
   ),
   _num(
-    id: 'sword_30',
+    id: 'coaster_30',
     name: '베테랑 수집가',
     description: '검 30자루 수집',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 10,
-    current: (c) => c.ownedSwordCount.toDouble(),
+    current: (c) => c.ownedCoasterCount.toDouble(),
     target: 30,
   ),
   _bool(
-    id: 'sword_all',
+    id: 'coaster_all',
     name: '대도감 완성',
     description: '모든 검 수집',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 50,
-    test: (c) => c.ownedSwordCount >= c.totalSwordCatalogCount,
+    test: (c) => c.ownedCoasterCount >= c.totalCoasterCatalogCount,
   ),
   _bool(
-    id: 'sword_r',
+    id: 'coaster_r',
     name: '첫 희귀',
     description: 'R 등급 검 획득',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 2,
     test: (c) => c.ownsAnyR,
   ),
   _bool(
-    id: 'sword_sr',
+    id: 'coaster_sr',
     name: '빛나는 발견',
     description: 'SR 등급 검 획득',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 5,
     test: (c) => c.ownsAnySr,
   ),
   _bool(
-    id: 'sword_ssr',
+    id: 'coaster_ssr',
     name: '전설의 조우',
     description: 'SSR 등급 검 획득',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 15,
     test: (c) => c.ownsAnySsr,
   ),
   _bool(
-    id: 'sword_lr',
+    id: 'coaster_lr',
     name: '영웅의 이름',
     description: 'LR 등급 검 획득',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 22,
     test: (c) => c.ownsAnyLr,
   ),
   _bool(
-    id: 'sword_ur',
+    id: 'coaster_ur',
     name: '신화의 일각',
     description: 'UR 등급 검 획득',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 30,
     test: (c) => c.ownsAnyUr,
   ),
@@ -496,7 +496,7 @@ final achievementCatalog = <AchievementDef>[
     id: 'set_first',
     name: '첫 세트',
     description: '검 세트 1개 완성',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 8,
     current: (c) => c.completedSetCount.toDouble(),
     target: 1,
@@ -505,7 +505,7 @@ final achievementCatalog = <AchievementDef>[
     id: 'set_3',
     name: '세트 수집가',
     description: '검 세트 3개 완성',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 25,
     current: (c) => c.completedSetCount.toDouble(),
     target: 3,
@@ -513,48 +513,48 @@ final achievementCatalog = <AchievementDef>[
 
   // ============ 7. 검 강화 (5) ============
   _num(
-    id: 'sword_lv_3',
+    id: 'coaster_lv_3',
     name: '검 단련 입문',
     description: '검 하나를 Lv 3으로',
-    category: AchievementCategory.swordLevel,
+    category: AchievementCategory.coasterLevel,
     essenceReward: 1,
-    current: (c) => c.maxSwordLevel.toDouble(),
+    current: (c) => c.maxCoasterLevel.toDouble(),
     target: 3,
   ),
   _num(
-    id: 'sword_lv_5',
+    id: 'coaster_lv_5',
     name: '검 절반 각성',
     description: '검 하나를 Lv 5으로',
-    category: AchievementCategory.swordLevel,
+    category: AchievementCategory.coasterLevel,
     essenceReward: 2,
-    current: (c) => c.maxSwordLevel.toDouble(),
+    current: (c) => c.maxCoasterLevel.toDouble(),
     target: 5,
   ),
   _num(
-    id: 'sword_lv_7',
+    id: 'coaster_lv_7',
     name: '검의 주인',
     description: '검 하나를 Lv 7로',
-    category: AchievementCategory.swordLevel,
+    category: AchievementCategory.coasterLevel,
     essenceReward: 5,
-    current: (c) => c.maxSwordLevel.toDouble(),
+    current: (c) => c.maxCoasterLevel.toDouble(),
     target: 7,
   ),
   _num(
-    id: 'sword_lv_max',
+    id: 'coaster_lv_max',
     name: '완전 각성',
     description: '검 하나를 최대 Lv 10으로',
-    category: AchievementCategory.swordLevel,
+    category: AchievementCategory.coasterLevel,
     essenceReward: 10,
-    current: (c) => c.maxSwordLevel.toDouble(),
+    current: (c) => c.maxCoasterLevel.toDouble(),
     target: 10,
   ),
   _num(
-    id: 'sword_maxed_5',
+    id: 'coaster_maxed_5',
     name: '다섯 개의 정점',
     description: '검 5자루를 Lv 10으로',
-    category: AchievementCategory.swordLevel,
+    category: AchievementCategory.coasterLevel,
     essenceReward: 30,
-    current: (c) => c.maxedSwordCount.toDouble(),
+    current: (c) => c.maxedCoasterCount.toDouble(),
     target: 5,
   ),
 
@@ -885,7 +885,7 @@ final achievementCatalog = <AchievementDef>[
     description: '검을 장착하여 홈 화면에 반영',
     category: AchievementCategory.master,
     essenceReward: 1,
-    test: (c) => c.hasEquippedSword,
+    test: (c) => c.hasEquippedCoaster,
   ),
   _num(
     id: 'master_tap_upgrades',
@@ -1180,86 +1180,86 @@ final achievementCatalog = <AchievementDef>[
 
   // -- 검 수집 후속 단계 --
   _num(
-    id: 'sword_collect_30',
+    id: 'coaster_collect_30',
     name: '폭넓은 수집가',
     description: '검 30종 수집',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 35,
-    current: (c) => c.ownedSwordCount.toDouble(),
+    current: (c) => c.ownedCoasterCount.toDouble(),
     target: 30,
   ),
   _num(
-    id: 'sword_collect_45',
+    id: 'coaster_collect_45',
     name: '거의 다 모았다',
     description: '검 45종 수집',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 60,
-    current: (c) => c.ownedSwordCount.toDouble(),
+    current: (c) => c.ownedCoasterCount.toDouble(),
     target: 45,
   ),
   _num(
-    id: 'sword_collect_60',
+    id: 'coaster_collect_60',
     name: '검의 수호자',
     description: '검 60종 수집',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 100,
-    current: (c) => c.ownedSwordCount.toDouble(),
+    current: (c) => c.ownedCoasterCount.toDouble(),
     target: 60,
   ),
   _num(
-    id: 'sword_collect_all',
+    id: 'coaster_collect_all',
     name: '완전한 도감',
     description: '모든 검 수집',
-    category: AchievementCategory.swordCollect,
+    category: AchievementCategory.coasterCollect,
     essenceReward: 200,
-    current: (c) => c.ownedSwordCount.toDouble(),
+    current: (c) => c.ownedCoasterCount.toDouble(),
     target: 66,
   ),
 
   // -- 검 강화 후속 단계 --
   _num(
-    id: 'sword_max_5',
+    id: 'coaster_max_5',
     name: '5자루 풀강',
     description: '최대 레벨 검 5자루',
-    category: AchievementCategory.swordLevel,
+    category: AchievementCategory.coasterLevel,
     essenceReward: 50,
-    current: (c) => c.maxedSwordCount.toDouble(),
+    current: (c) => c.maxedCoasterCount.toDouble(),
     target: 5,
   ),
   _num(
-    id: 'sword_max_10',
+    id: 'coaster_max_10',
     name: '10자루 풀강',
     description: '최대 레벨 검 10자루',
-    category: AchievementCategory.swordLevel,
+    category: AchievementCategory.coasterLevel,
     essenceReward: 90,
-    current: (c) => c.maxedSwordCount.toDouble(),
+    current: (c) => c.maxedCoasterCount.toDouble(),
     target: 10,
   ),
   _num(
-    id: 'sword_max_20',
+    id: 'coaster_max_20',
     name: '20자루 풀강',
     description: '최대 레벨 검 20자루',
-    category: AchievementCategory.swordLevel,
+    category: AchievementCategory.coasterLevel,
     essenceReward: 150,
-    current: (c) => c.maxedSwordCount.toDouble(),
+    current: (c) => c.maxedCoasterCount.toDouble(),
     target: 20,
   ),
   _num(
-    id: 'sword_max_40',
+    id: 'coaster_max_40',
     name: '대장간의 신',
     description: '최대 레벨 검 40자루',
-    category: AchievementCategory.swordLevel,
+    category: AchievementCategory.coasterLevel,
     essenceReward: 250,
-    current: (c) => c.maxedSwordCount.toDouble(),
+    current: (c) => c.maxedCoasterCount.toDouble(),
     target: 40,
   ),
   _num(
-    id: 'sword_max_all',
+    id: 'coaster_max_all',
     name: '완벽한 무기고',
     description: '모든 검 최대 레벨',
-    category: AchievementCategory.swordLevel,
+    category: AchievementCategory.coasterLevel,
     essenceReward: 500,
-    current: (c) => c.maxedSwordCount.toDouble(),
+    current: (c) => c.maxedCoasterCount.toDouble(),
     target: 66,
   ),
 
@@ -1521,10 +1521,10 @@ final achievementCatalog = <AchievementDef>[
     category: AchievementCategory.master,
     essenceReward: 250,
     test: (c) =>
-        c.ownedSwordCount >= 60 &&
+        c.ownedCoasterCount >= 60 &&
         c.prestigeCount >= 50 &&
-        c.totalSwordCatalogCount > 0 &&
-        c.ownedSwordCount / c.totalSwordCatalogCount >= 0.9,
+        c.totalCoasterCatalogCount > 0 &&
+        c.ownedCoasterCount / c.totalCoasterCatalogCount >= 0.9,
   ),
 
   // ============ 신규 카테고리 — 주식 (15) ============
@@ -1668,7 +1668,7 @@ final achievementCatalog = <AchievementDef>[
     id: 'set_complete_1',
     name: '첫 세트 완성',
     description: '검 세트 1개 완성',
-    category: AchievementCategory.swordSets,
+    category: AchievementCategory.coasterSets,
     essenceReward: 30,
     current: (c) => c.completedSetCount.toDouble(),
     target: 1,
@@ -1677,7 +1677,7 @@ final achievementCatalog = <AchievementDef>[
     id: 'set_complete_2',
     name: '두 세트 완성',
     description: '검 세트 2개 완성',
-    category: AchievementCategory.swordSets,
+    category: AchievementCategory.coasterSets,
     essenceReward: 60,
     current: (c) => c.completedSetCount.toDouble(),
     target: 2,
@@ -1686,7 +1686,7 @@ final achievementCatalog = <AchievementDef>[
     id: 'set_complete_3',
     name: '세 세트 완성',
     description: '검 세트 3개 완성',
-    category: AchievementCategory.swordSets,
+    category: AchievementCategory.coasterSets,
     essenceReward: 100,
     current: (c) => c.completedSetCount.toDouble(),
     target: 3,
@@ -1695,7 +1695,7 @@ final achievementCatalog = <AchievementDef>[
     id: 'set_complete_4',
     name: '네 세트 완성',
     description: '검 세트 4개 완성',
-    category: AchievementCategory.swordSets,
+    category: AchievementCategory.coasterSets,
     essenceReward: 150,
     current: (c) => c.completedSetCount.toDouble(),
     target: 4,
@@ -1704,7 +1704,7 @@ final achievementCatalog = <AchievementDef>[
     id: 'set_complete_5',
     name: '모든 세트 완성',
     description: '검 세트 5개 모두 완성',
-    category: AchievementCategory.swordSets,
+    category: AchievementCategory.coasterSets,
     essenceReward: 250,
     current: (c) => c.completedSetCount.toDouble(),
     target: 5,
@@ -1713,14 +1713,14 @@ final achievementCatalog = <AchievementDef>[
     id: 'set_legend_complete',
     name: '전설의 영웅',
     description: '"전설의 영웅" 세트 완성 (모든 영웅 검)',
-    category: AchievementCategory.swordSets,
+    category: AchievementCategory.coasterSets,
     essenceReward: 350,
     test: (c) =>
-        (c.ownedSwords['hero_excalibur'] ?? 0) > 0 &&
-        (c.ownedSwords['hero_durandal'] ?? 0) > 0 &&
-        (c.ownedSwords['hero_gram'] ?? 0) > 0 &&
-        (c.ownedSwords['hero_kusanagi'] ?? 0) > 0 &&
-        (c.ownedSwords['hero_balmung'] ?? 0) > 0,
+        (c.ownedCoasters['hero_excalibur'] ?? 0) > 0 &&
+        (c.ownedCoasters['hero_durandal'] ?? 0) > 0 &&
+        (c.ownedCoasters['hero_gram'] ?? 0) > 0 &&
+        (c.ownedCoasters['hero_kusanagi'] ?? 0) > 0 &&
+        (c.ownedCoasters['hero_balmung'] ?? 0) > 0,
   ),
 
   // ============ 신규 카테고리 — 컬렉션 (6) ============
@@ -1730,8 +1730,8 @@ final achievementCatalog = <AchievementDef>[
     description: '검 도감 25% 수집',
     category: AchievementCategory.collection,
     essenceReward: 25,
-    current: (c) => c.totalSwordCatalogCount > 0
-        ? (c.ownedSwordCount * 100 / c.totalSwordCatalogCount)
+    current: (c) => c.totalCoasterCatalogCount > 0
+        ? (c.ownedCoasterCount * 100 / c.totalCoasterCatalogCount)
         : 0,
     target: 25,
   ),
@@ -1741,8 +1741,8 @@ final achievementCatalog = <AchievementDef>[
     description: '검 도감 50% 수집',
     category: AchievementCategory.collection,
     essenceReward: 50,
-    current: (c) => c.totalSwordCatalogCount > 0
-        ? (c.ownedSwordCount * 100 / c.totalSwordCatalogCount)
+    current: (c) => c.totalCoasterCatalogCount > 0
+        ? (c.ownedCoasterCount * 100 / c.totalCoasterCatalogCount)
         : 0,
     target: 50,
   ),
@@ -1752,8 +1752,8 @@ final achievementCatalog = <AchievementDef>[
     description: '검 도감 75% 수집',
     category: AchievementCategory.collection,
     essenceReward: 100,
-    current: (c) => c.totalSwordCatalogCount > 0
-        ? (c.ownedSwordCount * 100 / c.totalSwordCatalogCount)
+    current: (c) => c.totalCoasterCatalogCount > 0
+        ? (c.ownedCoasterCount * 100 / c.totalCoasterCatalogCount)
         : 0,
     target: 75,
   ),
@@ -1763,8 +1763,8 @@ final achievementCatalog = <AchievementDef>[
     description: '검 도감 90% 수집',
     category: AchievementCategory.collection,
     essenceReward: 200,
-    current: (c) => c.totalSwordCatalogCount > 0
-        ? (c.ownedSwordCount * 100 / c.totalSwordCatalogCount)
+    current: (c) => c.totalCoasterCatalogCount > 0
+        ? (c.ownedCoasterCount * 100 / c.totalCoasterCatalogCount)
         : 0,
     target: 90,
   ),
@@ -1775,8 +1775,8 @@ final achievementCatalog = <AchievementDef>[
     category: AchievementCategory.collection,
     essenceReward: 400,
     test: (c) =>
-        c.totalSwordCatalogCount > 0 &&
-        c.ownedSwordCount >= c.totalSwordCatalogCount,
+        c.totalCoasterCatalogCount > 0 &&
+        c.ownedCoasterCount >= c.totalCoasterCatalogCount,
   ),
   _bool(
     id: 'collection_perfect',
@@ -1785,9 +1785,9 @@ final achievementCatalog = <AchievementDef>[
     category: AchievementCategory.collection,
     essenceReward: 800,
     test: (c) =>
-        c.totalSwordCatalogCount > 0 &&
-        c.ownedSwordCount >= c.totalSwordCatalogCount &&
-        c.maxedSwordCount >= c.totalSwordCatalogCount,
+        c.totalCoasterCatalogCount > 0 &&
+        c.ownedCoasterCount >= c.totalCoasterCatalogCount &&
+        c.maxedCoasterCount >= c.totalCoasterCatalogCount,
   ),
 
   // ============ 신규 카테고리 — 경제 (8) ============

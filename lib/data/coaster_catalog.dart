@@ -9,15 +9,15 @@ const _guardSteel = Color(0xFFB0BEC5);
 const _guardGold = Color(0xFFFFCA28);
 const _pommelSilver = Color(0xFFCFD8DC);
 
-const swordCatalog = <SwordDef>[
+const coasterCatalog = <CoasterDef>[
   // ============ N (일반) 15종 ============
-  SwordDef(
+  CoasterDef(
     id: 'rusty_blade',
     name: '녹슨 검',
     description: '오래 방치된 검. 그래도 쓸 만은 하다',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.05,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFF8D6E63),
       bladeAccent: Color(0xFF6D4C41),
       guardColor: Color(0xFF5D4037),
@@ -25,16 +25,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFF8D6E63),
       auraColor: Color(0xFF795548),
       auraIntensity: 0.15,
-      shape: SwordShape.dagger,
+      shape: CoasterShape.dagger,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'wooden_practice',
     name: '나무 훈련검',
     description: '아이도 다루는 기초 중의 기초',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.08,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFBCAAA4),
       bladeAccent: Color(0xFF8D6E63),
       guardColor: _handleBrown,
@@ -42,16 +42,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFFA1887F),
       auraColor: Color(0xFFD7CCC8),
       auraIntensity: 0.15,
-      shape: SwordShape.dagger,
+      shape: CoasterShape.dagger,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'bronze_blade',
     name: '동검',
     description: '푸른 빛이 도는 동 합금',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.10,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFCD853F),
       bladeAccent: Color(0xFF8D6E63),
       guardColor: Color(0xFFA0522D),
@@ -59,16 +59,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFFCD853F),
       auraColor: Color(0xFFCD853F),
       auraIntensity: 0.2,
-      shape: SwordShape.longsword,
+      shape: CoasterShape.longcoaster,
     ),
   ),
-  SwordDef(
-    id: 'iron_shortsword',
+  CoasterDef(
+    id: 'iron_shortcoaster',
     name: '철 단검',
     description: '짧지만 날카롭다',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.13,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFB0BEC5),
       bladeAccent: Color(0xFF78909C),
       guardColor: _guardSteel,
@@ -76,16 +76,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: _pommelSilver,
       auraColor: Color(0xFFB0BEC5),
       auraIntensity: 0.2,
-      shape: SwordShape.dagger,
+      shape: CoasterShape.dagger,
     ),
   ),
-  SwordDef(
-    id: 'iron_longsword',
+  CoasterDef(
+    id: 'iron_longcoaster',
     name: '철 장검',
     description: '표준적인 철제 장검',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.16,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFCFD8DC),
       bladeAccent: Color(0xFF90A4AE),
       guardColor: _guardSteel,
@@ -93,16 +93,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: _pommelSilver,
       auraColor: Color(0xFFCFD8DC),
       auraIntensity: 0.2,
-      shape: SwordShape.longsword,
+      shape: CoasterShape.longcoaster,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'steel_blade',
     name: '강철검',
     description: '단단히 제련된 강철',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.19,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFECEFF1),
       bladeAccent: Color(0xFFB0BEC5),
       guardColor: Color(0xFF78909C),
@@ -110,16 +110,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: _pommelSilver,
       auraColor: Color(0xFFECEFF1),
       auraIntensity: 0.22,
-      shape: SwordShape.longsword,
+      shape: CoasterShape.longcoaster,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'hunters_knife',
     name: '사냥꾼의 검',
     description: '숲에서 단련된 실용검',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.22,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFA1887F),
       bladeAccent: Color(0xFF795548),
       guardColor: Color(0xFF6D4C41),
@@ -127,16 +127,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFF8D6E63),
       auraColor: Color(0xFF8BC34A),
       auraIntensity: 0.2,
-      shape: SwordShape.dagger,
+      shape: CoasterShape.dagger,
     ),
   ),
-  SwordDef(
-    id: 'apprentice_sword',
+  CoasterDef(
+    id: 'apprentice_coaster',
     name: '도제의 검',
     description: '수련생에게 주는 기본 장비',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.25,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFB0BEC5),
       bladeAccent: Color(0xFF90A4AE),
       guardColor: _guardSteel,
@@ -144,16 +144,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: _pommelSilver,
       auraColor: Color(0xFF81D4FA),
       auraIntensity: 0.2,
-      shape: SwordShape.longsword,
+      shape: CoasterShape.longcoaster,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'guard_saber',
     name: '경비대 세이버',
     description: '도시 경비병의 표준 무기',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.28,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFB0BEC5),
       bladeAccent: Color(0xFF607D8B),
       guardColor: Color(0xFFFFB74D),
@@ -161,16 +161,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFFFFB74D),
       auraColor: Color(0xFFFFB74D),
       auraIntensity: 0.2,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
-    id: 'militia_sword',
+  CoasterDef(
+    id: 'militia_coaster',
     name: '민병대 검',
     description: '마을을 지키는 자들의 검',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.31,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFCFD8DC),
       bladeAccent: Color(0xFF90A4AE),
       guardColor: Color(0xFF8D6E63),
@@ -178,16 +178,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: _pommelSilver,
       auraColor: Color(0xFFC5E1A5),
       auraIntensity: 0.2,
-      shape: SwordShape.longsword,
+      shape: CoasterShape.longcoaster,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'forest_blade',
     name: '숲속의 검',
     description: '덩굴이 감긴 검',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.34,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFAED581),
       bladeAccent: Color(0xFF7CB342),
       guardColor: Color(0xFF558B2F),
@@ -195,16 +195,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFF8BC34A),
       auraColor: Color(0xFFAED581),
       auraIntensity: 0.25,
-      shape: SwordShape.katana,
+      shape: CoasterShape.katana,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'farmers_blade',
     name: '농부의 검',
     description: '호미보다 조금 길 뿐',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.37,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFB0BEC5),
       bladeAccent: Color(0xFF8D6E63),
       guardColor: _handleBrown,
@@ -212,16 +212,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFFA1887F),
       auraColor: Color(0xFFDCE775),
       auraIntensity: 0.18,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
-    id: 'travelers_sword',
+  CoasterDef(
+    id: 'travelers_coaster',
     name: '여행자 검',
     description: '긴 길동무',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.40,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFCFD8DC),
       bladeAccent: Color(0xFF90A4AE),
       guardColor: Color(0xFFA1887F),
@@ -229,16 +229,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFFFFCC80),
       auraColor: Color(0xFFFFCC80),
       auraIntensity: 0.2,
-      shape: SwordShape.longsword,
+      shape: CoasterShape.longcoaster,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'scout_knife',
     name: '척후 단검',
     description: '가볍고 빠르다',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.43,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFF90A4AE),
       bladeAccent: Color(0xFF607D8B),
       guardColor: Color(0xFF455A64),
@@ -246,16 +246,16 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFF78909C),
       auraColor: Color(0xFFB0BEC5),
       auraIntensity: 0.22,
-      shape: SwordShape.dagger,
+      shape: CoasterShape.dagger,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'cursed_rusty',
     name: '녹슨 저주검',
     description: '쓸 만한데 왠지 찝찝하다',
-    tier: SwordTier.n,
+    tier: CoasterTier.n,
     baseTapMult: 1.46,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFF5D4037),
       bladeAccent: Color(0xFF3E2723),
       guardColor: Color(0xFF4E342E),
@@ -264,19 +264,19 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF4A148C),
       auraIntensity: 0.25,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
 
   // ============ R (희귀) 12종 ============
-  SwordDef(
-    id: 'knights_sword',
+  CoasterDef(
+    id: 'knights_coaster',
     name: '기사의 검',
     description: '명예로운 기사의 정식 장비',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 1.60,
     baseDpsMult: 1.05,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFECEFF1),
       bladeAccent: Color(0xFF90A4AE),
       guardColor: _guardGold,
@@ -285,17 +285,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF64B5F6),
       auraIntensity: 0.3,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.longsword,
+      shape: CoasterShape.longcoaster,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'mercenary_blade',
     name: '용병의 검',
     description: '수많은 전장을 누빈 베테랑',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 1.65,
     baseDpsMult: 1.05,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFB0BEC5),
       bladeAccent: Color(0xFF546E7A),
       guardColor: Color(0xFF8D6E63),
@@ -303,17 +303,17 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFFBF360C),
       auraColor: Color(0xFFFF7043),
       auraIntensity: 0.28,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
-    id: 'paladin_sword',
+  CoasterDef(
+    id: 'paladin_coaster',
     name: '성기사 검',
     description: '신성한 빛이 깃든',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 1.70,
     baseDpsMult: 1.05,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFF9C4),
       bladeAccent: Color(0xFFFFEE58),
       guardColor: _guardGold,
@@ -322,17 +322,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFFF59D),
       auraIntensity: 0.35,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'ranger_blade',
     name: '순찰자 검',
     description: '국경을 지키는 칼',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 1.75,
     baseDpsMult: 1.06,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFC5E1A5),
       bladeAccent: Color(0xFF8BC34A),
       guardColor: Color(0xFF558B2F),
@@ -340,17 +340,17 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFF689F38),
       auraColor: Color(0xFFAED581),
       auraIntensity: 0.28,
-      shape: SwordShape.longsword,
+      shape: CoasterShape.longcoaster,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'cavalry_sabre',
     name: '기병 세이버',
     description: '말 위에서도 정확히',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 1.80,
     baseDpsMult: 1.07,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFCFD8DC),
       bladeAccent: Color(0xFF78909C),
       guardColor: _guardGold,
@@ -358,17 +358,17 @@ const swordCatalog = <SwordDef>[
       pommelColor: _guardGold,
       auraColor: Color(0xFFFFB74D),
       auraIntensity: 0.3,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'beastslayer',
     name: '짐승 사냥꾼',
     description: '큰 짐승도 한 번에',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 1.85,
     baseDpsMult: 1.08,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFBCAAA4),
       bladeAccent: Color(0xFF6D4C41),
       guardColor: Color(0xFF4E342E),
@@ -376,17 +376,17 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFFD84315),
       auraColor: Color(0xFFBF360C),
       auraIntensity: 0.3,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'rune_iron',
     name: '룬 새겨진 철검',
     description: '알 수 없는 문자가 빛난다',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 1.90,
     baseDpsMult: 1.08,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFF90CAF9),
       bladeAccent: Color(0xFF1976D2),
       guardColor: Color(0xFF546E7A),
@@ -395,17 +395,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF2196F3),
       auraIntensity: 0.35,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.rapier,
+      shape: CoasterShape.rapier,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'silvered_blade',
     name: '은도금 검',
     description: '빛나는 은빛 날',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 1.95,
     baseDpsMult: 1.09,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFECEFF1),
       bladeAccent: Color(0xFFE0E0E0),
       guardColor: Color(0xFFBDBDBD),
@@ -414,17 +414,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFE1F5FE),
       auraIntensity: 0.32,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.rapier,
+      shape: CoasterShape.rapier,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'crimson_edge',
     name: '진홍빛 칼날',
     description: '검붉게 물든 날',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 2.00,
     baseDpsMult: 1.10,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFEF5350),
       bladeAccent: Color(0xFFB71C1C),
       guardColor: Color(0xFF5D4037),
@@ -432,17 +432,17 @@ const swordCatalog = <SwordDef>[
       pommelColor: Color(0xFFD32F2F),
       auraColor: Color(0xFFE53935),
       auraIntensity: 0.35,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'azure_blade',
     name: '푸른 칼날',
     description: '심해의 색을 담은 검',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 2.05,
     baseDpsMult: 1.10,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFF4FC3F7),
       bladeAccent: Color(0xFF0277BD),
       guardColor: Color(0xFF01579B),
@@ -451,17 +451,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF29B6F6),
       auraIntensity: 0.35,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.longsword,
+      shape: CoasterShape.longcoaster,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'golden_saber',
     name: '황금 세이버',
     description: '장식인가 무기인가',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 2.10,
     baseDpsMult: 1.12,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFD54F),
       bladeAccent: Color(0xFFF57F17),
       guardColor: _guardGold,
@@ -470,17 +470,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFFC107),
       auraIntensity: 0.4,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'wind_slicer',
     name: '바람 가르는 검',
     description: '휘두르면 휘파람 소리가',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 2.15,
     baseDpsMult: 1.13,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFB2EBF2),
       bladeAccent: Color(0xFF4DD0E1),
       guardColor: Color(0xFF00838F),
@@ -489,17 +489,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF00BCD4),
       auraIntensity: 0.38,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.rapier,
+      shape: CoasterShape.rapier,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'rose_blade',
     name: '장미 검',
     description: '아름답지만 가시가 있다',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 2.20,
     baseDpsMult: 1.14,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFF8BBD0),
       bladeAccent: Color(0xFFEC407A),
       guardColor: Color(0xFF880E4F),
@@ -508,17 +508,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFEC407A),
       auraIntensity: 0.4,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.rapier,
+      shape: CoasterShape.rapier,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'tide_blade',
     name: '조수의 검',
     description: '파도와 함께 흔들린다',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 2.25,
     baseDpsMult: 1.14,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFF81D4FA),
       bladeAccent: Color(0xFF0277BD),
       guardColor: Color(0xFF01579B),
@@ -527,17 +527,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF039BE5),
       auraIntensity: 0.4,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.katana,
+      shape: CoasterShape.katana,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'ember_dagger',
     name: '잔불 단검',
     description: '꺼지지 않는 불씨',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 2.30,
     baseDpsMult: 1.15,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFAB91),
       bladeAccent: Color(0xFFD84315),
       guardColor: Color(0xFFBF360C),
@@ -546,17 +546,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFF8A65),
       auraIntensity: 0.42,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.dagger,
+      shape: CoasterShape.dagger,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'verdant_blade',
     name: '신록의 검',
     description: '봄의 생명력이 깃든',
-    tier: SwordTier.r,
+    tier: CoasterTier.r,
     baseTapMult: 2.35,
     baseDpsMult: 1.16,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFA5D6A7),
       bladeAccent: Color(0xFF2E7D32),
       guardColor: Color(0xFF1B5E20),
@@ -565,19 +565,19 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF4CAF50),
       auraIntensity: 0.42,
       sparkle: SparkleStyle.dim,
-      shape: SwordShape.katana,
+      shape: CoasterShape.katana,
     ),
   ),
 
   // ============ SR (초희귀) 8 → 14종 ============
-  SwordDef(
+  CoasterDef(
     id: 'flame_blade',
     name: '화염검',
     description: '날이 타오르는 마검',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 2.60,
     baseDpsMult: 1.20,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFF7043),
       bladeAccent: Color(0xFFBF360C),
       guardColor: Color(0xFFD84315),
@@ -586,17 +586,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFF5722),
       auraIntensity: 0.5,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'frost_edge',
     name: '빙하검',
     description: '닿는 것을 얼린다',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 2.80,
     baseDpsMult: 1.22,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFB3E5FC),
       bladeAccent: Color(0xFF0288D1),
       guardColor: Color(0xFF01579B),
@@ -605,17 +605,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF03A9F4),
       auraIntensity: 0.5,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.katana,
+      shape: CoasterShape.katana,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'thunder_slicer',
     name: '뇌전검',
     description: '번개가 깃든 검',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 3.00,
     baseDpsMult: 1.25,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFF59D),
       bladeAccent: Color(0xFFFBC02D),
       guardColor: Color(0xFFF57F17),
@@ -624,17 +624,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFFEB3B),
       auraIntensity: 0.55,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.rapier,
+      shape: CoasterShape.rapier,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'shadow_fang',
     name: '그림자 송곳니',
     description: '어둠을 엮어 만든 검',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 3.20,
     baseDpsMult: 1.28,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFF311B92),
       bladeAccent: Color(0xFF4527A0),
       guardColor: Color(0xFF212121),
@@ -643,17 +643,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF7E57C2),
       auraIntensity: 0.5,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.dagger,
+      shape: CoasterShape.dagger,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'moon_blade',
     name: '월광검',
     description: '달빛을 품은 검',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 3.40,
     baseDpsMult: 1.30,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFE1F5FE),
       bladeAccent: Color(0xFFB3E5FC),
       guardColor: Color(0xFFE0E0E0),
@@ -662,17 +662,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFBBDEFB),
       auraIntensity: 0.55,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.katana,
+      shape: CoasterShape.katana,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'sun_blade',
     name: '태양검',
     description: '한낮의 햇살을 벼려낸',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 3.60,
     baseDpsMult: 1.32,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFE082),
       bladeAccent: Color(0xFFFFB300),
       guardColor: Color(0xFFFF6F00),
@@ -681,17 +681,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFFB300),
       auraIntensity: 0.6,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'dragon_tooth',
     name: '용의 이빨',
     description: '고대 용의 송곳니로',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 3.90,
     baseDpsMult: 1.35,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFCC80),
       bladeAccent: Color(0xFFE65100),
       guardColor: Color(0xFFBF360C),
@@ -700,17 +700,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFF5722),
       auraIntensity: 0.55,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.dagger,
+      shape: CoasterShape.dagger,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'rune_blade',
     name: '고대 룬검',
     description: '잊혀진 룬어가 새겨진',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 4.20,
     baseDpsMult: 1.38,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFB39DDB),
       bladeAccent: Color(0xFF4527A0),
       guardColor: Color(0xFF311B92),
@@ -719,17 +719,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF9C27B0),
       auraIntensity: 0.58,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.rapier,
+      shape: CoasterShape.rapier,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'storm_glaive',
     name: '폭풍 글레이브',
     description: '내려치면 천둥소리가',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 4.40,
     baseDpsMult: 1.40,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFF90A4AE),
       bladeAccent: Color(0xFF455A64),
       guardColor: Color(0xFF263238),
@@ -738,17 +738,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF607D8B),
       auraIntensity: 0.6,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'venom_fang',
     name: '독아검',
     description: '닿기만 해도 위험하다',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 4.60,
     baseDpsMult: 1.42,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFC5E1A5),
       bladeAccent: Color(0xFF558B2F),
       guardColor: Color(0xFF33691E),
@@ -757,17 +757,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF7CB342),
       auraIntensity: 0.58,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.dagger,
+      shape: CoasterShape.dagger,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'crystal_edge',
     name: '수정 칼날',
     description: '투명하지만 단단하다',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 4.80,
     baseDpsMult: 1.44,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFE0F7FA),
       bladeAccent: Color(0xFF80DEEA),
       guardColor: Color(0xFF00838F),
@@ -776,17 +776,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF26C6DA),
       auraIntensity: 0.6,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.rapier,
+      shape: CoasterShape.rapier,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'phantom_edge',
     name: '환영검',
     description: '실체가 흐릿하다',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 5.00,
     baseDpsMult: 1.46,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFCE93D8),
       bladeAccent: Color(0xFF6A1B9A),
       guardColor: Color(0xFF4A148C),
@@ -795,17 +795,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF8E24AA),
       auraIntensity: 0.62,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.katana,
+      shape: CoasterShape.katana,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'inferno_blade',
     name: '지옥불검',
     description: '베어낸 자리가 타오른다',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 5.20,
     baseDpsMult: 1.48,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFF8A65),
       bladeAccent: Color(0xFFD84315),
       guardColor: Color(0xFFB71C1C),
@@ -814,19 +814,19 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFE64A19),
       auraIntensity: 0.65,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
 
   // ============ SSR (전설) 3 → 8종 ============
-  SwordDef(
-    id: 'sword_saint',
+  CoasterDef(
+    id: 'coaster_saint',
     name: '검성의 검',
     description: '한 획에 하늘을 가르는',
-    tier: SwordTier.ssr,
+    tier: CoasterTier.ssr,
     baseTapMult: 5.00,
     baseDpsMult: 1.50,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFF8E1),
       bladeAccent: Color(0xFFFFD54F),
       guardColor: _guardGold,
@@ -835,17 +835,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFFC107),
       auraIntensity: 0.75,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.katana,
+      shape: CoasterShape.katana,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'dragon_king',
     name: '용왕검',
     description: '용의 왕이 휘두르던 검',
-    tier: SwordTier.ssr,
+    tier: CoasterTier.ssr,
     baseTapMult: 5.60,
     baseDpsMult: 1.55,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFE082),
       bladeAccent: Color(0xFFFF8F00),
       guardColor: Color(0xFFBF360C),
@@ -854,17 +854,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFF6F00),
       auraIntensity: 0.8,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'holy_relic',
     name: '성스러운 유물',
     description: '잃어버린 신의 무기',
-    tier: SwordTier.ssr,
+    tier: CoasterTier.ssr,
     baseTapMult: 6.20,
     baseDpsMult: 1.60,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFFDE7),
       bladeAccent: Color(0xFFFFECB3),
       guardColor: _guardGold,
@@ -873,17 +873,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFFF59D),
       auraIntensity: 0.85,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'demon_slayer',
     name: '마검 사신',
     description: '마(魔)를 베는 검',
-    tier: SwordTier.ssr,
+    tier: CoasterTier.ssr,
     baseTapMult: 6.60,
     baseDpsMult: 1.62,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFF263238),
       bladeAccent: Color(0xFF000000),
       guardColor: Color(0xFFB71C1C),
@@ -892,17 +892,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFB71C1C),
       auraIntensity: 0.85,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'celestial_blade',
     name: '천공검',
     description: '하늘에서 내려온 검',
-    tier: SwordTier.ssr,
+    tier: CoasterTier.ssr,
     baseTapMult: 7.00,
     baseDpsMult: 1.65,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFE3F2FD),
       bladeAccent: Color(0xFF42A5F5),
       guardColor: Color(0xFF1565C0),
@@ -911,17 +911,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF2196F3),
       auraIntensity: 0.88,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'phoenix_blade',
     name: '불사조의 검',
     description: '꺼지지 않는 화염',
-    tier: SwordTier.ssr,
+    tier: CoasterTier.ssr,
     baseTapMult: 7.40,
     baseDpsMult: 1.68,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFCA28),
       bladeAccent: Color(0xFFFF6F00),
       guardColor: Color(0xFFBF360C),
@@ -930,17 +930,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFF5722),
       auraIntensity: 0.92,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'leviathan_fang',
     name: '리바이어던 송곳니',
     description: '심해의 군주가 남긴',
-    tier: SwordTier.ssr,
+    tier: CoasterTier.ssr,
     baseTapMult: 7.80,
     baseDpsMult: 1.70,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFF80DEEA),
       bladeAccent: Color(0xFF006064),
       guardColor: Color(0xFF004D40),
@@ -949,19 +949,19 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF00ACC1),
       auraIntensity: 0.92,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.dagger,
+      shape: CoasterShape.dagger,
     ),
   ),
 
   // ============ LR (영웅) 5종 [신규] ============
-  SwordDef(
+  CoasterDef(
     id: 'hero_excalibur',
     name: '엑스칼리버',
     description: '전설의 왕이 뽑아 든 검',
-    tier: SwordTier.lr,
+    tier: CoasterTier.lr,
     baseTapMult: 8.50,
     baseDpsMult: 1.80,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFFDE7),
       bladeAccent: Color(0xFFFFD54F),
       guardColor: _guardGold,
@@ -970,17 +970,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFFEB3B),
       auraIntensity: 0.95,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'hero_durandal',
     name: '듀란달',
     description: '결코 부러지지 않는 칼',
-    tier: SwordTier.lr,
+    tier: CoasterTier.lr,
     baseTapMult: 9.00,
     baseDpsMult: 1.85,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFE0F2F1),
       bladeAccent: Color(0xFF00695C),
       guardColor: Color(0xFF004D40),
@@ -989,17 +989,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF00BFA5),
       auraIntensity: 0.95,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.rapier,
+      shape: CoasterShape.rapier,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'hero_gram',
     name: '그람',
     description: '용을 베는 영웅의 검',
-    tier: SwordTier.lr,
+    tier: CoasterTier.lr,
     baseTapMult: 9.50,
     baseDpsMult: 1.90,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFCFD8DC),
       bladeAccent: Color(0xFF455A64),
       guardColor: Color(0xFFB71C1C),
@@ -1008,17 +1008,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFE53935),
       auraIntensity: 0.98,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'hero_kusanagi',
     name: '쿠사나기노 츠루기',
     description: '바람의 신이 휘둘렀다는',
-    tier: SwordTier.lr,
+    tier: CoasterTier.lr,
     baseTapMult: 10.00,
     baseDpsMult: 1.95,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFB2DFDB),
       bladeAccent: Color(0xFF00695C),
       guardColor: Color(0xFF004D40),
@@ -1027,17 +1027,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF26A69A),
       auraIntensity: 0.98,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.katana,
+      shape: CoasterShape.katana,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'hero_balmung',
     name: '발뭉크',
     description: '용살의 영웅이 남긴 보검',
-    tier: SwordTier.lr,
+    tier: CoasterTier.lr,
     baseTapMult: 10.50,
     baseDpsMult: 2.00,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFE1BEE7),
       bladeAccent: Color(0xFF6A1B9A),
       guardColor: Color(0xFF4A148C),
@@ -1046,19 +1046,19 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF8E24AA),
       auraIntensity: 1.0,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
 
   // ============ UR (신화) 2 → 5종 ============
-  SwordDef(
+  CoasterDef(
     id: 'cosmic_blade',
     name: '우주의 검',
     description: '별과 별 사이를 벼린',
-    tier: SwordTier.ur,
+    tier: CoasterTier.ur,
     baseTapMult: 10.00,
     baseDpsMult: 2.00,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFB39DDB),
       bladeAccent: Color(0xFFE1BEE7),
       guardColor: Color(0xFF4527A0),
@@ -1067,17 +1067,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF7C4DFF),
       auraIntensity: 1.0,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'eternal_excalibur',
     name: '영겁의 엑스칼리버',
     description: '이 세상의 왕이 되는 증표',
-    tier: SwordTier.ur,
+    tier: CoasterTier.ur,
     baseTapMult: 12.00,
     baseDpsMult: 2.20,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFF8E1),
       bladeAccent: Color(0xFFFFD54F),
       guardColor: _guardGold,
@@ -1086,17 +1086,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFFEB3B),
       auraIntensity: 1.0,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.rapier,
+      shape: CoasterShape.rapier,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'world_tree_blade',
     name: '세계수의 검',
     description: '세계의 뿌리를 다듬어 만든',
-    tier: SwordTier.ur,
+    tier: CoasterTier.ur,
     baseTapMult: 14.00,
     baseDpsMult: 2.40,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFC8E6C9),
       bladeAccent: Color(0xFF2E7D32),
       guardColor: Color(0xFF1B5E20),
@@ -1105,17 +1105,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF66BB6A),
       auraIntensity: 1.0,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.katana,
+      shape: CoasterShape.katana,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'void_render',
     name: '공허의 절단검',
     description: '존재 자체를 베어낸다',
-    tier: SwordTier.ur,
+    tier: CoasterTier.ur,
     baseTapMult: 16.00,
     baseDpsMult: 2.60,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFF311B92),
       bladeAccent: Color(0xFF000000),
       guardColor: Color(0xFF1A1A1A),
@@ -1124,17 +1124,17 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF6A1B9A),
       auraIntensity: 1.0,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'creation_blade',
     name: '창조의 검',
     description: '시작과 끝을 함께 품은',
-    tier: SwordTier.ur,
+    tier: CoasterTier.ur,
     baseTapMult: 18.00,
     baseDpsMult: 2.80,
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFFFFF),
       bladeAccent: Color(0xFFE1BEE7),
       guardColor: Color(0xFFFFD54F),
@@ -1143,20 +1143,20 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF7C4DFF),
       auraIntensity: 1.0,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
 
   // ============ 이벤트 검 (event-tagged, 일반 풀에 포함) ============
-  SwordDef(
+  CoasterDef(
     id: 'event_cherry_blossom',
     name: '벚꽃의 검',
     description: '봄날의 한 장면을 베어낸 듯',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 3.50,
     baseDpsMult: 1.30,
     eventTag: 'spring',
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFCE4EC),
       bladeAccent: Color(0xFFF8BBD0),
       guardColor: Color(0xFFEC407A),
@@ -1165,18 +1165,18 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFEC407A),
       auraIntensity: 0.6,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.katana,
+      shape: CoasterShape.katana,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'event_summer_wave',
     name: '여름 파도검',
     description: '시원한 한 줄기',
-    tier: SwordTier.sr,
+    tier: CoasterTier.sr,
     baseTapMult: 3.55,
     baseDpsMult: 1.32,
     eventTag: 'summer',
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFE0F7FA),
       bladeAccent: Color(0xFF00ACC1),
       guardColor: Color(0xFF00838F),
@@ -1185,18 +1185,18 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF00BCD4),
       auraIntensity: 0.6,
       sparkle: SparkleStyle.bright,
-      shape: SwordShape.katana,
+      shape: CoasterShape.katana,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'event_autumn_maple',
     name: '단풍의 검',
     description: '잎이 떨어지듯 베어낸다',
-    tier: SwordTier.ssr,
+    tier: CoasterTier.ssr,
     baseTapMult: 6.40,
     baseDpsMult: 1.62,
     eventTag: 'autumn',
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFAB91),
       bladeAccent: Color(0xFFD84315),
       guardColor: Color(0xFFBF360C),
@@ -1205,18 +1205,18 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFFF7043),
       auraIntensity: 0.85,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.falchion,
+      shape: CoasterShape.falchion,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'event_winter_frost',
     name: '겨울 서리검',
     description: '한 번의 휘둘림에 모든 게 얼어붙는다',
-    tier: SwordTier.ssr,
+    tier: CoasterTier.ssr,
     baseTapMult: 6.50,
     baseDpsMult: 1.65,
     eventTag: 'winter',
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFE1F5FE),
       bladeAccent: Color(0xFF81D4FA),
       guardColor: Color(0xFF0277BD),
@@ -1225,18 +1225,18 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFF03A9F4),
       auraIntensity: 0.88,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.rapier,
+      shape: CoasterShape.rapier,
     ),
   ),
-  SwordDef(
+  CoasterDef(
     id: 'event_lunar_gold',
     name: '설날 황금검',
     description: '복(福) 자가 새겨진 명절 한정',
-    tier: SwordTier.lr,
+    tier: CoasterTier.lr,
     baseTapMult: 9.20,
     baseDpsMult: 1.88,
     eventTag: 'lunar',
-    visual: SwordVisual(
+    visual: CoasterVisual(
       bladeColor: Color(0xFFFFD54F),
       bladeAccent: Color(0xFFFF8F00),
       guardColor: Color(0xFFB71C1C),
@@ -1245,10 +1245,10 @@ const swordCatalog = <SwordDef>[
       auraColor: Color(0xFFE53935),
       auraIntensity: 0.95,
       sparkle: SparkleStyle.orbiting,
-      shape: SwordShape.claymore,
+      shape: CoasterShape.claymore,
     ),
   ),
 ];
 
-SwordDef swordById(String id) =>
-    swordCatalog.firstWhere((s) => s.id == id);
+CoasterDef coasterById(String id) =>
+    coasterCatalog.firstWhere((s) => s.id == id);

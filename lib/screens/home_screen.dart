@@ -68,9 +68,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _spawnSlime(Size bounds) {
     final id = _nextSlimeId++;
-    // Keep it clear of the top bar and the sword center by biasing the
+    // Keep it clear of the top bar and the coaster center by biasing the
     // random position toward the horizontal edges and avoiding the middle
-    // band where the main sword sits.
+    // band where the main coaster sits.
     final w = bounds.width;
     final h = bounds.height;
     final leftSide = _rng.nextBool();
@@ -117,10 +117,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _openMainSwordEnhance() {
+  void _openMainCoasterEnhance() {
     showDialog<void>(
       context: context,
-      builder: (_) => const MainSwordEnhanceDialog(),
+      builder: (_) => const MainCoasterEnhanceDialog(),
     );
   }
 
@@ -175,9 +175,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ? constraints.maxHeight
                           : 240.0;
                       final size = height.clamp(128.0, 240.0).toDouble();
-                      return MainSwordWidget(
+                      return MainCoasterWidget(
                         onTap: _handleTap,
-                        stage: game.mainSwordStage,
+                        stage: game.mainCoasterStage,
                         size: size,
                       );
                     },
@@ -216,10 +216,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       game.isFeatureUnlocked(FeatureUnlocks.boosterShop),
                   exchangeUnlocked:
                       game.isFeatureUnlocked(FeatureUnlocks.goldExchange),
-                  stage: game.mainSwordStage,
+                  stage: game.mainCoasterStage,
                   onBooster: _openBoosterShop,
                   onExchange: _openGoldExchange,
-                  onEnhance: _openMainSwordEnhance,
+                  onEnhance: _openMainCoasterEnhance,
                 ),
               ),
               const SizedBox(height: 10),

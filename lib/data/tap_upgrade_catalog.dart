@@ -21,7 +21,7 @@ const tapUpgradeCatalog = <TapUpgradeDef>[
     tapPowerPerLevel: 5,
   ),
   TapUpgradeDef(
-    id: 'sword_aura',
+    id: 'coaster_aura',
     name: '검기 각성',
     description: '터치당 +25',
     icon: Icons.flash_on,

@@ -10,14 +10,14 @@ import 'widgets/feature_unlock_toast.dart';
 import 'widgets/first_purchase_popup.dart';
 import 'widgets/main_coaster_event_host.dart';
 
-class SwClickerApp extends ConsumerStatefulWidget {
-  const SwClickerApp({super.key});
+class CosterApp extends ConsumerStatefulWidget {
+  const CosterApp({super.key});
 
   @override
-  ConsumerState<SwClickerApp> createState() => _SwClickerAppState();
+  ConsumerState<CosterApp> createState() => _CosterAppState();
 }
 
-class _SwClickerAppState extends ConsumerState<SwClickerApp>
+class _CosterAppState extends ConsumerState<CosterApp>
     with WidgetsBindingObserver {
   @override
   void initState() {
@@ -65,7 +65,7 @@ class _SwClickerAppState extends ConsumerState<SwClickerApp>
           data: media.copyWith(textScaler: TextScaler.linear(textScale)),
           child: AchievementToastHost(
             child: FeatureUnlockToastHost(
-              child: MainSwordEventHost(
+              child: MainCoasterEventHost(
                 child: FirstPurchasePopupHost(
                   child: child ?? const SizedBox.shrink(),
                 ),

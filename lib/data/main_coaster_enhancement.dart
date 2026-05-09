@@ -1,20 +1,20 @@
 import 'dart:math' as math;
 
-/// Pricing + success-rate model for a single main sword enhancement attempt
+/// Pricing + success-rate model for a single main coaster enhancement attempt
 /// targeting [targetStage] (i.e. the stage you're trying to reach, 1..50).
 ///
 /// Both currency tracks scale exponentially with stage. The essence track
 /// is intentionally pricier per unit of real-money value (1000 essence ≈
 /// 10,000 KRW) but in exchange has a higher success rate and never costs
 /// the player a stage on failure.
-class MainSwordEnhanceCost {
+class MainCoasterEnhanceCost {
   final int targetStage;
   final double goldCost;
   final int essenceCost;
   final double goldSuccessBase; // 0..1
   final double essenceSuccessBase; // 0..1
   final int penaltyOnFail; // stages lost on a failed gold attempt
-  const MainSwordEnhanceCost({
+  const MainCoasterEnhanceCost({
     required this.targetStage,
     required this.goldCost,
     required this.essenceCost,
@@ -24,10 +24,10 @@ class MainSwordEnhanceCost {
   });
 }
 
-const mainSwordEnhanceMaxStage = 50;
+const mainCoasterEnhanceMaxStage = 50;
 
-MainSwordEnhanceCost mainSwordEnhanceCost(int targetStage) {
-  final s = targetStage.clamp(1, mainSwordEnhanceMaxStage);
+MainCoasterEnhanceCost mainCoasterEnhanceCost(int targetStage) {
+  final s = targetStage.clamp(1, mainCoasterEnhanceMaxStage);
   // Gold scales hard so the late-game requires real upgrade investment to
   // afford an attempt at all.
   final goldCost = 1e6 * math.pow(1.7, s - 1).toDouble();
@@ -51,7 +51,7 @@ MainSwordEnhanceCost mainSwordEnhanceCost(int targetStage) {
     penalty = 3;
   }
 
-  return MainSwordEnhanceCost(
+  return MainCoasterEnhanceCost(
     targetStage: s,
     goldCost: goldCost,
     essenceCost: essenceCost,
@@ -62,63 +62,63 @@ MainSwordEnhanceCost mainSwordEnhanceCost(int targetStage) {
 }
 
 /// Optional essence-paid boost stacked onto any enhancement attempt.
-enum MainSwordBoostLevel {
+enum MainCoasterBoostLevel {
   none,
   small, // +10%p
   medium, // +25%p
   large, // +50%p
 }
 
-extension MainSwordBoostInfo on MainSwordBoostLevel {
+extension MainCoasterBoostInfo on MainCoasterBoostLevel {
   int get essenceCost => switch (this) {
-        MainSwordBoostLevel.none => 0,
-        MainSwordBoostLevel.small => 5,
-        MainSwordBoostLevel.medium => 25,
-        MainSwordBoostLevel.large => 80,
+        MainCoasterBoostLevel.none => 0,
+        MainCoasterBoostLevel.small => 5,
+        MainCoasterBoostLevel.medium => 25,
+        MainCoasterBoostLevel.large => 80,
       };
 
   double get successBonus => switch (this) {
-        MainSwordBoostLevel.none => 0,
-        MainSwordBoostLevel.small => 0.10,
-        MainSwordBoostLevel.medium => 0.25,
-        MainSwordBoostLevel.large => 0.50,
+        MainCoasterBoostLevel.none => 0,
+        MainCoasterBoostLevel.small => 0.10,
+        MainCoasterBoostLevel.medium => 0.25,
+        MainCoasterBoostLevel.large => 0.50,
       };
 
   String get label => switch (this) {
-        MainSwordBoostLevel.none => '부스트 없음',
-        MainSwordBoostLevel.small => '소 +10%',
-        MainSwordBoostLevel.medium => '중 +25%',
-        MainSwordBoostLevel.large => '대 +50%',
+        MainCoasterBoostLevel.none => '부스트 없음',
+        MainCoasterBoostLevel.small => '소 +10%',
+        MainCoasterBoostLevel.medium => '중 +25%',
+        MainCoasterBoostLevel.large => '대 +50%',
       };
 }
 
 /// Cost in essence for the per-attempt 강 보호권 (failure preserves stage).
-const mainSwordProtectionEssenceCost = 50;
+const mainCoasterProtectionEssenceCost = 50;
 
 /// Hybrid attempt: pay 1.5x of both currencies for guaranteed +40%p.
 /// (Caps at 100% so for low stages this is overkill — it shines >+30.)
-const mainSwordHybridGoldMultiplier = 1.5;
-const mainSwordHybridEssenceMultiplier = 1.5;
-const mainSwordHybridSuccessBonus = 0.40;
+const mainCoasterHybridGoldMultiplier = 1.5;
+const mainCoasterHybridEssenceMultiplier = 1.5;
+const mainCoasterHybridSuccessBonus = 0.40;
 
 /// How much of the tap/dps stat bonus a stage adds. Linear for now —
 /// `mult = 1 + stage * 0.20`, so +0 = 1×, +25 = 6×, +50 = 11×.
-double mainSwordStageBonusMult(int stage) {
+double mainCoasterStageBonusMult(int stage) {
   if (stage <= 0) return 1.0;
   return 1.0 + stage * 0.20;
 }
 
 /// Milestone rewards distributed when [stage] is reached for the first
-/// time (tracked via SaveData.mainSwordHighestStage). Returns a record
+/// time (tracked via SaveData.mainCoasterHighestStage). Returns a record
 /// describing what to grant; null when no milestone fires.
-class MainSwordMilestoneReward {
+class MainCoasterMilestoneReward {
   final int stage;
   final int essence;
   final String? title;
   final double? collectionBonusFraction;
   final double? summonRateBonusFraction;
   final bool goldenFrame;
-  const MainSwordMilestoneReward({
+  const MainCoasterMilestoneReward({
     required this.stage,
     required this.essence,
     this.title,
@@ -128,21 +128,21 @@ class MainSwordMilestoneReward {
   });
 }
 
-const _mainSwordMilestones = <MainSwordMilestoneReward>[
-  MainSwordMilestoneReward(stage: 5, essence: 50),
-  MainSwordMilestoneReward(
+const _mainCoasterMilestones = <MainCoasterMilestoneReward>[
+  MainCoasterMilestoneReward(stage: 5, essence: 50),
+  MainCoasterMilestoneReward(
     stage: 10,
     essence: 200,
     collectionBonusFraction: 0.01,
   ),
-  MainSwordMilestoneReward(stage: 15, essence: 500),
-  MainSwordMilestoneReward(stage: 20, essence: 1000, title: '강화의 길'),
-  MainSwordMilestoneReward(stage: 25, essence: 2000),
-  MainSwordMilestoneReward(stage: 30, essence: 4000, title: '검의 주인'),
-  MainSwordMilestoneReward(stage: 35, essence: 6000),
-  MainSwordMilestoneReward(stage: 40, essence: 10000, title: '검신'),
-  MainSwordMilestoneReward(stage: 45, essence: 15000),
-  MainSwordMilestoneReward(
+  MainCoasterMilestoneReward(stage: 15, essence: 500),
+  MainCoasterMilestoneReward(stage: 20, essence: 1000, title: '강화의 길'),
+  MainCoasterMilestoneReward(stage: 25, essence: 2000),
+  MainCoasterMilestoneReward(stage: 30, essence: 4000, title: '검의 주인'),
+  MainCoasterMilestoneReward(stage: 35, essence: 6000),
+  MainCoasterMilestoneReward(stage: 40, essence: 10000, title: '검신'),
+  MainCoasterMilestoneReward(stage: 45, essence: 15000),
+  MainCoasterMilestoneReward(
     stage: 50,
     essence: 30000,
     title: '창세자',
@@ -151,8 +151,8 @@ const _mainSwordMilestones = <MainSwordMilestoneReward>[
   ),
 ];
 
-MainSwordMilestoneReward? mainSwordMilestoneAt(int stage) {
-  for (final m in _mainSwordMilestones) {
+MainCoasterMilestoneReward? mainCoasterMilestoneAt(int stage) {
+  for (final m in _mainCoasterMilestones) {
     if (m.stage == stage) return m;
   }
   return null;

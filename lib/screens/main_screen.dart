@@ -27,7 +27,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   static const _pages = <Widget>[
     HomeScreen(),
     UpgradeScreen(),
-    SwordScreen(),
+    CoasterScreen(),
     PrestigeScreen(),
     SettingsScreen(),
   ];

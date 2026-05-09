@@ -21,12 +21,12 @@ class SaveData {
   GameStats stats;
   GameSettings settings;
 
-  // Sword collection (v3)
+  // Coaster collection (v3)
   int essence;
-  Map<String, int> ownedSwords; // id → level (1~10)
-  String? equippedSwordId;
+  Map<String, int> ownedCoasters; // id → level (1~10)
+  String? equippedCoasterId;
   int summonsSinceHighRare; // pity counter (reset on SR+)
-  List<String?> formationSwordIds; // 5-slot equipped formation.
+  List<String?> formationCoasterIds; // 5-slot equipped formation.
 
   // Achievements (v4)
   Set<String> unlockedAchievements;
@@ -80,18 +80,18 @@ class SaveData {
   DateTime? firstLaunchAt; // anchors the 24h first-purchase popup window
   bool firstPurchasePopupShown;
 
-  // Main sword (v18): the single sword anchored to the home tab. Separate
-  // from the collection — collection swords still grant passive/active
-  // bonuses, but the home tab visually represents this main sword and only
+  // Main coaster (v18): the single coaster anchored to the home tab. Separate
+  // from the collection — collection coasters still grant passive/active
+  // bonuses, but the home tab visually represents this main coaster and only
   // its stage controls the home-tap visual evolution.
-  int mainSwordStage; // 0~50
-  String? mainSwordName; // null until first +1 enhance prompts the user
-  int mainSwordHighestStage; // for the permanent title (never decays)
-  Set<int> mainSwordTiersShown; // which evolution cutscenes have played
-  int mainSwordEnhanceAttempts; // analytics
+  int mainCoasterStage; // 0~50
+  String? mainCoasterName; // null until first +1 enhance prompts the user
+  int mainCoasterHighestStage; // for the permanent title (never decays)
+  Set<int> mainCoasterTiersShown; // which evolution cutscenes have played
+  int mainCoasterEnhanceAttempts; // analytics
   // Sum of all milestone collectionBonusFraction grants. Applied as a
   // fraction on top of the existing collection bonus.
-  double mainSwordCollectionBonusFraction;
+  double mainCoasterCollectionBonusFraction;
 
   // Gold-exchange shop (v17): how much of the player's currentGold came from
   // the essence-for-gold exchange and hasn't been spent yet. While this is
@@ -123,10 +123,10 @@ class SaveData {
     GameStats? stats,
     GameSettings? settings,
     this.essence = 90,
-    Map<String, int>? ownedSwords,
-    this.equippedSwordId,
+    Map<String, int>? ownedCoasters,
+    this.equippedCoasterId,
     this.summonsSinceHighRare = 0,
-    List<String?>? formationSwordIds,
+    List<String?>? formationCoasterIds,
     Set<String>? unlockedAchievements,
     this.lastDailyClaimAt,
     this.dailyStreak = 0,
@@ -152,12 +152,12 @@ class SaveData {
     this.goldExchangeDailyCount = 0,
     this.goldExchangePrestigeCount = 0,
     this.goldExchangeEightHourDayKey = 0,
-    this.mainSwordStage = 0,
-    this.mainSwordName,
-    this.mainSwordHighestStage = 0,
-    Set<int>? mainSwordTiersShown,
-    this.mainSwordEnhanceAttempts = 0,
-    this.mainSwordCollectionBonusFraction = 0,
+    this.mainCoasterStage = 0,
+    this.mainCoasterName,
+    this.mainCoasterHighestStage = 0,
+    Set<int>? mainCoasterTiersShown,
+    this.mainCoasterEnhanceAttempts = 0,
+    this.mainCoasterCollectionBonusFraction = 0,
     this.firstPurchasePackageClaimed = false,
     this.seasonPassExpiresAt,
     this.seasonPassLastClaimAt,
@@ -165,15 +165,15 @@ class SaveData {
     this.masterPackagePurchased = false,
     this.firstLaunchAt,
     this.firstPurchasePopupShown = false,
-  })  : mainSwordTiersShown = mainSwordTiersShown ?? <int>{},
+  })  : mainCoasterTiersShown = mainCoasterTiersShown ?? <int>{},
         producerLevels = producerLevels ?? {},
         tapUpgradeLevels = tapUpgradeLevels ?? {},
         prestigeUpgradeLevels = prestigeUpgradeLevels ?? {},
         lastSavedAt = lastSavedAt ?? DateTime.now(),
         stats = stats ?? GameStats(),
         settings = settings ?? GameSettings(),
-        ownedSwords = ownedSwords ?? {},
-        formationSwordIds = _normalizeFormationSwordIds(formationSwordIds),
+        ownedCoasters = ownedCoasters ?? {},
+        formationCoasterIds = _normalizeFormationCoasterIds(formationCoasterIds),
         unlockedAchievements = unlockedAchievements ?? <String>{},
         activeBoosters = activeBoosters ?? <Booster>[],
         skillReadyAt = skillReadyAt ?? <String, DateTime>{},
@@ -202,10 +202,10 @@ class SaveData {
         'stats': stats.toJson(),
         'settings': settings.toJson(),
         'essence': essence,
-        'ownedSwords': ownedSwords,
-        'equippedSwordId': equippedSwordId,
+        'ownedCoasters': ownedCoasters,
+        'equippedCoasterId': equippedCoasterId,
         'summonsSinceHighRare': summonsSinceHighRare,
-        'formationSwordIds': formationSwordIds,
+        'formationCoasterIds': formationCoasterIds,
         'unlockedAchievements': unlockedAchievements.toList(),
         'lastDailyClaimAt': lastDailyClaimAt?.toIso8601String(),
         'dailyStreak': dailyStreak,
@@ -232,12 +232,12 @@ class SaveData {
         'goldExchangeDailyCount': goldExchangeDailyCount,
         'goldExchangePrestigeCount': goldExchangePrestigeCount,
         'goldExchangeEightHourDayKey': goldExchangeEightHourDayKey,
-        'mainSwordStage': mainSwordStage,
-        'mainSwordName': mainSwordName,
-        'mainSwordHighestStage': mainSwordHighestStage,
-        'mainSwordTiersShown': mainSwordTiersShown.toList(),
-        'mainSwordEnhanceAttempts': mainSwordEnhanceAttempts,
-        'mainSwordCollectionBonusFraction': mainSwordCollectionBonusFraction,
+        'mainCoasterStage': mainCoasterStage,
+        'mainCoasterName': mainCoasterName,
+        'mainCoasterHighestStage': mainCoasterHighestStage,
+        'mainCoasterTiersShown': mainCoasterTiersShown.toList(),
+        'mainCoasterEnhanceAttempts': mainCoasterEnhanceAttempts,
+        'mainCoasterCollectionBonusFraction': mainCoasterCollectionBonusFraction,
         'firstPurchasePackageClaimed': firstPurchasePackageClaimed,
         'seasonPassExpiresAt': seasonPassExpiresAt?.toIso8601String(),
         'seasonPassLastClaimAt': seasonPassLastClaimAt?.toIso8601String(),
@@ -268,10 +268,10 @@ class SaveData {
         settings: GameSettings.fromJson(
             json['settings'] as Map<String, dynamic>? ?? {}),
         essence: json['essence'] as int? ?? 90,
-        ownedSwords: Map<String, int>.from(json['ownedSwords'] as Map? ?? {}),
-        equippedSwordId: json['equippedSwordId'] as String?,
+        ownedCoasters: Map<String, int>.from(json['ownedCoasters'] as Map? ?? {}),
+        equippedCoasterId: json['equippedCoasterId'] as String?,
         summonsSinceHighRare: json['summonsSinceHighRare'] as int? ?? 0,
-        formationSwordIds: (json['formationSwordIds'] as List?)
+        formationCoasterIds: (json['formationCoasterIds'] as List?)
             ?.map((e) => e is String ? e : null)
             .toList(),
         unlockedAchievements: (json['unlockedAchievements'] as List?)
@@ -335,16 +335,16 @@ class SaveData {
             json['goldExchangePrestigeCount'] as int? ?? 0,
         goldExchangeEightHourDayKey:
             json['goldExchangeEightHourDayKey'] as int? ?? 0,
-        mainSwordStage: json['mainSwordStage'] as int? ?? 0,
-        mainSwordName: json['mainSwordName'] as String?,
-        mainSwordHighestStage: json['mainSwordHighestStage'] as int? ?? 0,
-        mainSwordTiersShown:
-            ((json['mainSwordTiersShown'] as List?) ?? const [])
+        mainCoasterStage: json['mainCoasterStage'] as int? ?? 0,
+        mainCoasterName: json['mainCoasterName'] as String?,
+        mainCoasterHighestStage: json['mainCoasterHighestStage'] as int? ?? 0,
+        mainCoasterTiersShown:
+            ((json['mainCoasterTiersShown'] as List?) ?? const [])
                 .map((e) => e as int)
                 .toSet(),
-        mainSwordEnhanceAttempts: json['mainSwordEnhanceAttempts'] as int? ?? 0,
-        mainSwordCollectionBonusFraction:
-            (json['mainSwordCollectionBonusFraction'] as num?)?.toDouble() ?? 0,
+        mainCoasterEnhanceAttempts: json['mainCoasterEnhanceAttempts'] as int? ?? 0,
+        mainCoasterCollectionBonusFraction:
+            (json['mainCoasterCollectionBonusFraction'] as num?)?.toDouble() ?? 0,
         firstPurchasePackageClaimed:
             json['firstPurchasePackageClaimed'] as bool? ?? false,
         seasonPassExpiresAt:
@@ -361,12 +361,12 @@ class SaveData {
             json['firstPurchasePopupShown'] as bool? ?? false,
       );
 
-  static List<String?> _normalizeFormationSwordIds(List<String?>? source) {
-    final slots = List<String?>.filled(swordFormationSlotCount, null);
+  static List<String?> _normalizeFormationCoasterIds(List<String?>? source) {
+    final slots = List<String?>.filled(coasterFormationSlotCount, null);
     if (source == null) return slots;
-    final limit = source.length < swordFormationSlotCount
+    final limit = source.length < coasterFormationSlotCount
         ? source.length
-        : swordFormationSlotCount;
+        : coasterFormationSlotCount;
     for (var i = 0; i < limit; i++) {
       slots[i] = source[i];
     }

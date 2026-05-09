@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import '../models/coaster.dart';
 import 'coaster_shape_painter.dart';
 
-/// Small static preview of a sword (no tap, no sparkle animation).
-class SwordPreview extends StatelessWidget {
-  final SwordVisual visual;
+/// Small static preview of a coaster (no tap, no sparkle animation).
+class CoasterPreview extends StatelessWidget {
+  final CoasterVisual visual;
   final double size;
   final bool locked;
 
-  const SwordPreview({
+  const CoasterPreview({
     super.key,
     required this.visual,
     this.size = 80,
@@ -29,7 +29,7 @@ class SwordPreview extends StatelessWidget {
 }
 
 class _PreviewPainter extends CustomPainter {
-  final SwordVisual visual;
+  final CoasterVisual visual;
   final bool locked;
 
   _PreviewPainter({required this.visual, required this.locked});
@@ -57,16 +57,16 @@ class _PreviewPainter extends CustomPainter {
     }
 
     final colors = locked
-        ? const SwordShapeColors(
+        ? const CoasterShapeColors(
             blade: Color(0xFF424242),
             bladeAccent: Color(0xFF212121),
             guard: Color(0xFF424242),
             handle: Color(0xFF212121),
             pommel: Color(0xFF424242),
           )
-        : SwordShapeColors.fromVisual(visual);
+        : CoasterShapeColors.fromVisual(visual);
 
-    paintSwordShape(
+    paintCoasterShape(
       canvas,
       size,
       visual.shape,

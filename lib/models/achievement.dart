@@ -8,8 +8,8 @@ enum AchievementCategory {
   dps,
   playtime,
   producer,
-  swordCollect,
-  swordLevel,
+  coasterCollect,
+  coasterLevel,
   summon,
   prestige,
   slime,
@@ -19,7 +19,7 @@ enum AchievementCategory {
   master,
   // v13: introduced with milestone expansion + new content surfaces.
   stocks,
-  swordSets,
+  coasterSets,
   collection,
   economy,
 }
@@ -31,8 +31,8 @@ extension AchievementCategoryInfo on AchievementCategory {
         AchievementCategory.dps => 'DPS',
         AchievementCategory.playtime => '플레이 시간',
         AchievementCategory.producer => '동료',
-        AchievementCategory.swordCollect => '검 수집',
-        AchievementCategory.swordLevel => '검 강화',
+        AchievementCategory.coasterCollect => '검 수집',
+        AchievementCategory.coasterLevel => '검 강화',
         AchievementCategory.summon => '소환',
         AchievementCategory.prestige => '환생',
         AchievementCategory.slime => '슬라임',
@@ -41,7 +41,7 @@ extension AchievementCategoryInfo on AchievementCategory {
         AchievementCategory.daily => '일일',
         AchievementCategory.master => '마스터',
         AchievementCategory.stocks => '주식',
-        AchievementCategory.swordSets => '세트',
+        AchievementCategory.coasterSets => '세트',
         AchievementCategory.collection => '컬렉션',
         AchievementCategory.economy => '경제',
       };
@@ -52,8 +52,8 @@ extension AchievementCategoryInfo on AchievementCategory {
         AchievementCategory.dps => Icons.bolt,
         AchievementCategory.playtime => Icons.timer,
         AchievementCategory.producer => Icons.group,
-        AchievementCategory.swordCollect => Icons.collections,
-        AchievementCategory.swordLevel => Icons.upgrade,
+        AchievementCategory.coasterCollect => Icons.collections,
+        AchievementCategory.coasterLevel => Icons.upgrade,
         AchievementCategory.summon => Icons.diamond,
         AchievementCategory.prestige => Icons.auto_awesome,
         AchievementCategory.slime => Icons.bubble_chart,
@@ -62,7 +62,7 @@ extension AchievementCategoryInfo on AchievementCategory {
         AchievementCategory.daily => Icons.event_available,
         AchievementCategory.master => Icons.emoji_events,
         AchievementCategory.stocks => Icons.show_chart,
-        AchievementCategory.swordSets => Icons.workspaces,
+        AchievementCategory.coasterSets => Icons.workspaces,
         AchievementCategory.collection => Icons.collections_bookmark,
         AchievementCategory.economy => Icons.savings,
       };
@@ -73,8 +73,8 @@ extension AchievementCategoryInfo on AchievementCategory {
         AchievementCategory.dps => const Color(0xFF00ACC1),
         AchievementCategory.playtime => const Color(0xFF7E57C2),
         AchievementCategory.producer => const Color(0xFF26A69A),
-        AchievementCategory.swordCollect => const Color(0xFFE53935),
-        AchievementCategory.swordLevel => const Color(0xFF8D6E63),
+        AchievementCategory.coasterCollect => const Color(0xFFE53935),
+        AchievementCategory.coasterLevel => const Color(0xFF8D6E63),
         AchievementCategory.summon => const Color(0xFF7C4DFF),
         AchievementCategory.prestige => const Color(0xFFFFCA28),
         AchievementCategory.slime => const Color(0xFFFFC107),
@@ -83,7 +83,7 @@ extension AchievementCategoryInfo on AchievementCategory {
         AchievementCategory.daily => const Color(0xFF66BB6A),
         AchievementCategory.master => const Color(0xFFD81B60),
         AchievementCategory.stocks => const Color(0xFFD32F2F),
-        AchievementCategory.swordSets => const Color(0xFFEC407A),
+        AchievementCategory.coasterSets => const Color(0xFFEC407A),
         AchievementCategory.collection => const Color(0xFF5E35B1),
         AchievementCategory.economy => const Color(0xFF2E7D32),
       };
@@ -111,21 +111,21 @@ class AchContext {
   final int totalProducerLevels;
   final int ownedProducerCount;
   final int totalProducerCatalogCount;
-  final Map<String, int> ownedSwords;
-  final int ownedSwordCount;
-  final int totalSwordCatalogCount;
+  final Map<String, int> ownedCoasters;
+  final int ownedCoasterCount;
+  final int totalCoasterCatalogCount;
   final bool ownsAnyR;
   final bool ownsAnySr;
   final bool ownsAnySsr;
   final bool ownsAnyLr;
   final bool ownsAnyUr;
-  final int maxSwordLevel;
-  final int maxedSwordCount;
+  final int maxCoasterLevel;
+  final int maxedCoasterCount;
   final int totalSummons;
   final int prestigeCount;
   final Map<String, int> prestigeUpgradeLevels;
   final int totalTapUpgradesBought;
-  final bool hasEquippedSword;
+  final bool hasEquippedCoaster;
   final int totalCrits;
   final int maxCombo;
   final int comboBurstCount;
@@ -155,21 +155,21 @@ class AchContext {
     required this.totalProducerLevels,
     required this.ownedProducerCount,
     required this.totalProducerCatalogCount,
-    required this.ownedSwords,
-    required this.ownedSwordCount,
-    required this.totalSwordCatalogCount,
+    required this.ownedCoasters,
+    required this.ownedCoasterCount,
+    required this.totalCoasterCatalogCount,
     required this.ownsAnyR,
     required this.ownsAnySr,
     required this.ownsAnySsr,
     required this.ownsAnyLr,
     required this.ownsAnyUr,
-    required this.maxSwordLevel,
-    required this.maxedSwordCount,
+    required this.maxCoasterLevel,
+    required this.maxedCoasterCount,
     required this.totalSummons,
     required this.prestigeCount,
     required this.prestigeUpgradeLevels,
     required this.totalTapUpgradesBought,
-    required this.hasEquippedSword,
+    required this.hasEquippedCoaster,
     required this.totalCrits,
     required this.maxCombo,
     required this.comboBurstCount,

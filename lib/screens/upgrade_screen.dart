@@ -86,8 +86,8 @@ class UpgradeScreen extends ConsumerWidget {
                               isMax ? maxN > 0 : game.canAfford(cost);
                           // Show the EFFECTIVE gain — i.e. raw upgrade × all
                           // currently active multipliers (prestige, equipped
-                          // sword, boosters, set, collection). Without this,
-                          // the sword-collection bonus would silently apply
+                          // coaster, boosters, set, collection). Without this,
+                          // the coaster-collection bonus would silently apply
                           // but never show up in the buy preview.
                           final rawTap = def.tapPowerPerLevel * n;
                           final effTap = rawTap * notifier.tapMultiplier;
@@ -209,7 +209,7 @@ class _ProducerList extends StatelessWidget {
                 ? '마일스톤 완주! (x$curMult DPS)'
                 : '다음 Lv $nextMs → DPS x2 (현재 x$curMult)';
             // Effective gain = raw producer DPS × every active multiplier
-            // (prestige, equipped sword, boosters, set, COLLECTION). The
+            // (prestige, equipped coaster, boosters, set, COLLECTION). The
             // collection bonus actually does affect 동료/초월 income — this
             // surfaces it instead of leaving the player wondering.
             final rawDps = def.baseDps * n * def.milestoneMultiplier(lv);

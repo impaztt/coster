@@ -10,7 +10,7 @@ class RunStats {
   int boostersUsed;
   int producerLevelsBought;
   int tapUpgradesBought;
-  int swordDismantles;
+  int coasterDismantles;
   double goldEarned;
   double goldSpent;
   double dpsPeak;
@@ -20,13 +20,13 @@ class RunStats {
   int stockSells;
   double stockProfitRealized;
   double stockDividendsClaimed;
-  // True until any tap-upgrade is bought / any sword equipped — used by
+  // True until any tap-upgrade is bought / any coaster equipped — used by
   // niche "no-equip" or "no-upgrade" challenges. We only track the cheap
   // booleans that wouldn't bloat per-tick work.
   bool usedAnySkill;
   bool usedAnyBooster;
   bool boughtAnyTapUpgrade;
-  bool changedEquippedSword;
+  bool changedEquippedCoaster;
 
   RunStats({
     this.taps = 0,
@@ -38,7 +38,7 @@ class RunStats {
     this.boostersUsed = 0,
     this.producerLevelsBought = 0,
     this.tapUpgradesBought = 0,
-    this.swordDismantles = 0,
+    this.coasterDismantles = 0,
     this.goldEarned = 0,
     this.goldSpent = 0,
     this.dpsPeak = 0,
@@ -51,7 +51,7 @@ class RunStats {
     this.usedAnySkill = false,
     this.usedAnyBooster = false,
     this.boughtAnyTapUpgrade = false,
-    this.changedEquippedSword = false,
+    this.changedEquippedCoaster = false,
   });
 
   void reset() {
@@ -64,7 +64,7 @@ class RunStats {
     boostersUsed = 0;
     producerLevelsBought = 0;
     tapUpgradesBought = 0;
-    swordDismantles = 0;
+    coasterDismantles = 0;
     goldEarned = 0;
     goldSpent = 0;
     dpsPeak = 0;
@@ -77,7 +77,7 @@ class RunStats {
     usedAnySkill = false;
     usedAnyBooster = false;
     boughtAnyTapUpgrade = false;
-    changedEquippedSword = false;
+    changedEquippedCoaster = false;
   }
 
   Map<String, dynamic> toJson() => {
@@ -90,7 +90,7 @@ class RunStats {
         'boostersUsed': boostersUsed,
         'producerLevelsBought': producerLevelsBought,
         'tapUpgradesBought': tapUpgradesBought,
-        'swordDismantles': swordDismantles,
+        'coasterDismantles': coasterDismantles,
         'goldEarned': goldEarned,
         'goldSpent': goldSpent,
         'dpsPeak': dpsPeak,
@@ -103,7 +103,7 @@ class RunStats {
         'usedAnySkill': usedAnySkill,
         'usedAnyBooster': usedAnyBooster,
         'boughtAnyTapUpgrade': boughtAnyTapUpgrade,
-        'changedEquippedSword': changedEquippedSword,
+        'changedEquippedCoaster': changedEquippedCoaster,
       };
 
   factory RunStats.fromJson(Map<String, dynamic> json) => RunStats(
@@ -117,7 +117,7 @@ class RunStats {
         producerLevelsBought:
             (json['producerLevelsBought'] as num?)?.toInt() ?? 0,
         tapUpgradesBought: (json['tapUpgradesBought'] as num?)?.toInt() ?? 0,
-        swordDismantles: (json['swordDismantles'] as num?)?.toInt() ?? 0,
+        coasterDismantles: (json['coasterDismantles'] as num?)?.toInt() ?? 0,
         goldEarned: (json['goldEarned'] as num?)?.toDouble() ?? 0,
         goldSpent: (json['goldSpent'] as num?)?.toDouble() ?? 0,
         dpsPeak: (json['dpsPeak'] as num?)?.toDouble() ?? 0,
@@ -132,6 +132,6 @@ class RunStats {
         usedAnySkill: json['usedAnySkill'] as bool? ?? false,
         usedAnyBooster: json['usedAnyBooster'] as bool? ?? false,
         boughtAnyTapUpgrade: json['boughtAnyTapUpgrade'] as bool? ?? false,
-        changedEquippedSword: json['changedEquippedSword'] as bool? ?? false,
+        changedEquippedCoaster: json['changedEquippedCoaster'] as bool? ?? false,
       );
 }
