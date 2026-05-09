@@ -119,6 +119,24 @@ const comboWindowMs = 1500; // taps within this many ms extend the combo
 const comboMax = 50;
 const comboBonusPerStack = 0.01; // +1% tap per combo stack, cap +50%
 
+/// Boost gauge config (β charge-bar tap mechanic).
+/// Tap charges the gauge; while gauge > 0 the simulation runs at
+/// [boostTimeMultiplier] (cycles complete faster, idle DPS accrues
+/// faster). Gauge drains over real time.
+const boostGaugeMax = 100.0;
+const boostGaugeDecayPerSec = 10.0;
+const boostTimeMultiplier = 1.5;
+const boostChargePerTapPerPower = 5.0; // 1 tapPower ⇒ +5 gauge
+const boostChargeCritBonus = 30.0; // crit adds an extra pulse
+const boostChargeComboPerStack = 0.01; // +1% per combo stack
+
+/// Coaster operating cycle (ride loop) — fixed-revenue floor regardless
+/// of how many producers / passengers exist. A single cycle takes
+/// [cycleSeconds] of effective sim time (i.e. boost-multiplied), and
+/// pays [baseRevenuePerCycle] gold scaled by the prestige multiplier.
+const cycleSeconds = 4.0;
+const baseRevenuePerCycle = 1.0;
+
 /// Daily login reward table: streak day (1-indexed) → ticket reward.
 /// Streak resets when the user skips a day (>48h since last claim).
 const dailyRewards = <int>[0, 5, 10, 15, 20, 30, 40, 60];
@@ -1000,6 +1018,12 @@ class GameState {
   final DateTime? monthlyPassExpiresAt;
   final DateTime? seasonPassExpiresAt;
   final bool firstPurchasePackageClaimed;
+  // Boost gauge (0..[boostGaugeMax]) — taps fill it, time drains it.
+  // While > 0 the home scene runs at boostTimeMultiplier (1.5x).
+  final double boostGauge;
+  // Current ride-cycle progress (0..1). The HUD can render a thin
+  // progress sliver under the boost gauge for player feedback.
+  final double cycleProgress;
   final bool loaded;
 
   const GameState({
@@ -1065,6 +1089,8 @@ class GameState {
     this.monthlyPassExpiresAt,
     this.seasonPassExpiresAt,
     this.firstPurchasePackageClaimed = false,
+    this.boostGauge = 0,
+    this.cycleProgress = 0,
     this.loaded = false,
   });
 
@@ -1320,6 +1346,14 @@ class GameNotifier extends Notifier<GameState> {
   double _stockTickAcc = 0;
   bool _spareGaussReady = false;
   double _spareGauss = 0;
+  // Tap-charge boost (β bar). Ephemeral — resets to 0 on app restart, not
+  // saved. While > 0 the sim ticks at boostTimeMultiplier; decays at
+  // boostGaugeDecayPerSec in real time.
+  double _boostGauge = 0;
+  // Coaster ride-cycle progress (0..1). Each completed cycle pays a fixed
+  // baseRevenue floor even with zero producers, so tap-as-speed-up still
+  // produces income from frame 0.
+  double _cycleProgress = 0;
 
   @override
   GameState build() {
@@ -1662,15 +1696,39 @@ class GameNotifier extends Notifier<GameState> {
         _playTimeAcc -= whole;
         _rotateMissionWindowsIfNeeded(now: now);
       }
+      // Boost gauge decays in real time regardless of in-sim speed —
+      // otherwise tapping would extend its own duration nonlinearly.
+      if (_boostGauge > 0) {
+        _boostGauge =
+            (_boostGauge - boostGaugeDecayPerSec * dt).clamp(0.0, boostGaugeMax);
+      }
+      // Effective sim dt: while gauge>0 the world runs at 1.5x. Cycles
+      // complete faster AND DPS income accrues faster, matching the
+      // "fast-forward the whole scene" mental model.
+      final boosted = _boostGauge > 0;
+      final simDt = boosted ? dt * boostTimeMultiplier : dt;
+
       final dps = _calcDps();
       if (dps > _save.stats.maxDpsEver) _save.stats.maxDpsEver = dps;
       if (dps > _save.run.dpsPeak) _save.run.dpsPeak = dps;
       if (dps > 0) {
-        final gain = dps * dt;
+        final gain = dps * simDt;
         _save.gold += gain;
         _save.totalGoldEarned += gain;
         _save.stats.lifetimeGold += gain;
         _save.run.goldEarned += gain;
+      }
+      // Cycle revenue floor: a fixed payout each time a ride loop
+      // completes, so the player has income even with zero producers.
+      _cycleProgress += simDt / cycleSeconds;
+      if (_cycleProgress >= 1.0) {
+        final completed = _cycleProgress.floor();
+        _cycleProgress -= completed;
+        final cycleGain = completed * baseRevenuePerCycle * _prestigeMult();
+        _save.gold += cycleGain;
+        _save.totalGoldEarned += cycleGain;
+        _save.stats.lifetimeGold += cycleGain;
+        _save.run.goldEarned += cycleGain;
       }
       _stockTickAcc += dt;
       if (_stockTickAcc >= stockPriceTickSeconds) {
@@ -1761,6 +1819,8 @@ class GameNotifier extends Notifier<GameState> {
       monthlyPassExpiresAt: _save.monthlyPassExpiresAt,
       seasonPassExpiresAt: _save.seasonPassExpiresAt,
       firstPurchasePackageClaimed: _save.firstPurchasePackageClaimed,
+      boostGauge: _boostGauge,
+      cycleProgress: _cycleProgress,
       loaded: loaded,
     );
     if (loaded) {
@@ -2492,19 +2552,25 @@ class GameNotifier extends Notifier<GameState> {
     _lastTapAt = now;
     if (_combo > _save.stats.maxCombo) _save.stats.maxCombo = _combo;
 
+    // Tap = boost-gauge charge, NOT instant gold. Income flows from the
+    // ride-cycle floor + idle DPS, both of which run faster while the
+    // gauge is non-empty. tapPower / combo / crit / surge all funnel
+    // into how much gauge a single tap deposits.
     final base = _calcTapPower();
-    final comboMult = 1.0 + (_combo * comboBonusPerStack).clamp(0.0, 0.5);
+    final comboMult = 1.0 + (_combo * boostChargeComboPerStack).clamp(0.0, 0.5);
     final surgeMult = surge ? comboSurgeBonus : 1.0;
     final isCrit = _random.nextDouble() < critChance;
-    final critMult = isCrit ? critMultiplier : 1.0;
-    final amount = base * comboMult * surgeMult * critMult;
+    var charge =
+        base * boostChargePerTapPerPower * comboMult * surgeMult;
+    if (isCrit) charge += boostChargeCritBonus;
+    _boostGauge = (_boostGauge + charge).clamp(0.0, boostGaugeMax);
+    // [amount] is reused as the floating-number value the UI animates;
+    // it now represents charge units rather than gold. The HUD widget
+    // styles the popup accordingly.
+    final amount = charge;
 
-    _save.gold += amount;
-    _save.totalGoldEarned += amount;
-    _save.stats.lifetimeGold += amount;
     _save.stats.totalTaps++;
     _save.run.taps++;
-    _save.run.goldEarned += amount;
     _incMission('daily_tap_300', 1, daily: true);
     _incMission('weekly_tap_5000', 1, daily: false);
     if (isCrit) {
