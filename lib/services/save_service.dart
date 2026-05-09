@@ -9,17 +9,26 @@ import '../models/save_data.dart';
 /// so the worst case is "lose the most recent write" instead of "lose the
 /// entire save."
 class SaveService {
-  // Kept as the legacy key string so existing installs migrate seamlessly.
-  static const _keyCurrent = 'sw_clicker_save_v1';
-  static const _keyPrevious = 'sw_clicker_save_v1_prev';
-  static const _pendingAccountLoginKey = 'sw_pending_account_login_v1';
+  static const _keyCurrent = 'coster_save_v1';
+  static const _keyPrevious = 'coster_save_v1_prev';
+  static const _pendingAccountLoginKey = 'coster_pending_account_login_v1';
+
+  // Read fallbacks: pre-rename installs stored under the sw_clicker prefix.
+  // We read them only — new writes always go to the coster_* slots.
+  static const _legacyKeyCurrent = 'sw_clicker_save_v1';
+  static const _legacyKeyPrevious = 'sw_clicker_save_v1_prev';
 
   Future<SaveData?> load() async {
     final prefs = await SharedPreferences.getInstance();
     final primary = _tryDecode(prefs.getString(_keyCurrent));
     if (primary != null) return primary;
-    // Current slot is missing or unreadable — fall back to the prior snapshot.
-    return _tryDecode(prefs.getString(_keyPrevious));
+    final previous = _tryDecode(prefs.getString(_keyPrevious));
+    if (previous != null) return previous;
+    // Pre-coster install — try the old sw_clicker keys once. The next save()
+    // will rotate the data into the new coster_* slot.
+    final legacy = _tryDecode(prefs.getString(_legacyKeyCurrent)) ??
+        _tryDecode(prefs.getString(_legacyKeyPrevious));
+    return legacy;
   }
 
   SaveData? _tryDecode(String? raw) {
@@ -60,6 +69,8 @@ class SaveService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyCurrent);
     await prefs.remove(_keyPrevious);
+    await prefs.remove(_legacyKeyCurrent);
+    await prefs.remove(_legacyKeyPrevious);
     await prefs.remove(_pendingAccountLoginKey);
   }
 
