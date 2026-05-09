@@ -84,7 +84,7 @@ class OfflineRewardDialog extends ConsumerWidget {
                 ),
               ],
             ),
-            if (reward.essenceBonus > 0) ...[
+            if (reward.ticketBonus > 0) ...[
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -92,7 +92,7 @@ class OfflineRewardDialog extends ConsumerWidget {
                   const Icon(Icons.diamond, color: Color(0xFF26A69A), size: 24),
                   const SizedBox(width: 6),
                   Text(
-                    '복귀 지원 +${reward.essenceBonus} 정수',
+                    '복귀 지원 +${reward.ticketBonus} 티켓',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -160,11 +160,11 @@ class OfflineRewardDialog extends ConsumerWidget {
     if (!context.mounted) return;
     if (earned) {
       // Pay the base reward, then add another full reward worth of gold
-      // (and double the essence bonus too) directly.
+      // (and double the ticket bonus too) directly.
       notifier.claimOfflineReward(reward);
       notifier.grantBonusGold(reward.gold);
-      if (reward.essenceBonus > 0) {
-        notifier.grantEssence(reward.essenceBonus);
+      if (reward.ticketBonus > 0) {
+        notifier.grantTicket(reward.ticketBonus);
       }
       Navigator.of(context).pop();
     } else {

@@ -22,7 +22,7 @@ class SaveData {
   GameSettings settings;
 
   // Coaster collection (v3)
-  int essence;
+  int ticket;
   Map<String, int> ownedCoasters; // id → level (1~10)
   String? equippedCoasterId;
   int summonsSinceHighRare; // pity counter (reset on SR+)
@@ -94,7 +94,7 @@ class SaveData {
   double mainCoasterCollectionBonusFraction;
 
   // Gold-exchange shop (v17): how much of the player's currentGold came from
-  // the essence-for-gold exchange and hasn't been spent yet. While this is
+  // the ticket-for-gold exchange and hasn't been spent yet. While this is
   // > 0, that portion of currentGold is excluded from the prestige-coin
   // wealthScore so paying for the exchange can't directly buy prestige
   // coins. Decrements down to 0 as the player spends gold on producers,
@@ -122,7 +122,7 @@ class SaveData {
     DateTime? lastSavedAt,
     GameStats? stats,
     GameSettings? settings,
-    this.essence = 90,
+    this.ticket = 90,
     Map<String, int>? ownedCoasters,
     this.equippedCoasterId,
     this.summonsSinceHighRare = 0,
@@ -201,7 +201,7 @@ class SaveData {
         'lastSavedAt': lastSavedAt.toIso8601String(),
         'stats': stats.toJson(),
         'settings': settings.toJson(),
-        'essence': essence,
+        'ticket': ticket,
         'ownedCoasters': ownedCoasters,
         'equippedCoasterId': equippedCoasterId,
         'summonsSinceHighRare': summonsSinceHighRare,
@@ -267,7 +267,7 @@ class SaveData {
         stats: GameStats.fromJson(json['stats'] as Map<String, dynamic>? ?? {}),
         settings: GameSettings.fromJson(
             json['settings'] as Map<String, dynamic>? ?? {}),
-        essence: json['essence'] as int? ?? 90,
+        ticket: json['ticket'] as int? ?? 90,
         ownedCoasters: Map<String, int>.from(json['ownedCoasters'] as Map? ?? {}),
         equippedCoasterId: json['equippedCoasterId'] as String?,
         summonsSinceHighRare: json['summonsSinceHighRare'] as int? ?? 0,

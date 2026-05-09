@@ -878,7 +878,7 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'demon_slayer',
-    name: '마검 사신',
+    name: '마코스터 사신',
     description: '마(魔)를 베는 검',
     tier: CoasterTier.ssr,
     baseTapMult: 6.60,
@@ -1147,7 +1147,7 @@ const coasterCatalog = <CoasterDef>[
     ),
   ),
 
-  // ============ 이벤트 검 (event-tagged, 일반 풀에 포함) ============
+  // ============ 이벤트 코스터 (event-tagged, 일반 풀에 포함) ============
   CoasterDef(
     id: 'event_cherry_blossom',
     name: '벚꽃의 검',

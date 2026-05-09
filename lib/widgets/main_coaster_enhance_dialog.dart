@@ -34,7 +34,7 @@ class _MainCoasterEnhanceDialogState
     final tierNext = mainCoasterTierFor(targetStage);
     final selected = _planFor(cost, _currency, _boost, _useProtection);
     final canAfford = game.gold >= selected.goldCost &&
-        game.essence >= selected.essenceCost &&
+        game.ticket >= selected.ticketCost &&
         !atMax;
 
     return Dialog(
@@ -51,7 +51,7 @@ class _MainCoasterEnhanceDialogState
                 name: game.mainCoasterName ?? '이름 없는 검',
                 stage: stage,
                 tierLabel: tierCurrent.name,
-                essence: game.essence,
+                ticket: game.ticket,
               ),
               const SizedBox(height: 12),
               _StagePreview(stage: stage, targetStage: targetStage),
@@ -85,7 +85,7 @@ class _MainCoasterEnhanceDialogState
                                 cost, currency, _boost, _useProtection),
                         },
                         gold: game.gold,
-                        essence: game.essence,
+                        ticket: game.ticket,
                         onSelected: (value) =>
                             setState(() => _currency = value),
                       ),
@@ -120,7 +120,7 @@ class _MainCoasterEnhanceDialogState
     MainCoasterBoostLevel boost,
     bool useProtection,
   ) {
-    final boostCost = boost.essenceCost;
+    final boostCost = boost.ticketCost;
     final boostBonus = boost.successBonus;
     return switch (currency) {
       MainCoasterEnhanceCurrency.gold => _EnhancePlan(
@@ -130,34 +130,34 @@ class _MainCoasterEnhanceDialogState
           icon: Icons.paid,
           color: AppColors.deepCoral,
           goldCost: cost.goldCost,
-          essenceCost:
-              boostCost + (useProtection ? mainCoasterProtectionEssenceCost : 0),
+          ticketCost:
+              boostCost + (useProtection ? mainCoasterProtectionTicketCost : 0),
           successRate: (cost.goldSuccessBase + boostBonus).clamp(0.0, 1.0),
           failureLabel:
               useProtection ? '실패 시 단계 유지' : '실패 시 -${cost.penaltyOnFail}강',
           protectedOnFail: useProtection,
         ),
-      MainCoasterEnhanceCurrency.essence => _EnhancePlan(
+      MainCoasterEnhanceCurrency.ticket => _EnhancePlan(
           currency: currency,
-          title: '정수 강화',
+          title: '티켓 강화',
           subtitle: '실패해도 단계 유지',
           icon: Icons.diamond,
           color: const Color(0xFF7C4DFF),
           goldCost: 0,
-          essenceCost: cost.essenceCost + boostCost,
-          successRate: (cost.essenceSuccessBase + boostBonus).clamp(0.0, 1.0),
+          ticketCost: cost.ticketCost + boostCost,
+          successRate: (cost.ticketSuccessBase + boostBonus).clamp(0.0, 1.0),
           failureLabel: '실패 시 단계 유지',
           protectedOnFail: true,
         ),
       MainCoasterEnhanceCurrency.hybrid => _EnhancePlan(
           currency: currency,
           title: '하이브리드',
-          subtitle: '골드와 정수 모두 사용',
+          subtitle: '골드와 티켓 모두 사용',
           icon: Icons.auto_awesome,
           color: const Color(0xFFFFB300),
           goldCost: cost.goldCost * mainCoasterHybridGoldMultiplier,
-          essenceCost:
-              (cost.essenceCost * mainCoasterHybridEssenceMultiplier).round() +
+          ticketCost:
+              (cost.ticketCost * mainCoasterHybridTicketMultiplier).round() +
                   boostCost,
           successRate:
               (cost.goldSuccessBase + mainCoasterHybridSuccessBonus + boostBonus)
@@ -201,7 +201,7 @@ class _MainCoasterEnhanceDialogState
 
   String _failureLabel(MainCoasterEnhanceFailure reason) => switch (reason) {
         MainCoasterEnhanceFailure.notEnoughGold => '골드가 부족해요',
-        MainCoasterEnhanceFailure.notEnoughEssence => '정수가 부족해요',
+        MainCoasterEnhanceFailure.notEnoughTicket => '티켓가 부족해요',
         MainCoasterEnhanceFailure.alreadyMaxed => '이미 최대 단계입니다',
         MainCoasterEnhanceFailure.rolledFailure ||
         MainCoasterEnhanceFailure.none =>
@@ -216,7 +216,7 @@ class _EnhancePlan {
   final IconData icon;
   final Color color;
   final double goldCost;
-  final int essenceCost;
+  final int ticketCost;
   final double successRate;
   final String failureLabel;
   final bool protectedOnFail;
@@ -228,7 +228,7 @@ class _EnhancePlan {
     required this.icon,
     required this.color,
     required this.goldCost,
-    required this.essenceCost,
+    required this.ticketCost,
     required this.successRate,
     required this.failureLabel,
     required this.protectedOnFail,
@@ -239,13 +239,13 @@ class _Header extends StatelessWidget {
   final String name;
   final int stage;
   final String tierLabel;
-  final int essence;
+  final int ticket;
 
   const _Header({
     required this.name,
     required this.stage,
     required this.tierLabel,
-    required this.essence,
+    required this.ticket,
   });
 
   @override
@@ -276,16 +276,16 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
-        _EssenceChip(essence: essence),
+        _TicketChip(ticket: ticket),
       ],
     );
   }
 }
 
-class _EssenceChip extends StatelessWidget {
-  final int essence;
+class _TicketChip extends StatelessWidget {
+  final int ticket;
 
-  const _EssenceChip({required this.essence});
+  const _TicketChip({required this.ticket});
 
   @override
   Widget build(BuildContext context) {
@@ -302,7 +302,7 @@ class _EssenceChip extends StatelessWidget {
           Icon(Icons.diamond, color: Colors.teal.shade700, size: 15),
           const SizedBox(width: 4),
           Text(
-            '$essence',
+            '$ticket',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w900,
@@ -494,8 +494,8 @@ class _OptionPanel extends StatelessWidget {
                         ),
                         Text(
                           protectionRelevant
-                              ? '골드 강화 실패 시 단계 하락 방지 · 정수 $mainCoasterProtectionEssenceCost'
-                              : '정수/하이브리드는 기본적으로 실패 시 단계가 유지됩니다',
+                              ? '골드 강화 실패 시 단계 하락 방지 · 티켓 $mainCoasterProtectionTicketCost'
+                              : '티켓/하이브리드는 기본적으로 실패 시 단계가 유지됩니다',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -522,8 +522,8 @@ class _OptionPanel extends StatelessWidget {
       };
 
   String _boostCostLabel(MainCoasterBoostLevel level) {
-    if (level.essenceCost <= 0) return '무료';
-    return '정수 ${level.essenceCost}';
+    if (level.ticketCost <= 0) return '무료';
+    return '티켓 ${level.ticketCost}';
   }
 }
 
@@ -531,14 +531,14 @@ class _ModeGrid extends StatelessWidget {
   final MainCoasterEnhanceCurrency selected;
   final Map<MainCoasterEnhanceCurrency, _EnhancePlan> plans;
   final double gold;
-  final int essence;
+  final int ticket;
   final ValueChanged<MainCoasterEnhanceCurrency> onSelected;
 
   const _ModeGrid({
     required this.selected,
     required this.plans,
     required this.gold,
-    required this.essence,
+    required this.ticket,
     required this.onSelected,
   });
 
@@ -563,7 +563,7 @@ class _ModeGrid extends StatelessWidget {
                     plan: plan,
                     selected: selected == plan.currency,
                     canAfford:
-                        gold >= plan.goldCost && essence >= plan.essenceCost,
+                        gold >= plan.goldCost && ticket >= plan.ticketCost,
                     onTap: () => onSelected(plan.currency),
                   ),
                 ),
@@ -693,7 +693,7 @@ class _AttemptSummary extends StatelessWidget {
               Expanded(
                 child: _CostPill(
                   icon: Icons.diamond,
-                  label: plan.essenceCost > 0 ? '${plan.essenceCost}' : '없음',
+                  label: plan.ticketCost > 0 ? '${plan.ticketCost}' : '없음',
                   color: const Color(0xFF7C4DFF),
                 ),
               ),

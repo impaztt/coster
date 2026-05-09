@@ -18,7 +18,7 @@ const prestigeUpgradeCatalog = <PrestigeUpgradeDef>[
   ),
   PrestigeUpgradeDef(
     id: 'legacy_tap',
-    name: '검의 유산',
+    name: '코스터의 유산',
     description: '터치 위력을 영구 강화합니다.',
     icon: Icons.touch_app,
     accent: Color(0xFFFF7043),
@@ -52,7 +52,7 @@ const prestigeUpgradeCatalog = <PrestigeUpgradeDef>[
   ),
   PrestigeUpgradeDef(
     id: 'legacy_coin',
-    name: '영혼 재순환',
+    name: '명성 재순환',
     description: '환생 시 획득하는 코인을 늘립니다.',
     icon: Icons.currency_exchange,
     accent: Color(0xFF7C4DFF),

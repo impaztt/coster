@@ -68,7 +68,7 @@ class DailyBonusDialog extends ConsumerWidget {
                 const Icon(Icons.diamond, color: Color(0xFF26A69A), size: 28),
                 const SizedBox(width: 6),
                 Text(
-                  '+${bonus.essence} 정수',
+                  '+${bonus.ticket} 티켓',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
@@ -102,7 +102,7 @@ class DailyBonusDialog extends ConsumerWidget {
               icon: const Icon(Icons.play_circle_fill,
                   color: AppColors.deepCoral),
               label: Text(
-                '광고 시청 후 2배 (+${bonus.essence})',
+                '광고 시청 후 2배 (+${bonus.ticket})',
                 style: const TextStyle(
                   color: AppColors.deepCoral,
                   fontWeight: FontWeight.w800,
@@ -130,7 +130,7 @@ class DailyBonusDialog extends ConsumerWidget {
     if (!context.mounted) return;
     if (earned) {
       notifier.claimDailyBonus(bonus);
-      notifier.grantEssence(bonus.essence);
+      notifier.grantTicket(bonus.ticket);
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

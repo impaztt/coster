@@ -20,9 +20,9 @@ const skillCatalog = <SkillDef>[
     cooldown: Duration(minutes: 10),
   ),
   SkillDef(
-    id: SkillId.essenceGather,
-    name: '정수 모이기',
-    description: '즉시 정수 +30',
+    id: SkillId.ticketGather,
+    name: '티켓 모이기',
+    description: '즉시 티켓 +30',
     icon: Icons.diamond,
     color: Color(0xFF7C4DFF),
     cooldown: Duration(hours: 6),

@@ -59,7 +59,7 @@ class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
   void _showMilestone(MainCoasterMilestoneReward reward) {
     if (!mounted) return;
     final parts = <String>[];
-    if (reward.essence > 0) parts.add('정수 +${reward.essence}');
+    if (reward.ticket > 0) parts.add('티켓 +${reward.ticket}');
     if (reward.title != null) parts.add('호칭 "${reward.title}"');
     if (reward.collectionBonusFraction != null) {
       parts.add('컬렉션 +${(reward.collectionBonusFraction! * 100).toStringAsFixed(0)}%');
@@ -85,13 +85,13 @@ class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('내 검 이름 짓기'),
+        title: const Text('내 코스터 이름 짓기'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '첫 강화를 축하합니다. 이 검의 이름을 지어주세요.',
+              '첫 강화를 축하합니다. 이 코스터의 이름을 지어주세요.',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.black.withValues(alpha: 0.6),

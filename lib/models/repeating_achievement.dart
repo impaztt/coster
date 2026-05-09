@@ -18,7 +18,7 @@ class RepeatingAchievementDef {
   final double Function(AchContext) current;
   // Target value for [stage] (1-based).
   final double Function(int stage) targetForStage;
-  // Essence reward granted when [stage] is cleared.
+  // Ticket reward granted when [stage] is cleared.
   final int Function(int stage) rewardForStage;
 
   const RepeatingAchievementDef({

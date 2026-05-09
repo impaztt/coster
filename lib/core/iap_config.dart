@@ -8,32 +8,32 @@
 class IapConfig {
   // Existing (already wired through _purchasePremiumProduct)
   static const adRemoval = 'premium_ad_removal';
-  static const monthlyEssencePass = 'premium_monthly_essence_pass';
+  static const monthlyTicketPass = 'premium_monthly_ticket_pass';
   static const starterPackage = 'premium_starter_package';
 
   // Phase 1: Entry tier
   static const firstPurchase = 'premium_first_purchase';
-  static const essenceSmall = 'premium_essence_small';
-  static const essenceMedium = 'premium_essence_medium';
+  static const ticketSmall = 'premium_essence_small';
+  static const ticketMedium = 'premium_essence_medium';
 
   // Phase 2: Core tier
-  static const essenceLarge = 'premium_essence_large';
+  static const ticketLarge = 'premium_essence_large';
 
   // Phase 3: Whale tier
-  static const essenceXLarge = 'premium_essence_xlarge';
+  static const ticketXLarge = 'premium_essence_xlarge';
   static const masterPackage = 'premium_master_package';
   static const seasonPass = 'premium_season_pass';
 
   /// Full ID set used to bulk-load product details from the store.
   static const allProductIds = <String>{
     adRemoval,
-    monthlyEssencePass,
+    monthlyTicketPass,
     starterPackage,
     firstPurchase,
-    essenceSmall,
-    essenceMedium,
-    essenceLarge,
-    essenceXLarge,
+    ticketSmall,
+    ticketMedium,
+    ticketLarge,
+    ticketXLarge,
     masterPackage,
     seasonPass,
   };

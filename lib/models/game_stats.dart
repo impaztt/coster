@@ -13,7 +13,7 @@ class GameStats {
   int boostersPurchased;
   int maxDailyStreak;
   // v13 — lifetime gold spent (producers, tap upgrades, prestige coin
-  // purchases, summons via essence/coin shops, etc). Tracks player-driven
+  // purchases, summons via ticket/coin shops, etc). Tracks player-driven
   // outflow rather than passively-burnt currency.
   double totalGoldSpent;
 

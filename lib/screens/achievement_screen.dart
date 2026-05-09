@@ -268,7 +268,7 @@ class _AchievementTile extends StatelessWidget {
                         size: 12, color: Color(0xFF7C4DFF)),
                     const SizedBox(width: 2),
                     Text(
-                      '+${def.essenceReward}',
+                      '+${def.ticketReward}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,

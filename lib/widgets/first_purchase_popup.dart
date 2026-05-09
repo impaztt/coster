@@ -103,7 +103,7 @@ class _FirstPurchaseDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            const _BenefitLine('정수 500'),
+            const _BenefitLine('티켓 500'),
             const _BenefitLine('SR 확정 소환권 1매'),
             const _BenefitLine('24시간 한정 노출'),
             const SizedBox(height: 14),

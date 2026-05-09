@@ -54,7 +54,7 @@ class _CosterAppState extends ConsumerState<CosterApp>
     final textScale = ref.watch(gameProvider.select((s) => s.textScale));
 
     return MaterialApp(
-      title: '검 키우기',
+      title: '코스터 키우기',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(highContrast: highContrast),
       darkTheme: buildDarkTheme(highContrast: highContrast),

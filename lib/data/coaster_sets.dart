@@ -34,7 +34,7 @@ const coasterSets = <CoasterSet>[
   ),
   CoasterSet(
     id: 'elements',
-    name: '원소의 정수',
+    name: '원소의 티켓',
     description: '불·물·바람·번개·대지를 한자리에',
     coasterIds: [
       'flame_blade',

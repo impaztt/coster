@@ -21,7 +21,7 @@ class FeatureUnlocks {
 enum FeatureUnlockProgressKind {
   count,
   gold,
-  essence,
+  ticket,
 }
 
 class FeatureUnlockProgress {
@@ -57,7 +57,7 @@ class FeatureUnlockProgress {
           safe.floor().clamp(0, 1 << 31).toInt(),
         ),
       FeatureUnlockProgressKind.gold => NumberFormatter.format(safe),
-      FeatureUnlockProgressKind.essence => NumberFormatter.formatInt(
+      FeatureUnlockProgressKind.ticket => NumberFormatter.formatInt(
           safe.floor().clamp(0, 1 << 31).toInt(),
         ),
     };
@@ -125,13 +125,13 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
   FeatureUnlockDef(
     id: FeatureUnlocks.missionsTab,
     label: '미션',
-    description: '상점 탭의 임무 메뉴가 열립니다. 일일/주간 목표로 정수와 코인을 얻을 수 있어요.',
+    description: '상점 탭의 임무 메뉴가 열립니다. 일일/주간 목표로 티켓와 코인을 얻을 수 있어요.',
     icon: Icons.flag,
     color: const Color(0xFF00897B),
     trigger: (s) => s.totalTaps >= 1,
     roadmapOrder: 1,
     unlockConditionText: '총 터치 1회',
-    benefitSummary: '정수와 코인을 주는 일일/주간 미션 시작',
+    benefitSummary: '티켓와 코인을 주는 일일/주간 미션 시작',
     stageHint: '초반',
     tips: const [
       '첫 터치 직후 바로 열리니 시작하자마자 확인하세요.',
@@ -146,34 +146,34 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
   FeatureUnlockDef(
     id: FeatureUnlocks.summonTab,
     label: '소환',
-    description: '상점 탭의 소환 메뉴가 열립니다. 정수로 검을 뽑아 수집 보너스를 올릴 수 있어요.',
+    description: '상점 탭의 소환 메뉴가 열립니다. 티켓로 코스터를 뽑아 수집 보너스를 올릴 수 있어요.',
     icon: Icons.auto_awesome,
     color: const Color(0xFF7C4DFF),
-    trigger: (s) => s.essence >= 50,
+    trigger: (s) => s.ticket >= 50,
     roadmapOrder: 2,
-    unlockConditionText: '정수 50 이상 보유',
-    benefitSummary: '검 수집 시작 + 전체 전투력(수집 보너스) 상승',
+    unlockConditionText: '티켓 50 이상 보유',
+    benefitSummary: '코스터 수집 시작 + 전체 전투력(수집 보너스) 상승',
     stageHint: '초반',
     tips: const [
-      '초반 미션/업적으로 정수를 우선 모으세요.',
+      '초반 미션/업적으로 티켓를 우선 모으세요.',
       '1연보다 10연 이상을 활용하면 희귀 보장 구간이 안정적입니다.',
     ],
     progress: (s) => FeatureUnlockProgress(
-      current: s.essence.toDouble(),
+      current: s.ticket.toDouble(),
       target: 50,
-      kind: FeatureUnlockProgressKind.essence,
+      kind: FeatureUnlockProgressKind.ticket,
     ),
   ),
   FeatureUnlockDef(
     id: FeatureUnlocks.achievementsTab,
     label: '업적',
-    description: '상점 탭의 임무 메뉴에 업적이 열립니다. 업적 달성으로 정수 보상을 받습니다.',
+    description: '상점 탭의 임무 메뉴에 업적이 열립니다. 업적 달성으로 티켓 보상을 받습니다.',
     icon: Icons.emoji_events,
     color: const Color(0xFFFFB300),
     trigger: (s) => s.unlockedAchievements.isNotEmpty,
     roadmapOrder: 3,
     unlockConditionText: '업적 1개 이상 달성',
-    benefitSummary: '업적 기반 정수 수급 루트 오픈',
+    benefitSummary: '업적 기반 티켓 수급 루트 오픈',
     stageHint: '초반',
     tips: const [
       '처음엔 터치/골드/강화 관련 업적이 가장 빨리 열립니다.',
@@ -187,13 +187,13 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
   ),
   FeatureUnlockDef(
     id: FeatureUnlocks.coasterSetsView,
-    label: '검 세트',
-    description: '상점 탭의 무기고 메뉴에 세트가 열립니다. 같은 세트 검을 모으면 세트 보너스가 적용됩니다.',
+    label: '코스터 세트',
+    description: '상점 탭의 무기고 메뉴에 세트가 열립니다. 같은 세트 코스터를 모으면 세트 보너스가 적용됩니다.',
     icon: Icons.workspaces,
     color: const Color(0xFFEC407A),
     trigger: _ownsAnySetPair,
     roadmapOrder: 4,
-    unlockConditionText: '같은 세트 검 2종 이상 보유',
+    unlockConditionText: '같은 세트 코스터 2종 이상 보유',
     benefitSummary: '세트 완성 시 추가 탭/방치 배율 확보',
     stageHint: '중반',
     tips: const [
@@ -230,7 +230,7 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
   FeatureUnlockDef(
     id: FeatureUnlocks.boosterShop,
     label: '부스터 상점',
-    description: '홈 화면 우하단에 부스터 버튼이 열립니다. 정수로 시간제 버프를 구매할 수 있어요.',
+    description: '홈 화면 우하단에 부스터 버튼이 열립니다. 티켓로 시간제 버프를 구매할 수 있어요.',
     icon: Icons.bolt,
     color: const Color(0xFFFF8A65),
     trigger: (s) => s.prestigeCount >= 1,
@@ -273,7 +273,7 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
   FeatureUnlockDef(
     id: FeatureUnlocks.goldExchange,
     label: '골드 환금소',
-    description: '정수를 골드로 즉시 환전할 수 있어요. 환전한 골드는 환생 코인에 직접 들어가지 않습니다.',
+    description: '티켓를 골드로 즉시 환전할 수 있어요. 환전한 골드는 환생 코인에 직접 들어가지 않습니다.',
     icon: Icons.currency_exchange,
     color: const Color(0xFFFFB300),
     // Either first prestige clears it (most likely path) OR a player who
@@ -281,10 +281,10 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
     trigger: (s) => s.prestigeCount >= 1 || s.lifetimeGold >= 1e8,
     roadmapOrder: 8,
     unlockConditionText: '환생 1회 또는 누적 골드 100M 이상',
-    benefitSummary: '정수를 시간 단축에 사용해 페이스 조절',
+    benefitSummary: '티켓를 시간 단축에 사용해 페이스 조절',
     stageHint: '중후반',
     tips: const [
-      '8시간 환금 슬롯이 정수 효율이 가장 좋아요. 자기 전 한 번 사용해 보세요.',
+      '8시간 환금 슬롯이 티켓 효율이 가장 좋아요. 자기 전 한 번 사용해 보세요.',
       '환전한 골드를 강화/주식에 쓰면 그때부터 환생 코인 계산에 정상 반영됩니다.',
     ],
     progress: (s) => FeatureUnlockProgress(

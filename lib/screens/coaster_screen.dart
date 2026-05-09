@@ -200,7 +200,7 @@ class _HeaderBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final essence = ref.watch(gameProvider).essence;
+    final ticket = ref.watch(gameProvider).ticket;
     final owned = ref.watch(gameProvider).ownedCoasters.length;
     final total = coasterCatalog.length;
     final bonus = ref.read(gameProvider.notifier).collectionBonusFraction;
@@ -214,8 +214,8 @@ class _HeaderBar extends ConsumerWidget {
                 child: _InfoChip(
                   icon: Icons.diamond,
                   color: const Color(0xFF7C4DFF),
-                  label: '정수',
-                  value: '$essence',
+                  label: '티켓',
+                  value: '$ticket',
                 ),
               ),
               const SizedBox(width: 10),
@@ -458,7 +458,7 @@ class _FormationSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '보유 검 5자루를 배치해 전투력과 검세권을 동시에 키웁니다.',
+            '보유 코스터 5대를 배치해 전투력과 검세권을 동시에 키웁니다.',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.86),
               fontSize: 12,
@@ -644,7 +644,7 @@ class _FormationSlotCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '보유한 검을 배치하세요',
+                        '보유한 코스터를 배치하세요',
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.black.withValues(alpha: 0.55),
@@ -739,7 +739,7 @@ class _FormationRuleCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '역할을 다양하게 섞으면 전투 보너스가 오르고, 같은 지역 검을 묶으면 해당 지역 주식의 내재가치와 배당이 강해집니다.',
+            '역할을 다양하게 섞으면 전투 보너스가 오르고, 같은 지역 코스터를 묶으면 해당 지역 주식의 내재가치와 배당이 강해집니다.',
             style: TextStyle(
               fontSize: 11,
               color: Colors.black.withValues(alpha: 0.55),
@@ -827,7 +827,7 @@ void _openFormationPicker(BuildContext context, WidgetRef ref, int slot) {
             return const Padding(
               padding: EdgeInsets.only(bottom: 8),
               child: Text(
-                '착용 검 선택',
+                '착용 코스터 선택',
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
               ),
             );
@@ -1395,13 +1395,13 @@ class _DismantleButton extends ConsumerWidget {
     final refund = notifier.dismantleRefund(def.id);
     final disabled = equipped || refund <= 0;
     final hint =
-        equipped ? '장착 중인 검은 분해할 수 없어요' : '분해 시 정수 +$refund (Lv $level 기준)';
+        equipped ? '장착 중인 검은 분해할 수 없어요' : '분해 시 티켓 +$refund (Lv $level 기준)';
     return Column(
       children: [
         OutlinedButton.icon(
           onPressed: disabled ? null : () => _confirm(context, ref, refund),
           icon: const Icon(Icons.recycling, size: 18),
-          label: Text('분해 (+$refund 정수)'),
+          label: Text('분해 (+$refund 티켓)'),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size.fromHeight(44),
             foregroundColor: const Color(0xFF7C4DFF),
@@ -1435,7 +1435,7 @@ class _DismantleButton extends ConsumerWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('${def.name} 분해'),
         content: Text(
-          '이 검은 컬렉션에서 영구 제거되고, 정수 +$refund 가 지급돼요.\n'
+          '이 검은 컬렉션에서 영구 제거되고, 티켓 +$refund 가 지급돼요.\n'
           '되돌릴 수 없어요.',
         ),
         actions: [
@@ -1459,7 +1459,7 @@ class _DismantleButton extends ConsumerWidget {
       Navigator.of(context).pop(); // close detail sheet
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${def.name} 분해 · 정수 +$granted'),
+          content: Text('${def.name} 분해 · 티켓 +$granted'),
           duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
@@ -1571,7 +1571,7 @@ class _MissionHubViewState extends ConsumerState<_MissionHubView> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            '미션 ${r.count}개 일괄 수령 · 정수 +${r.essence} · 코인 +${r.coins}',
+                            '미션 ${r.count}개 일괄 수령 · 티켓 +${r.ticket} · 코인 +${r.coins}',
                           ),
                           duration: const Duration(seconds: 2),
                           behavior: SnackBarBehavior.floating,
@@ -1871,7 +1871,7 @@ class _MissionTaskTile extends StatelessWidget {
           ),
           const SizedBox(height: 3),
           Text(
-            '${mission.progress}/${mission.target} · 정수 +${mission.rewardEssence} · 코인 +${mission.rewardPrestigeCoins}',
+            '${mission.progress}/${mission.target} · 티켓 +${mission.rewardTicket} · 코인 +${mission.rewardPrestigeCoins}',
             style: TextStyle(
               fontSize: 10,
               color: Colors.black.withValues(alpha: 0.6),
@@ -2460,7 +2460,7 @@ class _AchievementHubTile extends StatelessWidget {
                         size: 12, color: Color(0xFF7C4DFF)),
                     const SizedBox(width: 2),
                     Text(
-                      '+${def.essenceReward}',
+                      '+${def.ticketReward}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
@@ -2550,20 +2550,20 @@ class _PremiumStoreView extends ConsumerWidget {
       ),
       _StoreSectionData(
         title: '패스',
-        subtitle: '매일 받는 정수 보급',
+        subtitle: '매일 받는 티켓 보급',
         products: pick([
-          premiumMonthlyEssencePassProductId,
+          premiumMonthlyTicketPassProductId,
           premiumSeasonPassProductId,
         ]),
       ),
       _StoreSectionData(
-        title: '정수',
+        title: '티켓',
         subtitle: '필요할 때 바로 충전',
         products: pick([
-          premiumEssenceSmallProductId,
-          premiumEssenceMediumProductId,
-          premiumEssenceLargeProductId,
-          premiumEssenceXLargeProductId,
+          premiumTicketSmallProductId,
+          premiumTicketMediumProductId,
+          premiumTicketLargeProductId,
+          premiumTicketXLargeProductId,
         ]),
       ),
       _StoreSectionData(
@@ -2579,7 +2579,7 @@ class _PremiumStoreView extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _StoreHeaderPanel(
-            essence: game.essence,
+            ticket: game.ticket,
             monthlyLabel: notifier.hasActiveMonthlyPass
                 ? '월정액 D-${notifier.monthlyPassDaysRemaining}'
                 : '월정액 없음',
@@ -2592,35 +2592,35 @@ class _PremiumStoreView extends ConsumerWidget {
             const SizedBox(height: 16),
           if (notifier.hasActiveMonthlyPass || notifier.hasActiveSeasonPass)
             _PassRewardPanel(
-              monthlyClaimable: notifier.monthlyPassClaimableEssence,
+              monthlyClaimable: notifier.monthlyPassClaimableTicket,
               monthlyDaysRemaining: notifier.monthlyPassDaysRemaining,
-              seasonClaimable: notifier.seasonPassClaimableEssence,
+              seasonClaimable: notifier.seasonPassClaimableTicket,
               seasonDaysRemaining: notifier.seasonPassDaysRemaining,
               seasonWeeklyAvailable: notifier.seasonPassWeeklyAvailable,
               onClaimMonthly: () {
                 final amount =
-                    ref.read(gameProvider.notifier).claimMonthlyPassEssence();
+                    ref.read(gameProvider.notifier).claimMonthlyPassTicket();
                 _toast(
                   context,
-                  amount > 0 ? '정수 $amount개를 수령했어요' : '오늘 받을 정수가 없어요',
+                  amount > 0 ? '티켓 $amount개를 수령했어요' : '오늘 받을 티켓가 없어요',
                 );
               },
               onClaimSeasonDaily: () {
                 final amount = ref
                     .read(gameProvider.notifier)
-                    .claimSeasonPassDailyEssence();
+                    .claimSeasonPassDailyTicket();
                 _toast(
                   context,
-                  amount > 0 ? '정수 $amount개를 수령했어요' : '오늘 받을 정수가 없어요',
+                  amount > 0 ? '티켓 $amount개를 수령했어요' : '오늘 받을 티켓가 없어요',
                 );
               },
               onClaimSeasonWeekly: () {
                 final amount = ref
                     .read(gameProvider.notifier)
-                    .claimSeasonPassWeeklyEssence();
+                    .claimSeasonPassWeeklyTicket();
                 _toast(
                   context,
-                  amount > 0 ? '주간 보너스 정수 $amount개' : '아직 받을 수 없어요',
+                  amount > 0 ? '주간 보너스 티켓 $amount개' : '아직 받을 수 없어요',
                 );
               },
             ),
@@ -2636,13 +2636,13 @@ class _PremiumStoreView extends ConsumerWidget {
 }
 
 class _StoreHeaderPanel extends StatelessWidget {
-  final int essence;
+  final int ticket;
   final String monthlyLabel;
   final String seasonLabel;
   final String adLabel;
 
   const _StoreHeaderPanel({
-    required this.essence,
+    required this.ticket,
     required this.monthlyLabel,
     required this.seasonLabel,
     required this.adLabel,
@@ -2698,7 +2698,7 @@ class _StoreHeaderPanel extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '정수, 패스, 패키지',
+                      '티켓, 패스, 패키지',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -2709,7 +2709,7 @@ class _StoreHeaderPanel extends StatelessWidget {
                   ],
                 ),
               ),
-              _EssencePill(amount: essence),
+              _TicketPill(amount: ticket),
             ],
           ),
           const SizedBox(height: 14),
@@ -2740,9 +2740,9 @@ class _StoreHeaderPanel extends StatelessWidget {
   }
 }
 
-class _EssencePill extends StatelessWidget {
+class _TicketPill extends StatelessWidget {
   final int amount;
-  const _EssencePill({required this.amount});
+  const _TicketPill({required this.amount});
 
   @override
   Widget build(BuildContext context) {
@@ -2819,7 +2819,7 @@ class _PassRewardPanel extends StatelessWidget {
       if (seasonDaysRemaining > 0)
         _ClaimCard(
           title: '시즌 주간',
-          value: '+$seasonPassWeeklyEssence',
+          value: '+$seasonPassWeeklyTicket',
           status: seasonWeeklyAvailable ? '수령 가능' : '대기',
           icon: Icons.card_giftcard,
           color: AppColors.deepCoral,
@@ -2831,7 +2831,7 @@ class _PassRewardPanel extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _StoreSectionTitle(title: '패스 보상', subtitle: '받을 수 있는 정수'),
+        const _StoreSectionTitle(title: '패스 보상', subtitle: '받을 수 있는 티켓'),
         const SizedBox(height: 10),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -2875,7 +2875,7 @@ class _ClaimCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final rewardText = value.startsWith('+') ? '$value 정수' : value;
+    final rewardText = value.startsWith('+') ? '$value 티켓' : value;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -3223,42 +3223,42 @@ _StoreProductMeta _storeProductMeta(String productId) {
         summary: '전면 광고 OFF · 광고 보상 즉시 수령',
         badges: ['영구 혜택', '편의'],
       ),
-    premiumMonthlyEssencePassProductId => _StoreProductMeta(
+    premiumMonthlyTicketPassProductId => _StoreProductMeta(
         icon: Icons.calendar_month,
         color: Colors.teal.shade700,
-        summary: '즉시 300 · 매일 120 정수',
+        summary: '즉시 300 · 매일 120 티켓',
         badges: const ['30일', '누적 보상'],
       ),
     premiumStarterPackageProductId => const _StoreProductMeta(
         icon: Icons.inventory_2,
         color: AppColors.deepCoral,
-        summary: '정수 1,400 · SR+ 검 · 30분 부스터',
+        summary: '티켓 1,400 · SR+ 코스터 · 30분 부스터',
         badges: ['초반 추천', '1회'],
       ),
     premiumFirstPurchaseProductId => const _StoreProductMeta(
         icon: Icons.card_giftcard,
         color: Color(0xFF5E35B1),
-        summary: '정수 500 · SR 확정권 · 첫 결제 보너스',
+        summary: '티켓 500 · SR 확정권 · 첫 결제 보너스',
         badges: ['한정', '1회'],
       ),
-    premiumEssenceSmallProductId =>
-      _essenceMeta('정수 110', Colors.teal.shade600),
-    premiumEssenceMediumProductId =>
-      _essenceMeta('정수 380', const Color(0xFF00897B)),
-    premiumEssenceLargeProductId =>
-      _essenceMeta('정수 1,200', const Color(0xFF00796B)),
-    premiumEssenceXLargeProductId =>
-      _essenceMeta('정수 2,800', const Color(0xFF00695C)),
+    premiumTicketSmallProductId =>
+      _ticketMeta('티켓 110', Colors.teal.shade600),
+    premiumTicketMediumProductId =>
+      _ticketMeta('티켓 380', const Color(0xFF00897B)),
+    premiumTicketLargeProductId =>
+      _ticketMeta('티켓 1,200', const Color(0xFF00796B)),
+    premiumTicketXLargeProductId =>
+      _ticketMeta('티켓 2,800', const Color(0xFF00695C)),
     premiumSeasonPassProductId => const _StoreProductMeta(
         icon: Icons.workspace_premium,
         color: Color(0xFF7E57C2),
-        summary: '60일 매일 정수 · 주간 600 보너스',
+        summary: '60일 매일 티켓 · 주간 600 보너스',
         badges: ['장기 효율', '패스'],
       ),
     premiumMasterPackageProductId => const _StoreProductMeta(
         icon: Icons.auto_awesome,
         color: Color(0xFFAD6800),
-        summary: '정수 7,500 · UR 검 · 보호권 10',
+        summary: '티켓 7,500 · UR 코스터 · 보호권 10',
         badges: ['최대 묶음', '1회'],
       ),
     _ => const _StoreProductMeta(
@@ -3270,19 +3270,19 @@ _StoreProductMeta _storeProductMeta(String productId) {
   };
 }
 
-_StoreProductMeta _essenceMeta(String summary, Color color) {
+_StoreProductMeta _ticketMeta(String summary, Color color) {
   return _StoreProductMeta(
     icon: Icons.diamond,
     color: color,
     summary: summary,
-    badges: const ['즉시 지급', '정수'],
+    badges: const ['즉시 지급', '티켓'],
   );
 }
 
 String _storeProductStatus(String productId, GameNotifier notifier) {
   return switch (productId) {
     premiumAdRemovalProductId => notifier.adsRemoved ? '완료' : '영구',
-    premiumMonthlyEssencePassProductId => notifier.hasActiveMonthlyPass
+    premiumMonthlyTicketPassProductId => notifier.hasActiveMonthlyPass
         ? 'D-${notifier.monthlyPassDaysRemaining}'
         : '30일',
     premiumSeasonPassProductId => notifier.hasActiveSeasonPass
@@ -3340,7 +3340,7 @@ class _SummonView extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '검을 소환하여 수집하세요',
+                  '코스터를 소환하여 수집하세요',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -3399,7 +3399,7 @@ class _SummonView extends ConsumerWidget {
           _SummonButton(
             label: '1연 소환',
             cost: summonCostSingle,
-            essence: game.essence,
+            ticket: game.ticket,
             primary: false,
             onTap: () async {
               final r = notifier.summonOne();
@@ -3412,7 +3412,7 @@ class _SummonView extends ConsumerWidget {
           _SummonButton(
             label: '10연 소환 (마지막 R+ 확정)',
             cost: summonCostTen,
-            essence: game.essence,
+            ticket: game.ticket,
             primary: true,
             onTap: () async {
               final r = notifier.summonTen();
@@ -3425,7 +3425,7 @@ class _SummonView extends ConsumerWidget {
           _SummonButton(
             label: '100연 소환 (10회마다 R+ 확정)',
             cost: summonCostHundred,
-            essence: game.essence,
+            ticket: game.ticket,
             primary: false,
             onTap: () async {
               final r = notifier.summonHundred();
@@ -3441,7 +3441,7 @@ class _SummonView extends ConsumerWidget {
             toNextLevel: summonRateToNext,
           ),
           const SizedBox(height: 20),
-          _EssenceSources(),
+          _TicketSources(),
         ],
       ),
     );
@@ -3451,21 +3451,21 @@ class _SummonView extends ConsumerWidget {
 class _SummonButton extends StatelessWidget {
   final String label;
   final int cost;
-  final int essence;
+  final int ticket;
   final bool primary;
   final VoidCallback onTap;
 
   const _SummonButton({
     required this.label,
     required this.cost,
-    required this.essence,
+    required this.ticket,
     required this.primary,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final enabled = essence >= cost;
+    final enabled = ticket >= cost;
     final bg = enabled
         ? (primary ? AppColors.coral : Colors.white)
         : Colors.grey.shade300;
@@ -3621,7 +3621,7 @@ class _RateTable extends StatelessWidget {
   }
 }
 
-class _EssenceSources extends StatelessWidget {
+class _TicketSources extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -3641,7 +3641,7 @@ class _EssenceSources extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '정수 획득처',
+            '티켓 획득처',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w800,
@@ -3655,7 +3655,7 @@ class _EssenceSources extends StatelessWidget {
           ),
           const _SourceRow(
             icon: Icons.calendar_month,
-            text: '일일 출석 보너스 (5~60 정수)',
+            text: '일일 출석 보너스 (5~60 티켓)',
           ),
           const _SourceRow(
             icon: Icons.emoji_events,
@@ -3663,7 +3663,7 @@ class _EssenceSources extends StatelessWidget {
           ),
           const _SourceRow(
             icon: Icons.recycling,
-            text: '검 분해 시 (등급·레벨에 비례)',
+            text: '코스터 분해 시 (등급·레벨에 비례)',
           ),
         ],
       ),
@@ -3757,7 +3757,7 @@ class _CoasterSetsHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '검 세트 컬렉션',
+            '코스터 세트 컬렉션',
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -3775,7 +3775,7 @@ class _CoasterSetsHeader extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '같은 세트의 검을 모두 모으면 영구적으로 터치·DPS 배율이 증가합니다.',
+            '같은 세트의 코스터를 모두 모으면 영구적으로 터치·DPS 배율이 증가합니다.',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.9),
               fontSize: 11,

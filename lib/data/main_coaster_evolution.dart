@@ -133,7 +133,7 @@ const mainCoasterTiers = <MainCoasterTier>[
   MainCoasterTier(
     index: 5,
     name: '뇌전검',
-    description: '검 끝에서 번개가 흐른다',
+    description: '코스터 끝에서 번개가 흐른다',
     shape: CoasterShape.rapier,
     blade: Color(0xFFFFF59D),
     bladeAccent: Color(0xFFFBC02D),

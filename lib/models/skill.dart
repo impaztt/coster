@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 enum SkillId {
   slashBurst('slash_burst'),
-  essenceGather('essence_gather'),
+  ticketGather('ticket_gather'),
   comboSurge('combo_surge');
 
   final String id;

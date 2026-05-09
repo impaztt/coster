@@ -5,7 +5,7 @@ import '../core/number_format.dart';
 import '../core/theme.dart';
 import '../providers/game_provider.dart';
 
-/// "환금소" — spend essence to instantly receive gold. Two product lines:
+/// "환금소" — spend ticket to instantly receive gold. Two product lines:
 /// DPS-time conversion (auto-scales) and fixed amounts (fades out late).
 class GoldExchangeDialog extends ConsumerWidget {
   const GoldExchangeDialog({super.key});
@@ -32,7 +32,7 @@ class GoldExchangeDialog extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _Header(essence: game.essence),
+              _Header(ticket: game.ticket),
               const SizedBox(height: 8),
               _UsageBar(
                 dailyUsed: game.goldExchangeDailyUsed,
@@ -55,7 +55,7 @@ class GoldExchangeDialog extends ConsumerWidget {
                         offer: offer,
                         previewGold:
                             notifier.previewGoldExchangeYield(offer),
-                        canAfford: game.essence >= offer.essenceCost,
+                        canAfford: game.ticket >= offer.ticketCost,
                         eightHourLocked: offer.id == 'dps_8h' &&
                             game.goldExchangeEightHourUsedToday,
                         atDailyCap: game.goldExchangeDailyUsed >=
@@ -78,7 +78,7 @@ class GoldExchangeDialog extends ConsumerWidget {
                           offer: offer,
                           previewGold:
                               notifier.previewGoldExchangeYield(offer),
-                          canAfford: game.essence >= offer.essenceCost,
+                          canAfford: game.ticket >= offer.ticketCost,
                           eightHourLocked: false,
                           atDailyCap: game.goldExchangeDailyUsed >=
                               goldExchangeDailyLimit,
@@ -131,7 +131,7 @@ class GoldExchangeDialog extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('소비 정수: ${offer.essenceCost}'),
+            Text('소비 티켓: ${offer.ticketCost}'),
             const SizedBox(height: 4),
             Text('획득 골드: +${NumberFormatter.format(preview)}'),
             const SizedBox(height: 8),
@@ -182,7 +182,7 @@ class GoldExchangeDialog extends ConsumerWidget {
   }
 
   String _failureText(GoldExchangeFailureReason r) => switch (r) {
-        GoldExchangeFailureReason.notEnoughEssence => '정수가 부족해요',
+        GoldExchangeFailureReason.notEnoughTicket => '티켓가 부족해요',
         GoldExchangeFailureReason.dailyCapReached =>
           '오늘은 환전 횟수를 모두 사용했어요',
         GoldExchangeFailureReason.prestigeCapReached =>
@@ -194,8 +194,8 @@ class GoldExchangeDialog extends ConsumerWidget {
 }
 
 class _Header extends StatelessWidget {
-  final int essence;
-  const _Header({required this.essence});
+  final int ticket;
+  const _Header({required this.ticket});
 
   @override
   Widget build(BuildContext context) {
@@ -212,7 +212,7 @@ class _Header extends StatelessWidget {
         Icon(Icons.diamond, color: Colors.teal.shade700, size: 18),
         const SizedBox(width: 4),
         Text(
-          '$essence',
+          '$ticket',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w800,
@@ -305,7 +305,7 @@ class _OfferTile extends StatelessWidget {
     if (eightHourLocked) return '내일 다시 가능';
     if (atRunCap) return '회차 캡 도달';
     if (atDailyCap) return '오늘 캡 도달';
-    if (!canAfford) return '정수 부족';
+    if (!canAfford) return '티켓 부족';
     return null;
   }
 
@@ -401,7 +401,7 @@ class _OfferTile extends StatelessWidget {
                         ),
                         const SizedBox(width: 3),
                         Text(
-                          '${offer.essenceCost}',
+                          '${offer.ticketCost}',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,

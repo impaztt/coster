@@ -475,7 +475,7 @@ class _RegionListTile extends ConsumerWidget {
                         if (districtBonus > 0) ...[
                           const SizedBox(height: 3),
                           Text(
-                            '검세권 +${(districtBonus * 100).toStringAsFixed(1)}% · 지역 검 $regionOwned/$regionTotal',
+                            '검세권 +${(districtBonus * 100).toStringAsFixed(1)}% · 지역 코스터 $regionOwned/$regionTotal',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
@@ -1096,7 +1096,7 @@ class _DistrictBondCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '이 지역에 연결된 검을 모으거나 착용에 배치하면 주식의 내재가치와 배당률이 올라갑니다.',
+            '이 지역에 연결된 코스터를 모으거나 착용에 배치하면 주식의 내재가치와 배당률이 올라갑니다.',
             style: TextStyle(
               fontSize: 11,
               color: Colors.black.withValues(alpha: 0.58),

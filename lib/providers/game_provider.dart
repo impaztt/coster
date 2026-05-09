@@ -34,7 +34,7 @@ final buyMultiplierProvider = StateProvider<int>((_) => 1);
 
 const stockMarketPriceCurveRebalanceVersion = 16;
 
-/// Cost in 정수 per single summon.
+/// Cost in 티켓 per single summon.
 const summonCostSingle = 50;
 const summonCostTen = 450;
 const summonCostHundred = 4500;
@@ -109,8 +109,8 @@ const offlineHardElapsedHours = 72;
 /// Short enough to verify the feature quickly, long enough to skip tab-switch
 /// round-trips.
 const offlineMinSeconds = 30;
-const comebackEssenceStepSeconds = 15 * 60; // +1 essence per 15m
-const comebackEssenceCap = 120;
+const comebackTicketStepSeconds = 15 * 60; // +1 ticket per 15m
+const comebackTicketCap = 120;
 
 /// Crit + combo config.
 const critChance = 0.05; // 5%
@@ -119,7 +119,7 @@ const comboWindowMs = 1500; // taps within this many ms extend the combo
 const comboMax = 50;
 const comboBonusPerStack = 0.01; // +1% tap per combo stack, cap +50%
 
-/// Daily login reward table: streak day (1-indexed) → essence reward.
+/// Daily login reward table: streak day (1-indexed) → ticket reward.
 /// Streak resets when the user skips a day (>48h since last claim).
 const dailyRewards = <int>[0, 5, 10, 15, 20, 30, 40, 60];
 int dailyRewardFor(int streak) {
@@ -146,7 +146,7 @@ int _calcPrestigeCoinsFromProgress({
     tapUpgradeSum += lv;
   }
 
-  // Exclude any portion of currentGold that came from the essence-for-gold
+  // Exclude any portion of currentGold that came from the ticket-for-gold
   // exchange. Until the player actually spends it on producers/upgrades,
   // purchased gold contributes nothing to the prestige coin payout.
   final effectiveCurrentGold =
@@ -165,7 +165,7 @@ int _calcPrestigeCoinsFromProgress({
   return max(1, (raw * bonusMultiplier).floor());
 }
 
-/// Booster shop catalog. (`adOnly`=true means essence cost is N/A; only
+/// Booster shop catalog. (`adOnly`=true means ticket cost is N/A; only
 /// purchasable via the ad stub.)
 class BoosterOffer {
   final String id;
@@ -174,7 +174,7 @@ class BoosterOffer {
   final BoosterType type;
   final double multiplier;
   final int durationSec;
-  final int essenceCost; // 0 → ad-only
+  final int ticketCost; // 0 → ad-only
   const BoosterOffer({
     required this.id,
     required this.title,
@@ -182,7 +182,7 @@ class BoosterOffer {
     required this.type,
     required this.multiplier,
     required this.durationSec,
-    required this.essenceCost,
+    required this.ticketCost,
   });
 }
 
@@ -194,7 +194,7 @@ const boosterOffers = <BoosterOffer>[
     type: BoosterType.dps,
     multiplier: 2.0,
     durationSec: 1800,
-    essenceCost: 50,
+    ticketCost: 50,
   ),
   BoosterOffer(
     id: 'tap_2x_15m',
@@ -203,7 +203,7 @@ const boosterOffers = <BoosterOffer>[
     type: BoosterType.tap,
     multiplier: 2.0,
     durationSec: 900,
-    essenceCost: 30,
+    ticketCost: 30,
   ),
   BoosterOffer(
     id: 'rush_3x_5m',
@@ -212,50 +212,50 @@ const boosterOffers = <BoosterOffer>[
     type: BoosterType.rush,
     multiplier: 3.0,
     durationSec: 300,
-    essenceCost: 100,
+    ticketCost: 100,
   ),
 ];
 
 const premiumAdRemovalProductId = 'premium_ad_removal';
-const premiumMonthlyEssencePassProductId = 'premium_monthly_essence_pass';
+const premiumMonthlyTicketPassProductId = 'premium_monthly_ticket_pass';
 const premiumStarterPackageProductId = 'premium_starter_package';
 const premiumFirstPurchaseProductId = 'premium_first_purchase';
-const premiumEssenceSmallProductId = 'premium_essence_small';
-const premiumEssenceMediumProductId = 'premium_essence_medium';
-const premiumEssenceLargeProductId = 'premium_essence_large';
-const premiumEssenceXLargeProductId = 'premium_essence_xlarge';
+const premiumTicketSmallProductId = 'premium_essence_small';
+const premiumTicketMediumProductId = 'premium_essence_medium';
+const premiumTicketLargeProductId = 'premium_essence_large';
+const premiumTicketXLargeProductId = 'premium_essence_xlarge';
 const premiumMasterPackageProductId = 'premium_master_package';
 const premiumSeasonPassProductId = 'premium_season_pass';
 
-const monthlyEssencePassImmediateEssence = 300;
-const monthlyEssencePassDailyEssence = 120;
-const monthlyEssencePassDurationDays = 30;
-const monthlyEssencePassMissedClaimCapDays = 3;
+const monthlyTicketPassImmediateTicket = 300;
+const monthlyTicketPassDailyTicket = 120;
+const monthlyTicketPassDurationDays = 30;
+const monthlyTicketPassMissedClaimCapDays = 3;
 
-const starterPackageEssence = 1400;
+const starterPackageTicket = 1400;
 const starterPackageDpsBoostDurationSec = 1800;
 
-/// Season pass (60 days). Larger daily essence + a weekly stipend.
+/// Season pass (60 days). Larger daily ticket + a weekly stipend.
 const seasonPassDurationDays = 60;
-const seasonPassDailyEssence = 200;
+const seasonPassDailyTicket = 200;
 const seasonPassMissedClaimCapDays = 3;
 
 /// Weekly bonus: paid out at most once every 7 days while the pass is
 /// active. Designed as the headline "extra" so the pass feels distinct
 /// from the cheaper monthly version.
-const seasonPassWeeklyEssence = 600;
+const seasonPassWeeklyTicket = 600;
 const seasonPassWeeklyIntervalDays = 7;
 
 /// First-purchase package: heavily front-loaded, one shot per account,
 /// only purchasable in the first ad-funnel window.
-const firstPurchasePackageEssence = 500;
-// Essence packs (consumables — no extra effect, just essence).
-const essenceSmallEssence = 110;
-const essenceMediumEssence = 380;
-const essenceLargeEssence = 1200;
-const essenceXLargeEssence = 2800;
+const firstPurchasePackageTicket = 500;
+// Ticket packs (consumables — no extra effect, just ticket).
+const ticketSmallTicket = 110;
+const ticketMediumTicket = 380;
+const ticketLargeTicket = 1200;
+const ticketXLargeTicket = 2800;
 
-const masterPackageEssence = 7500;
+const masterPackageTicket = 7500;
 const masterPackageProtectionScrolls = 10;
 const masterPackageBoosterDurationSec = 86400; // 24h all-buff buffer
 
@@ -287,13 +287,13 @@ const premiumProducts = <PremiumProductDef>[
     ],
   ),
   PremiumProductDef(
-    id: premiumMonthlyEssencePassProductId,
-    title: '월간 정수 보급권',
-    subtitle: '30일 동안 매일 정수를 안정적으로 확보',
+    id: premiumMonthlyTicketPassProductId,
+    title: '월간 티켓 보급권',
+    subtitle: '30일 동안 매일 티켓를 안정적으로 확보',
     priceLabel: '₩5,900',
     benefits: [
-      '구매 즉시 정수 300',
-      '30일 동안 매일 정수 120',
+      '구매 즉시 티켓 300',
+      '30일 동안 매일 티켓 120',
       '미수령 보상 최대 3일 누적',
     ],
   ),
@@ -303,8 +303,8 @@ const premiumProducts = <PremiumProductDef>[
     subtitle: '초반 소환과 성장 템포를 한 번에 보강',
     priceLabel: '₩4,900',
     benefits: [
-      '정수 1,400',
-      'SR+ 검 1자루 확정 지급',
+      '티켓 1,400',
+      'SR+ 코스터 1대 확정 지급',
       '자동 수익 x2 30분',
     ],
   ),
@@ -314,47 +314,47 @@ const premiumProducts = <PremiumProductDef>[
     subtitle: '계정당 1회 — 강력한 진입 보너스',
     priceLabel: '₩1,100',
     benefits: [
-      '정수 500',
+      '티켓 500',
       'SR 확정 소환권 1',
       '24시간 한정 노출',
     ],
   ),
   PremiumProductDef(
-    id: premiumEssenceSmallProductId,
-    title: '정수 꾸러미 (소)',
-    subtitle: '가장 가벼운 정수 충전',
+    id: premiumTicketSmallProductId,
+    title: '티켓 꾸러미 (소)',
+    subtitle: '가장 가벼운 티켓 충전',
     priceLabel: '₩1,100',
-    benefits: ['정수 110'],
+    benefits: ['티켓 110'],
   ),
   PremiumProductDef(
-    id: premiumEssenceMediumProductId,
-    title: '정수 꾸러미 (중)',
+    id: premiumTicketMediumProductId,
+    title: '티켓 꾸러미 (중)',
     subtitle: '5분 환금 1회 + 보너스 30',
     priceLabel: '₩3,300',
-    benefits: ['정수 380'],
+    benefits: ['티켓 380'],
   ),
   PremiumProductDef(
-    id: premiumEssenceLargeProductId,
-    title: '정수 꾸러미 (대)',
+    id: premiumTicketLargeProductId,
+    title: '티켓 꾸러미 (대)',
     subtitle: '8시간 환금 1회분 + 보너스 200',
     priceLabel: '₩9,900',
-    benefits: ['정수 1,200'],
+    benefits: ['티켓 1,200'],
   ),
   PremiumProductDef(
-    id: premiumEssenceXLargeProductId,
-    title: '정수 꾸러미 (특대)',
+    id: premiumTicketXLargeProductId,
+    title: '티켓 꾸러미 (특대)',
     subtitle: '대량 충전 + 보너스 500',
     priceLabel: '₩19,900',
-    benefits: ['정수 2,800'],
+    benefits: ['티켓 2,800'],
   ),
   PremiumProductDef(
     id: premiumSeasonPassProductId,
     title: '시즌 패스',
-    subtitle: '60일간 매일 정수 + 주간 보너스',
+    subtitle: '60일간 매일 티켓 + 주간 보너스',
     priceLabel: '₩14,900',
     benefits: [
-      '60일간 매일 정수 200',
-      '7일마다 정수 600 추가',
+      '60일간 매일 티켓 200',
+      '7일마다 티켓 600 추가',
       '구매 즉시 시즌 시작',
     ],
   ),
@@ -364,7 +364,7 @@ const premiumProducts = <PremiumProductDef>[
     subtitle: '한 번에 코어 빌드 완성',
     priceLabel: '₩49,900',
     benefits: [
-      '정수 7,500',
+      '티켓 7,500',
       'UR 확정 소환권 1',
       '강 보호권 10',
       '24시간 모든 부스터',
@@ -399,11 +399,11 @@ const comboSurgeBonus = 2.0; // tap reward × this while surging
 
 /// Slash burst skill: instant gold equal to current DPS × this seconds.
 const slashBurstWorthSeconds = 300;
-const essenceGatherAmount = 30;
+const ticketGatherAmount = 30;
 const ascensionCoreBonusPerLevel = 0.015;
 
 // =========================================================================
-// Gold-exchange shop (정수 → 골드 환전소)
+// Gold-exchange shop (티켓 → 골드 환전소)
 //
 // Two product lines:
 //   • dpsTime  — pays out (currentDps × seconds × dpsTimeYieldFactor) gold.
@@ -425,7 +425,7 @@ class GoldExchangeOffer {
   final String id;
   final String title;
   final String subtitle;
-  final int essenceCost;
+  final int ticketCost;
   final GoldExchangeKind kind;
   // For dpsTime: the simulated offline duration in seconds.
   final int dpsSeconds;
@@ -439,7 +439,7 @@ class GoldExchangeOffer {
     required this.id,
     required this.title,
     required this.subtitle,
-    required this.essenceCost,
+    required this.ticketCost,
     required this.kind,
     this.dpsSeconds = 0,
     this.fixedGold = 0,
@@ -452,9 +452,9 @@ class GoldExchangeOffer {
 const dpsTimeYieldFactor = 0.85;
 
 /// Floor for dpsTime offers right after prestige (when DPS = 0). We pay out
-/// `floor * essenceCost` so a freshly-prestiged player still gets a small
+/// `floor * ticketCost` so a freshly-prestiged player still gets a small
 /// nudge instead of zero gold.
-const dpsTimeFloorPerEssence = 10000.0; // 10K gold per essence
+const dpsTimeFloorPerTicket = 10000.0; // 10K gold per ticket
 
 /// Daily cap for the entire exchange shop, independent of which offers were
 /// used. Resets at UTC day rollover via the existing _dayKey() helper.
@@ -469,7 +469,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
     id: 'dps_5m',
     title: '5분 환금',
     subtitle: '현재 DPS 기준 5분치 골드',
-    essenceCost: 12,
+    ticketCost: 12,
     kind: GoldExchangeKind.dpsTime,
     dpsSeconds: 300,
   ),
@@ -477,7 +477,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
     id: 'dps_30m',
     title: '30분 환금',
     subtitle: '현재 DPS 기준 30분치 골드',
-    essenceCost: 50,
+    ticketCost: 50,
     kind: GoldExchangeKind.dpsTime,
     dpsSeconds: 1800,
   ),
@@ -485,7 +485,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
     id: 'dps_2h',
     title: '2시간 환금',
     subtitle: '현재 DPS 기준 2시간치 골드',
-    essenceCost: 180,
+    ticketCost: 180,
     kind: GoldExchangeKind.dpsTime,
     dpsSeconds: 7200,
   ),
@@ -493,7 +493,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
     id: 'dps_8h',
     title: '8시간 환금',
     subtitle: '현재 DPS 기준 8시간치 골드 · 하루 1회',
-    essenceCost: 600,
+    ticketCost: 600,
     kind: GoldExchangeKind.dpsTime,
     dpsSeconds: 28800,
     dailyCap: 1,
@@ -504,7 +504,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
     id: 'fixed_1m',
     title: '긴급 자금 1M',
     subtitle: '고정 100만 골드',
-    essenceCost: 5,
+    ticketCost: 5,
     kind: GoldExchangeKind.fixed,
     fixedGold: 1e6,
   ),
@@ -512,7 +512,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
     id: 'fixed_50m',
     title: '긴급 자금 50M',
     subtitle: '고정 5천만 골드',
-    essenceCost: 20,
+    ticketCost: 20,
     kind: GoldExchangeKind.fixed,
     fixedGold: 5e7,
   ),
@@ -520,7 +520,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
     id: 'fixed_500m',
     title: '긴급 자금 500M',
     subtitle: '고정 5억 골드',
-    essenceCost: 80,
+    ticketCost: 80,
     kind: GoldExchangeKind.fixed,
     fixedGold: 5e8,
   ),
@@ -528,7 +528,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
     id: 'fixed_3b',
     title: '긴급 자금 3B',
     subtitle: '고정 30억 골드',
-    essenceCost: 300,
+    ticketCost: 300,
     kind: GoldExchangeKind.fixed,
     fixedGold: 3e9,
   ),
@@ -540,12 +540,12 @@ const goldExchangeFixedHideAfterPrestiges = 3;
 
 // Main coaster enhancement types ------------------------------------------------
 
-enum MainCoasterEnhanceCurrency { gold, essence, hybrid }
+enum MainCoasterEnhanceCurrency { gold, ticket, hybrid }
 
 enum MainCoasterEnhanceFailure {
   none,
   notEnoughGold,
-  notEnoughEssence,
+  notEnoughTicket,
   alreadyMaxed,
   rolledFailure,
 }
@@ -558,7 +558,7 @@ class MainCoasterEnhanceAttemptResult {
   final MainCoasterEnhanceFailure reason;
   final int penaltyApplied;
   final double goldSpent;
-  final int essenceSpent;
+  final int ticketSpent;
   final bool crossedTierUp;
   final MainCoasterMilestoneReward? milestoneReward;
   const MainCoasterEnhanceAttemptResult({
@@ -569,7 +569,7 @@ class MainCoasterEnhanceAttemptResult {
     required this.reason,
     this.penaltyApplied = 0,
     this.goldSpent = 0,
-    this.essenceSpent = 0,
+    this.ticketSpent = 0,
     this.crossedTierUp = false,
     this.milestoneReward,
   });
@@ -621,7 +621,7 @@ final mainCoasterEventProvider = StreamProvider<MainCoasterEvent>(
 /// reason on failure so the UI can show a useful toast.
 enum GoldExchangeFailureReason {
   none,
-  notEnoughEssence,
+  notEnoughTicket,
   dailyCapReached,
   prestigeCapReached,
   perOfferCapReached,
@@ -655,7 +655,7 @@ class MissionDef {
   final String title;
   final String description;
   final int target;
-  final int rewardEssence;
+  final int rewardTicket;
   final int rewardPrestigeCoins;
   final MissionCycle cycle;
   const MissionDef({
@@ -663,7 +663,7 @@ class MissionDef {
     required this.title,
     required this.description,
     required this.target,
-    required this.rewardEssence,
+    required this.rewardTicket,
     required this.rewardPrestigeCoins,
     required this.cycle,
   });
@@ -675,7 +675,7 @@ class MissionView {
   final String description;
   final int progress;
   final int target;
-  final int rewardEssence;
+  final int rewardTicket;
   final int rewardPrestigeCoins;
   final bool claimed;
   const MissionView({
@@ -684,7 +684,7 @@ class MissionView {
     required this.description,
     required this.progress,
     required this.target,
-    required this.rewardEssence,
+    required this.rewardTicket,
     required this.rewardPrestigeCoins,
     required this.claimed,
   });
@@ -698,7 +698,7 @@ const dailyMissionDefs = <MissionDef>[
     title: '집중 훈련',
     description: '터치 300회',
     target: 300,
-    rewardEssence: 15,
+    rewardTicket: 15,
     rewardPrestigeCoins: 12,
     cycle: MissionCycle.daily,
   ),
@@ -707,7 +707,7 @@ const dailyMissionDefs = <MissionDef>[
     title: '강화 루틴',
     description: '강화 레벨 30회 구매',
     target: 30,
-    rewardEssence: 18,
+    rewardTicket: 18,
     rewardPrestigeCoins: 14,
     cycle: MissionCycle.daily,
   ),
@@ -716,7 +716,7 @@ const dailyMissionDefs = <MissionDef>[
     title: '스킬 숙련',
     description: '스킬 5회 사용',
     target: 5,
-    rewardEssence: 20,
+    rewardTicket: 20,
     rewardPrestigeCoins: 16,
     cycle: MissionCycle.daily,
   ),
@@ -725,7 +725,7 @@ const dailyMissionDefs = <MissionDef>[
     title: '정밀 타격',
     description: '치명타 30회 발동',
     target: 30,
-    rewardEssence: 18,
+    rewardTicket: 18,
     rewardPrestigeCoins: 14,
     cycle: MissionCycle.daily,
   ),
@@ -734,7 +734,7 @@ const dailyMissionDefs = <MissionDef>[
     title: '슬라임 처치',
     description: '슬라임 5마리 처치',
     target: 5,
-    rewardEssence: 16,
+    rewardTicket: 16,
     rewardPrestigeCoins: 12,
     cycle: MissionCycle.daily,
   ),
@@ -743,7 +743,7 @@ const dailyMissionDefs = <MissionDef>[
     title: '소환 의식',
     description: '소환 15회',
     target: 15,
-    rewardEssence: 22,
+    rewardTicket: 22,
     rewardPrestigeCoins: 18,
     cycle: MissionCycle.daily,
   ),
@@ -752,7 +752,7 @@ const dailyMissionDefs = <MissionDef>[
     title: '콤보 폭발',
     description: '콤보 버스트 1회 발동',
     target: 1,
-    rewardEssence: 14,
+    rewardTicket: 14,
     rewardPrestigeCoins: 10,
     cycle: MissionCycle.daily,
   ),
@@ -761,7 +761,7 @@ const dailyMissionDefs = <MissionDef>[
     title: '가속 점검',
     description: '부스터 1회 사용',
     target: 1,
-    rewardEssence: 20,
+    rewardTicket: 20,
     rewardPrestigeCoins: 14,
     cycle: MissionCycle.daily,
   ),
@@ -773,7 +773,7 @@ const weeklyMissionDefs = <MissionDef>[
     title: '환생 순환',
     description: '환생 5회 달성',
     target: 5,
-    rewardEssence: 90,
+    rewardTicket: 90,
     rewardPrestigeCoins: 120,
     cycle: MissionCycle.weekly,
   ),
@@ -782,7 +782,7 @@ const weeklyMissionDefs = <MissionDef>[
     title: '황금 사냥',
     description: '슬라임 40마리 처치',
     target: 40,
-    rewardEssence: 80,
+    rewardTicket: 80,
     rewardPrestigeCoins: 90,
     cycle: MissionCycle.weekly,
   ),
@@ -791,7 +791,7 @@ const weeklyMissionDefs = <MissionDef>[
     title: '수집 주간',
     description: '소환 120회',
     target: 120,
-    rewardEssence: 110,
+    rewardTicket: 110,
     rewardPrestigeCoins: 110,
     cycle: MissionCycle.weekly,
   ),
@@ -800,7 +800,7 @@ const weeklyMissionDefs = <MissionDef>[
     title: '터치 마라톤',
     description: '터치 5000회',
     target: 5000,
-    rewardEssence: 75,
+    rewardTicket: 75,
     rewardPrestigeCoins: 80,
     cycle: MissionCycle.weekly,
   ),
@@ -809,7 +809,7 @@ const weeklyMissionDefs = <MissionDef>[
     title: '강화 매니아',
     description: '강화 200회 구매',
     target: 200,
-    rewardEssence: 100,
+    rewardTicket: 100,
     rewardPrestigeCoins: 110,
     cycle: MissionCycle.weekly,
   ),
@@ -818,7 +818,7 @@ const weeklyMissionDefs = <MissionDef>[
     title: '스킬 마스터',
     description: '스킬 50회 사용',
     target: 50,
-    rewardEssence: 90,
+    rewardTicket: 90,
     rewardPrestigeCoins: 100,
     cycle: MissionCycle.weekly,
   ),
@@ -827,7 +827,7 @@ const weeklyMissionDefs = <MissionDef>[
     title: '폭풍 일격',
     description: '치명타 300회 발동',
     target: 300,
-    rewardEssence: 80,
+    rewardTicket: 80,
     rewardPrestigeCoins: 90,
     cycle: MissionCycle.weekly,
   ),
@@ -836,7 +836,7 @@ const weeklyMissionDefs = <MissionDef>[
     title: '가속 의존',
     description: '부스터 5회 사용',
     target: 5,
-    rewardEssence: 120,
+    rewardTicket: 120,
     rewardPrestigeCoins: 130,
     cycle: MissionCycle.weekly,
   ),
@@ -858,13 +858,13 @@ class SummonResult {
 class PremiumPurchaseResult {
   final bool ok;
   final String message;
-  final int essenceGranted;
+  final int ticketGranted;
   final SummonResult? bonusSummon;
 
   const PremiumPurchaseResult({
     required this.ok,
     required this.message,
-    this.essenceGranted = 0,
+    this.ticketGranted = 0,
     this.bonusSummon,
   });
 }
@@ -933,8 +933,8 @@ class SkillResult {
 
 class DailyBonus {
   final int streak;
-  final int essence;
-  const DailyBonus({required this.streak, required this.essence});
+  final int ticket;
+  const DailyBonus({required this.streak, required this.ticket});
 }
 
 class GameState {
@@ -961,7 +961,7 @@ class GameState {
   final bool highContrast;
   final double textScale;
   final bool reduceTapHaptics;
-  final int essence;
+  final int ticket;
   final Map<String, int> ownedCoasters;
   final String? equippedCoasterId;
   final int summonsSinceHighRare;
@@ -1026,7 +1026,7 @@ class GameState {
     required this.highContrast,
     required this.textScale,
     required this.reduceTapHaptics,
-    required this.essence,
+    required this.ticket,
     required this.ownedCoasters,
     required this.equippedCoasterId,
     required this.summonsSinceHighRare,
@@ -1092,7 +1092,7 @@ class GameState {
         highContrast: false,
         textScale: 1.0,
         reduceTapHaptics: false,
-        essence: 90,
+        ticket: 90,
         ownedCoasters: {},
         equippedCoasterId: null,
         summonsSinceHighRare: 0,
@@ -1256,7 +1256,7 @@ class GameState {
       totalStockTrades: market.totalTradesCount,
       totalGoldSpent: totalGoldSpent,
       prestigeCoins: prestigeCoins,
-      essence: essence,
+      ticket: ticket,
       run: run,
     );
   }
@@ -1265,26 +1265,26 @@ class GameState {
 class OfflineReward {
   final Duration duration;
   final double gold;
-  final int essenceBonus;
+  final int ticketBonus;
   final bool blockedByClockGuard;
   const OfflineReward({
     required this.duration,
     required this.gold,
-    this.essenceBonus = 0,
+    this.ticketBonus = 0,
     this.blockedByClockGuard = false,
   });
 }
 
-const _milestoneEssence = <int, int>{
+const _milestoneTicket = <int, int>{
   25: 1,
   50: 2,
   100: 5,
   200: 10,
 };
 
-int _milestoneEssenceUpTo(int level) {
+int _milestoneTicketUpTo(int level) {
   int total = 0;
-  _milestoneEssence.forEach((threshold, reward) {
+  _milestoneTicket.forEach((threshold, reward) {
     if (level >= threshold) total += reward;
   });
   return total;
@@ -1360,12 +1360,12 @@ class GameNotifier extends Notifier<GameState> {
           blockedByClockGuard: true,
         );
       } else if (cappedSeconds >= offlineMinSeconds && dpsNow > 0) {
-        final essenceBonus = min(
-            comebackEssenceCap, cappedSeconds ~/ comebackEssenceStepSeconds);
+        final ticketBonus = min(
+            comebackTicketCap, cappedSeconds ~/ comebackTicketStepSeconds);
         _pendingOffline = OfflineReward(
           duration: Duration(seconds: cappedSeconds),
           gold: dpsNow * cappedSeconds,
-          essenceBonus: essenceBonus,
+          ticketBonus: ticketBonus,
         );
       }
     } else {
@@ -1494,7 +1494,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.prestigeCoins = _intClamp(_save.prestigeCoins, 0, 2147483647);
     _save.prestigeCount = _intClamp(_save.prestigeCount, 0, 1000000);
     _save.ascensionCoreLevel = _intClamp(_save.ascensionCoreLevel, 0, 1000000);
-    _save.essence = _intClamp(_save.essence, 0, 2147483647);
+    _save.ticket = _intClamp(_save.ticket, 0, 2147483647);
     _save.dailyStreak = _intClamp(_save.dailyStreak, 0, 100000);
     _save.tapsSinceSlime =
         _intClamp(_save.tapsSinceSlime, 0, slimeSpawnEvery - 1);
@@ -1638,7 +1638,7 @@ class GameNotifier extends Notifier<GameState> {
     final now = DateTime.now();
     // First-ever claim → day 1.
     if (last == null) {
-      return DailyBonus(streak: 1, essence: dailyRewardFor(1));
+      return DailyBonus(streak: 1, ticket: dailyRewardFor(1));
     }
     final hours = now.difference(last).inHours;
     if (hours < 24) return null; // already claimed today
@@ -1646,7 +1646,7 @@ class GameNotifier extends Notifier<GameState> {
     // Beyond 48h → streak resets to day 1.
     final nextStreak =
         hours < 48 ? ((_save.dailyStreak % (dailyRewards.length - 1)) + 1) : 1;
-    return DailyBonus(streak: nextStreak, essence: dailyRewardFor(nextStreak));
+    return DailyBonus(streak: nextStreak, ticket: dailyRewardFor(nextStreak));
   }
 
   void _startTicker() {
@@ -1718,7 +1718,7 @@ class GameNotifier extends Notifier<GameState> {
       highContrast: _save.settings.highContrast,
       textScale: _save.settings.textScale,
       reduceTapHaptics: _save.settings.reduceTapHaptics,
-      essence: _save.essence,
+      ticket: _save.ticket,
       ownedCoasters: Map.unmodifiable(_save.ownedCoasters),
       equippedCoasterId: _save.equippedCoasterId,
       summonsSinceHighRare: _save.summonsSinceHighRare,
@@ -1825,7 +1825,7 @@ class GameNotifier extends Notifier<GameState> {
           description: def.description,
           progress: (progress[def.id] ?? 0).clamp(0, def.target).toInt(),
           target: def.target,
-          rewardEssence: def.rewardEssence,
+          rewardTicket: def.rewardTicket,
           rewardPrestigeCoins: def.rewardPrestigeCoins,
           claimed: claimed.contains(def.id),
         ),
@@ -1852,7 +1852,7 @@ class GameNotifier extends Notifier<GameState> {
       if (def.id == 'master_perfectionist') continue; // handled below
       if (def.progress(ctx).done) {
         _save.unlockedAchievements.add(def.id);
-        _save.essence += def.essenceReward;
+        _save.ticket += def.ticketReward;
         _achievementUnlocks.add(def);
         anyChanged = true;
       }
@@ -1865,13 +1865,13 @@ class GameNotifier extends Notifier<GameState> {
         final def = achievementCatalog
             .firstWhere((a) => a.id == 'master_perfectionist');
         _save.unlockedAchievements.add(def.id);
-        _save.essence += def.essenceReward;
+        _save.ticket += def.ticketReward;
         _achievementUnlocks.add(def);
         anyChanged = true;
       }
     }
     if (anyChanged) {
-      // Re-emit to reflect new essence + unlock set in a single next frame.
+      // Re-emit to reflect new ticket + unlock set in a single next frame.
       state = GameState(
         gold: state.gold,
         totalGoldEarned: state.totalGoldEarned,
@@ -1896,7 +1896,7 @@ class GameNotifier extends Notifier<GameState> {
         highContrast: state.highContrast,
         textScale: state.textScale,
         reduceTapHaptics: state.reduceTapHaptics,
-        essence: _save.essence,
+        ticket: _save.ticket,
         ownedCoasters: state.ownedCoasters,
         equippedCoasterId: state.equippedCoasterId,
         summonsSinceHighRare: state.summonsSinceHighRare,
@@ -1936,7 +1936,7 @@ class GameNotifier extends Notifier<GameState> {
   void _advanceRepeatingAchievements() {
     final ctx = state.achContext();
     var anyChanged = false;
-    var totalEssenceGranted = 0;
+    var totalTicketGranted = 0;
     for (final def in repeatingAchievementCatalog) {
       var cleared = _save.repeatingAchievementStages[def.id] ?? 0;
       final value = def.current(ctx);
@@ -1944,7 +1944,7 @@ class GameNotifier extends Notifier<GameState> {
       var safety = 256;
       while (safety-- > 0 && value >= def.targetForStage(cleared + 1)) {
         cleared++;
-        totalEssenceGranted += def.rewardForStage(cleared);
+        totalTicketGranted += def.rewardForStage(cleared);
       }
       if (cleared != (_save.repeatingAchievementStages[def.id] ?? 0)) {
         _save.repeatingAchievementStages[def.id] = cleared;
@@ -1952,8 +1952,8 @@ class GameNotifier extends Notifier<GameState> {
       }
     }
     if (!anyChanged) return;
-    if (totalEssenceGranted > 0) _save.essence += totalEssenceGranted;
-    // Re-emit so the UI sees the new cleared-stage map and essence.
+    if (totalTicketGranted > 0) _save.ticket += totalTicketGranted;
+    // Re-emit so the UI sees the new cleared-stage map and ticket.
     state = GameState(
       gold: state.gold,
       totalGoldEarned: state.totalGoldEarned,
@@ -1978,7 +1978,7 @@ class GameNotifier extends Notifier<GameState> {
       highContrast: state.highContrast,
       textScale: state.textScale,
       reduceTapHaptics: state.reduceTapHaptics,
-      essence: _save.essence,
+      ticket: _save.ticket,
       ownedCoasters: state.ownedCoasters,
       equippedCoasterId: state.equippedCoasterId,
       summonsSinceHighRare: state.summonsSinceHighRare,
@@ -2050,7 +2050,7 @@ class GameNotifier extends Notifier<GameState> {
       highContrast: state.highContrast,
       textScale: state.textScale,
       reduceTapHaptics: state.reduceTapHaptics,
-      essence: state.essence,
+      ticket: state.ticket,
       ownedCoasters: state.ownedCoasters,
       equippedCoasterId: state.equippedCoasterId,
       summonsSinceHighRare: state.summonsSinceHighRare,
@@ -2289,7 +2289,7 @@ class GameNotifier extends Notifier<GameState> {
   /// with the rest of the build.
   double _mainCoasterMult() => mainCoasterStageBonusMult(_save.mainCoasterStage);
 
-  /// Public read so the UI can show "+X% from 메인검 +N단계".
+  /// Public read so the UI can show "+X% from 메인코스터 +N단계".
   double get mainCoasterBonusFraction =>
       _mainCoasterMult() - 1.0 + _summonRateBonusFromMainCoaster();
 
@@ -2572,9 +2572,9 @@ class GameNotifier extends Notifier<GameState> {
     _save.producerLevels[id] = newLv;
     _incMission('daily_upgrade_30', n, daily: true);
     _incMission('weekly_upgrade_200', n, daily: false);
-    final essenceGain =
-        _milestoneEssenceUpTo(newLv) - _milestoneEssenceUpTo(oldLv);
-    if (essenceGain > 0) _save.essence += essenceGain;
+    final ticketGain =
+        _milestoneTicketUpTo(newLv) - _milestoneTicketUpTo(oldLv);
+    if (ticketGain > 0) _save.ticket += ticketGain;
     _emit(loaded: true);
     unawaited(_persist());
     return n;
@@ -2667,7 +2667,7 @@ class GameNotifier extends Notifier<GameState> {
     switch (offer.kind) {
       case GoldExchangeKind.dpsTime:
         final raw = _calcDps() * offer.dpsSeconds * dpsTimeYieldFactor;
-        final floor = dpsTimeFloorPerEssence * offer.essenceCost;
+        final floor = dpsTimeFloorPerTicket * offer.ticketCost;
         return raw < floor ? floor : raw;
       case GoldExchangeKind.fixed:
         return offer.fixedGold;
@@ -2679,7 +2679,7 @@ class GameNotifier extends Notifier<GameState> {
   bool get goldExchangeFixedHidden =>
       _save.prestigeCount >= goldExchangeFixedHideAfterPrestiges;
 
-  /// Attempt to spend essence on a gold-exchange offer.
+  /// Attempt to spend ticket on a gold-exchange offer.
   GoldExchangeResult buyGoldExchange(String offerId) {
     final offer = goldExchangeOffers.firstWhere(
       (o) => o.id == offerId,
@@ -2688,11 +2688,11 @@ class GameNotifier extends Notifier<GameState> {
     final now = DateTime.now();
     _rotateGoldExchangeDayIfNeeded(now);
 
-    if (_save.essence < offer.essenceCost) {
+    if (_save.ticket < offer.ticketCost) {
       return const GoldExchangeResult(
         ok: false,
         goldGranted: 0,
-        reason: GoldExchangeFailureReason.notEnoughEssence,
+        reason: GoldExchangeFailureReason.notEnoughTicket,
       );
     }
     if (_save.goldExchangeDailyCount >= goldExchangeDailyLimit) {
@@ -2722,7 +2722,7 @@ class GameNotifier extends Notifier<GameState> {
     }
 
     final goldGranted = previewGoldExchangeYield(offer);
-    _save.essence -= offer.essenceCost;
+    _save.ticket -= offer.ticketCost;
     _save.gold += goldGranted;
     // Critical: do NOT touch totalGoldEarned. The whole point of this
     // tracker is to keep purchased gold out of prestige-coin math until
@@ -2765,7 +2765,7 @@ class GameNotifier extends Notifier<GameState> {
   ///
   /// Stage transitions follow these rules:
   ///   • Success → +1 stage (clamped at mainCoasterEnhanceMaxStage).
-  ///   • Failure on essence path → no stage change.
+  ///   • Failure on ticket path → no stage change.
   ///   • Failure on gold path → −penalty unless [useProtection] is set.
   ///   • Failure on hybrid → splits the difference: gold-track penalty
   ///     applies, but protection is implied (so no stage loss) at the
@@ -2790,29 +2790,29 @@ class GameNotifier extends Notifier<GameState> {
 
     // Compute final cost based on currency choice.
     double goldCost = 0;
-    int essenceCost = 0;
+    int ticketCost = 0;
     double successRate;
     final boost = boostLevel;
-    final boostEssenceCost = boost.essenceCost;
+    final boostTicketCost = boost.ticketCost;
     final protection =
         currency == MainCoasterEnhanceCurrency.gold && useProtection;
 
     switch (currency) {
       case MainCoasterEnhanceCurrency.gold:
         goldCost = cost.goldCost;
-        essenceCost = boostEssenceCost +
-            (protection ? mainCoasterProtectionEssenceCost : 0);
+        ticketCost = boostTicketCost +
+            (protection ? mainCoasterProtectionTicketCost : 0);
         successRate =
             (cost.goldSuccessBase + boost.successBonus).clamp(0.0, 1.0);
-      case MainCoasterEnhanceCurrency.essence:
-        essenceCost = cost.essenceCost + boostEssenceCost;
+      case MainCoasterEnhanceCurrency.ticket:
+        ticketCost = cost.ticketCost + boostTicketCost;
         successRate =
-            (cost.essenceSuccessBase + boost.successBonus).clamp(0.0, 1.0);
+            (cost.ticketSuccessBase + boost.successBonus).clamp(0.0, 1.0);
       case MainCoasterEnhanceCurrency.hybrid:
         goldCost = cost.goldCost * mainCoasterHybridGoldMultiplier;
-        essenceCost =
-            (cost.essenceCost * mainCoasterHybridEssenceMultiplier).round() +
-                boostEssenceCost;
+        ticketCost =
+            (cost.ticketCost * mainCoasterHybridTicketMultiplier).round() +
+                boostTicketCost;
         successRate = (cost.goldSuccessBase +
                 mainCoasterHybridSuccessBonus +
                 boost.successBonus)
@@ -2828,13 +2828,13 @@ class GameNotifier extends Notifier<GameState> {
         reason: MainCoasterEnhanceFailure.notEnoughGold,
       );
     }
-    if (_save.essence < essenceCost) {
+    if (_save.ticket < ticketCost) {
       return MainCoasterEnhanceAttemptResult(
         ok: false,
         success: false,
         previousStage: currentStage,
         newStage: currentStage,
-        reason: MainCoasterEnhanceFailure.notEnoughEssence,
+        reason: MainCoasterEnhanceFailure.notEnoughTicket,
       );
     }
 
@@ -2844,8 +2844,8 @@ class GameNotifier extends Notifier<GameState> {
       _save.stats.totalGoldSpent += goldCost;
       _save.run.goldSpent += goldCost;
     }
-    if (essenceCost > 0) {
-      _save.essence -= essenceCost;
+    if (ticketCost > 0) {
+      _save.ticket -= ticketCost;
     }
 
     final roll = _random.nextDouble();
@@ -2857,8 +2857,8 @@ class GameNotifier extends Notifier<GameState> {
     int penaltyApplied = 0;
     if (success) {
       newStage = currentStage + 1;
-    } else if (currency == MainCoasterEnhanceCurrency.essence) {
-      // Essence-track failures never lose a stage.
+    } else if (currency == MainCoasterEnhanceCurrency.ticket) {
+      // Ticket-track failures never lose a stage.
     } else if (currency == MainCoasterEnhanceCurrency.hybrid) {
       // Hybrid paid the full price, treat as protected.
     } else if (!protection) {
@@ -2892,7 +2892,7 @@ class GameNotifier extends Notifier<GameState> {
     if (success && wasNewHigh) {
       milestone = mainCoasterMilestoneAt(newStage);
       if (milestone != null) {
-        if (milestone.essence > 0) _save.essence += milestone.essence;
+        if (milestone.ticket > 0) _save.ticket += milestone.ticket;
         if (milestone.collectionBonusFraction != null) {
           _save.mainCoasterCollectionBonusFraction +=
               milestone.collectionBonusFraction!;
@@ -2917,7 +2917,7 @@ class GameNotifier extends Notifier<GameState> {
           : MainCoasterEnhanceFailure.rolledFailure,
       penaltyApplied: penaltyApplied,
       goldSpent: goldCost,
-      essenceSpent: essenceCost,
+      ticketSpent: ticketCost,
       crossedTierUp: crossedTierUp,
       milestoneReward: milestone,
     );
@@ -2956,7 +2956,7 @@ class GameNotifier extends Notifier<GameState> {
       final def = achievementById(id);
       if (def == null) return;
       _save.unlockedAchievements.add(def.id);
-      _save.essence += def.essenceReward;
+      _save.ticket += def.ticketReward;
       _achievementUnlocks.add(def);
     }
 
@@ -2994,8 +2994,8 @@ class GameNotifier extends Notifier<GameState> {
     _save.gold += r.gold;
     _save.totalGoldEarned += r.gold;
     _save.stats.lifetimeGold += r.gold;
-    if (r.essenceBonus > 0) {
-      _save.essence += r.essenceBonus;
+    if (r.ticketBonus > 0) {
+      _save.ticket += r.ticketBonus;
     }
     _emit(loaded: true);
     unawaited(_persist());
@@ -3057,7 +3057,7 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   void claimDailyBonus(DailyBonus bonus) {
-    _save.essence += bonus.essence;
+    _save.ticket += bonus.ticket;
     _save.dailyStreak = bonus.streak;
     if (bonus.streak > _save.stats.maxDailyStreak) {
       _save.stats.maxDailyStreak = bonus.streak;
@@ -3079,7 +3079,7 @@ class GameNotifier extends Notifier<GameState> {
     if (claimed.contains(id)) return false;
     if ((progress[id] ?? 0) < def.target) return false;
     claimed.add(id);
-    _save.essence += def.rewardEssence;
+    _save.ticket += def.rewardTicket;
     _save.prestigeCoins += def.rewardPrestigeCoins;
     _emit(loaded: true);
     unawaited(_persist());
@@ -3087,11 +3087,11 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   /// Claim every completed-but-unclaimed mission across both daily and
-  /// weekly tracks. Returns aggregate reward totals (count, essence, coins).
-  ({int count, int essence, int coins}) claimAllMissions() {
+  /// weekly tracks. Returns aggregate reward totals (count, ticket, coins).
+  ({int count, int ticket, int coins}) claimAllMissions() {
     _rotateMissionWindowsIfNeeded();
     var count = 0;
-    var essence = 0;
+    var ticket = 0;
     var coins = 0;
     void sweep({required bool daily}) {
       final defs = daily ? _dailyMissionById : _weeklyMissionById;
@@ -3105,7 +3105,7 @@ class GameNotifier extends Notifier<GameState> {
         if (claimed.contains(id)) continue;
         if ((progress[id] ?? 0) < def.target) continue;
         claimed.add(id);
-        essence += def.rewardEssence;
+        ticket += def.rewardTicket;
         coins += def.rewardPrestigeCoins;
         count++;
       }
@@ -3113,12 +3113,12 @@ class GameNotifier extends Notifier<GameState> {
 
     sweep(daily: true);
     sweep(daily: false);
-    if (count == 0) return (count: 0, essence: 0, coins: 0);
-    _save.essence += essence;
+    if (count == 0) return (count: 0, ticket: 0, coins: 0);
+    _save.ticket += ticket;
     _save.prestigeCoins += coins;
     _emit(loaded: true);
     unawaited(_persist());
-    return (count: count, essence: essence, coins: coins);
+    return (count: count, ticket: ticket, coins: coins);
   }
 
   // ============ Premium shop ============
@@ -3157,11 +3157,11 @@ class GameNotifier extends Notifier<GameState> {
     if (lastClaim == null) return 1;
     final days = _dateOnly(now).difference(_dateOnly(lastClaim)).inDays;
     if (days <= 0) return 0;
-    return min(days, monthlyEssencePassMissedClaimCapDays);
+    return min(days, monthlyTicketPassMissedClaimCapDays);
   }
 
-  int get monthlyPassClaimableEssence =>
-      monthlyPassClaimableDays * monthlyEssencePassDailyEssence;
+  int get monthlyPassClaimableTicket =>
+      monthlyPassClaimableDays * monthlyTicketPassDailyTicket;
 
   PremiumPurchaseResult purchasePremiumProduct(String productId) {
     switch (productId) {
@@ -3180,7 +3180,7 @@ class GameNotifier extends Notifier<GameState> {
           message: '광고 제거가 적용됐어요',
         );
 
-      case premiumMonthlyEssencePassProductId:
+      case premiumMonthlyTicketPassProductId:
         final now = DateTime.now();
         final wasActive = hasActiveMonthlyPass;
         final currentExpiresAt = _save.monthlyPassExpiresAt;
@@ -3188,15 +3188,15 @@ class GameNotifier extends Notifier<GameState> {
             ? currentExpiresAt
             : now;
         _save.monthlyPassExpiresAt =
-            base.add(const Duration(days: monthlyEssencePassDurationDays));
+            base.add(const Duration(days: monthlyTicketPassDurationDays));
         if (!wasActive) _save.monthlyPassLastClaimAt = now;
-        _save.essence += monthlyEssencePassImmediateEssence;
+        _save.ticket += monthlyTicketPassImmediateTicket;
         _emit(loaded: true);
         unawaited(_persist());
         return const PremiumPurchaseResult(
           ok: true,
-          message: '월간 정수 보급권이 적용됐어요',
-          essenceGranted: monthlyEssencePassImmediateEssence,
+          message: '월간 티켓 보급권이 적용됐어요',
+          ticketGranted: monthlyTicketPassImmediateTicket,
         );
 
       case premiumStarterPackageProductId:
@@ -3207,7 +3207,7 @@ class GameNotifier extends Notifier<GameState> {
           );
         }
         _save.starterPackagePurchased = true;
-        _save.essence += starterPackageEssence;
+        _save.ticket += starterPackageTicket;
         final bonusSummon = _doOnePull(
           guaranteedRPlus: true,
           forceSrPlus: true,
@@ -3228,7 +3228,7 @@ class GameNotifier extends Notifier<GameState> {
         return PremiumPurchaseResult(
           ok: true,
           message: '초보자 패키지가 지급됐어요',
-          essenceGranted: starterPackageEssence,
+          ticketGranted: starterPackageTicket,
           bonusSummon: bonusSummon,
         );
 
@@ -3240,7 +3240,7 @@ class GameNotifier extends Notifier<GameState> {
           );
         }
         _save.firstPurchasePackageClaimed = true;
-        _save.essence += firstPurchasePackageEssence;
+        _save.ticket += firstPurchasePackageTicket;
         final firstSummon = _doOnePull(
           guaranteedRPlus: true,
           forceSrPlus: true,
@@ -3253,18 +3253,18 @@ class GameNotifier extends Notifier<GameState> {
         return PremiumPurchaseResult(
           ok: true,
           message: '첫 결제 패키지가 지급됐어요',
-          essenceGranted: firstPurchasePackageEssence,
+          ticketGranted: firstPurchasePackageTicket,
           bonusSummon: firstSummon,
         );
 
-      case premiumEssenceSmallProductId:
-        return _grantEssencePack(essenceSmallEssence, '정수 꾸러미 (소)');
-      case premiumEssenceMediumProductId:
-        return _grantEssencePack(essenceMediumEssence, '정수 꾸러미 (중)');
-      case premiumEssenceLargeProductId:
-        return _grantEssencePack(essenceLargeEssence, '정수 꾸러미 (대)');
-      case premiumEssenceXLargeProductId:
-        return _grantEssencePack(essenceXLargeEssence, '정수 꾸러미 (특대)');
+      case premiumTicketSmallProductId:
+        return _grantTicketPack(ticketSmallTicket, '티켓 꾸러미 (소)');
+      case premiumTicketMediumProductId:
+        return _grantTicketPack(ticketMediumTicket, '티켓 꾸러미 (중)');
+      case premiumTicketLargeProductId:
+        return _grantTicketPack(ticketLargeTicket, '티켓 꾸러미 (대)');
+      case premiumTicketXLargeProductId:
+        return _grantTicketPack(ticketXLargeTicket, '티켓 꾸러미 (특대)');
 
       case premiumSeasonPassProductId:
         final now = DateTime.now();
@@ -3294,7 +3294,7 @@ class GameNotifier extends Notifier<GameState> {
           );
         }
         _save.masterPackagePurchased = true;
-        _save.essence += masterPackageEssence;
+        _save.ticket += masterPackageTicket;
         final masterSummon = _doOnePull(
           guaranteedRPlus: true,
           forceSrPlus: true,
@@ -3320,7 +3320,7 @@ class GameNotifier extends Notifier<GameState> {
         return PremiumPurchaseResult(
           ok: true,
           message: '마스터 패키지가 지급됐어요',
-          essenceGranted: masterPackageEssence,
+          ticketGranted: masterPackageTicket,
           bonusSummon: masterSummon,
         );
 
@@ -3332,14 +3332,14 @@ class GameNotifier extends Notifier<GameState> {
     }
   }
 
-  PremiumPurchaseResult _grantEssencePack(int amount, String label) {
-    _save.essence += amount;
+  PremiumPurchaseResult _grantTicketPack(int amount, String label) {
+    _save.ticket += amount;
     _emit(loaded: true);
     unawaited(_persist());
     return PremiumPurchaseResult(
       ok: true,
       message: '$label 지급 완료',
-      essenceGranted: amount,
+      ticketGranted: amount,
     );
   }
 
@@ -3373,8 +3373,8 @@ class GameNotifier extends Notifier<GameState> {
     return min(days, seasonPassMissedClaimCapDays);
   }
 
-  int get seasonPassClaimableEssence =>
-      seasonPassClaimableDays * seasonPassDailyEssence;
+  int get seasonPassClaimableTicket =>
+      seasonPassClaimableDays * seasonPassDailyTicket;
 
   bool get seasonPassWeeklyAvailable {
     if (!hasActiveSeasonPass) return false;
@@ -3384,24 +3384,24 @@ class GameNotifier extends Notifier<GameState> {
         seasonPassWeeklyIntervalDays;
   }
 
-  int claimSeasonPassDailyEssence() {
+  int claimSeasonPassDailyTicket() {
     final days = seasonPassClaimableDays;
     if (days <= 0) return 0;
-    final amount = days * seasonPassDailyEssence;
-    _save.essence += amount;
+    final amount = days * seasonPassDailyTicket;
+    _save.ticket += amount;
     _save.seasonPassLastClaimAt = DateTime.now();
     _emit(loaded: true);
     unawaited(_persist());
     return amount;
   }
 
-  int claimSeasonPassWeeklyEssence() {
+  int claimSeasonPassWeeklyTicket() {
     if (!seasonPassWeeklyAvailable) return 0;
-    _save.essence += seasonPassWeeklyEssence;
+    _save.ticket += seasonPassWeeklyTicket;
     _save.seasonPassLastWeeklyClaimAt = DateTime.now();
     _emit(loaded: true);
     unawaited(_persist());
-    return seasonPassWeeklyEssence;
+    return seasonPassWeeklyTicket;
   }
 
   // First-purchase popup gating.
@@ -3421,16 +3421,16 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   // Bulk grant for milestones / rewarded ads / external testing.
-  void grantEssence(int amount) {
+  void grantTicket(int amount) {
     if (amount <= 0) return;
-    _save.essence += amount;
+    _save.ticket += amount;
     _emit(loaded: true);
     unawaited(_persist());
   }
 
   /// Bonus gold grant from rewarded ads (offline-reward x2 etc.). Counts
   /// toward lifetime/totalGoldEarned because the player earned it through
-  /// ad engagement, not by paying with essence.
+  /// ad engagement, not by paying with ticket.
   void grantBonusGold(double amount) {
     if (amount <= 0) return;
     _save.gold += amount;
@@ -3440,11 +3440,11 @@ class GameNotifier extends Notifier<GameState> {
     unawaited(_persist());
   }
 
-  int claimMonthlyPassEssence() {
+  int claimMonthlyPassTicket() {
     final days = monthlyPassClaimableDays;
     if (days <= 0) return 0;
-    final amount = days * monthlyEssencePassDailyEssence;
-    _save.essence += amount;
+    final amount = days * monthlyTicketPassDailyTicket;
+    _save.ticket += amount;
     _save.monthlyPassLastClaimAt = DateTime.now();
     _emit(loaded: true);
     unawaited(_persist());
@@ -3456,10 +3456,10 @@ class GameNotifier extends Notifier<GameState> {
 
   // ============ Boosters + ads ============
 
-  /// Attempt to buy [offer] with essence. Returns true on success.
-  bool buyBoosterWithEssence(BoosterOffer offer) {
-    if (_save.essence < offer.essenceCost) return false;
-    _save.essence -= offer.essenceCost;
+  /// Attempt to buy [offer] with ticket. Returns true on success.
+  bool buyBoosterWithTicket(BoosterOffer offer) {
+    if (_save.ticket < offer.ticketCost) return false;
+    _save.ticket -= offer.ticketCost;
     _applyBooster(offer.type, offer.multiplier, offer.durationSec);
     _save.stats.boostersPurchased++;
     _save.run.boostersUsed++;
@@ -3568,13 +3568,13 @@ class GameNotifier extends Notifier<GameState> {
           ok: true,
           message: '10초간 콤보 폭주!',
         );
-      case SkillId.essenceGather:
-        _save.essence += essenceGatherAmount;
+      case SkillId.ticketGather:
+        _save.ticket += ticketGatherAmount;
         result = SkillResult(
-          id: SkillId.essenceGather,
+          id: SkillId.ticketGather,
           ok: true,
-          message: '정수 +$essenceGatherAmount',
-          payload: essenceGatherAmount.toDouble(),
+          message: '티켓 +$ticketGatherAmount',
+          payload: ticketGatherAmount.toDouble(),
         );
     }
     _save.skillReadyAt[id.id] = now.add(def.cooldown);
@@ -3611,7 +3611,7 @@ class GameNotifier extends Notifier<GameState> {
 
   // ============ Coaster dismantle ============
 
-  /// Returns the amount of essence that dismantling [coasterId] would refund,
+  /// Returns the amount of ticket that dismantling [coasterId] would refund,
   /// or 0 if the coaster can't be dismantled.
   int dismantleRefund(String coasterId) {
     final lv = _save.ownedCoasters[coasterId] ?? 0;
@@ -3623,10 +3623,10 @@ class GameNotifier extends Notifier<GameState> {
     } catch (_) {
       return 0;
     }
-    return _dismantleEssencePerLevel(def.tier) * lv;
+    return _dismantleTicketPerLevel(def.tier) * lv;
   }
 
-  int _dismantleEssencePerLevel(CoasterTier tier) {
+  int _dismantleTicketPerLevel(CoasterTier tier) {
     return switch (tier) {
       CoasterTier.n => 2,
       CoasterTier.r => 5,
@@ -3637,7 +3637,7 @@ class GameNotifier extends Notifier<GameState> {
     };
   }
 
-  /// Dismantle an owned, non-equipped coaster. Returns essence granted (0 on
+  /// Dismantle an owned, non-equipped coaster. Returns ticket granted (0 on
   /// failure — usually because the coaster is equipped or not owned).
   int dismantleCoaster(String coasterId) {
     final refund = dismantleRefund(coasterId);
@@ -3648,7 +3648,7 @@ class GameNotifier extends Notifier<GameState> {
         _save.formationCoasterIds[i] = null;
       }
     }
-    _save.essence += refund;
+    _save.ticket += refund;
     _save.run.coasterDismantles++;
     _emit(loaded: true);
     unawaited(_persist());
@@ -3733,8 +3733,8 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   SummonResult? summonOne() {
-    if (_save.essence < summonCostSingle) return null;
-    _save.essence -= summonCostSingle;
+    if (_save.ticket < summonCostSingle) return null;
+    _save.ticket -= summonCostSingle;
     final r = _doOnePull(guaranteedRPlus: false);
     _save.run.summons++;
     _incMission('daily_summon_15', 1, daily: true);
@@ -3745,8 +3745,8 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   List<SummonResult>? summonTen() {
-    if (_save.essence < summonCostTen) return null;
-    _save.essence -= summonCostTen;
+    if (_save.ticket < summonCostTen) return null;
+    _save.ticket -= summonCostTen;
     final results = <SummonResult>[];
     for (int i = 0; i < 10; i++) {
       final isLast = i == 9;
@@ -3761,8 +3761,8 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   List<SummonResult>? summonHundred() {
-    if (_save.essence < summonCostHundred) return null;
-    _save.essence -= summonCostHundred;
+    if (_save.ticket < summonCostHundred) return null;
+    _save.ticket -= summonCostHundred;
     final results = <SummonResult>[];
     for (int i = 0; i < 100; i++) {
       final isLastOfTenBlock = i % 10 == 9;

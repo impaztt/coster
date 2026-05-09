@@ -33,7 +33,7 @@ class BoosterShopDialog extends ConsumerWidget {
                 Icon(Icons.diamond, color: Colors.teal.shade700, size: 18),
                 const SizedBox(width: 4),
                 Text(
-                  '${game.essence}',
+                  '${game.ticket}',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
@@ -46,11 +46,11 @@ class BoosterShopDialog extends ConsumerWidget {
             for (final offer in boosterOffers) ...[
               _OfferRow(
                 offer: offer,
-                canAffordEssence: game.essence >= offer.essenceCost,
+                canAffordTicket: game.ticket >= offer.ticketCost,
                 adsRemoved: notifier.adsRemoved,
-                onBuyEssence: () {
-                  final ok = notifier.buyBoosterWithEssence(offer);
-                  if (!ok) _toast(context, '정수가 부족해요');
+                onBuyTicket: () {
+                  final ok = notifier.buyBoosterWithTicket(offer);
+                  if (!ok) _toast(context, '티켓가 부족해요');
                 },
                 onWatchAd: () async {
                   // 광고 제거 IAP 보유자는 즉시 지급 (광고 시청 단계 스킵).
@@ -107,16 +107,16 @@ class BoosterShopDialog extends ConsumerWidget {
 
 class _OfferRow extends StatelessWidget {
   final BoosterOffer offer;
-  final bool canAffordEssence;
+  final bool canAffordTicket;
   final bool adsRemoved;
-  final VoidCallback onBuyEssence;
+  final VoidCallback onBuyTicket;
   final VoidCallback onWatchAd;
 
   const _OfferRow({
     required this.offer,
-    required this.canAffordEssence,
+    required this.canAffordTicket,
     required this.adsRemoved,
-    required this.onBuyEssence,
+    required this.onBuyTicket,
     required this.onWatchAd,
   });
 
@@ -155,11 +155,11 @@ class _OfferRow extends StatelessWidget {
             children: [
               Expanded(
                 child: _BuyButton(
-                  label: '정수 ${offer.essenceCost}',
+                  label: '티켓 ${offer.ticketCost}',
                   icon: Icons.diamond,
-                  enabled: canAffordEssence,
+                  enabled: canAffordTicket,
                   filled: true,
-                  onTap: onBuyEssence,
+                  onTap: onBuyTicket,
                 ),
               ),
               const SizedBox(width: 8),

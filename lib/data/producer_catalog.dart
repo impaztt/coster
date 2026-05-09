@@ -5,7 +5,7 @@ const producerCatalog = <ProducerDef>[
   ProducerDef(
     id: 'apprentice',
     name: '견습 검사',
-    description: '아장아장 검을 휘두릅니다',
+    description: '아장아장 코스터를 휘두릅니다',
     icon: Icons.child_care,
     accent: Color(0xFFFFB74D),
     baseCost: 50,
@@ -23,7 +23,7 @@ const producerCatalog = <ProducerDef>[
   ProducerDef(
     id: 'knight',
     name: '기사',
-    description: '명예를 위해 검을 듭니다',
+    description: '명예를 위해 코스터를 듭니다',
     icon: Icons.shield,
     accent: Color(0xFF64B5F6),
     baseCost: 5000,
@@ -59,7 +59,7 @@ const producerCatalog = <ProducerDef>[
   ProducerDef(
     id: 'coaster_god',
     name: '검신',
-    description: '검 그 자체가 되었습니다',
+    description: '코스터 그 자체가 되었습니다',
     icon: Icons.bolt,
     accent: Color(0xFFFFEB3B),
     baseCost: 50000000,
@@ -113,7 +113,7 @@ const producerCatalog = <ProducerDef>[
   ProducerDef(
     id: 'astral_duelist',
     name: '성계 결투가',
-    description: '별 사이를 뛰어다니며 검을 겨눈다',
+    description: '별 사이를 뛰어다니며 코스터를 겨눈다',
     icon: Icons.public,
     accent: Color(0xFF7986CB),
     baseCost: 50000000000000,
@@ -159,7 +159,7 @@ const producerCatalog = <ProducerDef>[
   ),
   ProducerDef(
     id: 'stormblade_executor',
-    name: '폭풍검 집행자',
+    name: '폭풍코스터 집행자',
     description: '번개와 검격을 동시에 내리꽂는다',
     icon: Icons.flash_on,
     accent: Color(0xFF64B5F6),
@@ -242,7 +242,7 @@ const producerCatalog = <ProducerDef>[
   ProducerDef(
     id: 'arcane_familiar',
     name: '마법의 정령',
-    description: '검 옆을 떠다니며 일을 거든다',
+    description: '코스터 옆을 떠다니며 일을 거든다',
     icon: Icons.auto_awesome,
     accent: Color(0xFFAB47BC),
     baseCost: 1e15,

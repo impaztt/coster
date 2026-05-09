@@ -31,8 +31,8 @@ extension AchievementCategoryInfo on AchievementCategory {
         AchievementCategory.dps => 'DPS',
         AchievementCategory.playtime => '플레이 시간',
         AchievementCategory.producer => '동료',
-        AchievementCategory.coasterCollect => '검 수집',
-        AchievementCategory.coasterLevel => '검 강화',
+        AchievementCategory.coasterCollect => '코스터 수집',
+        AchievementCategory.coasterLevel => '코스터 강화',
         AchievementCategory.summon => '소환',
         AchievementCategory.prestige => '환생',
         AchievementCategory.slime => '슬라임',
@@ -142,7 +142,7 @@ class AchContext {
   final int totalStockTrades;
   final double totalGoldSpent;
   final int prestigeCoins;
-  final int essence;
+  final int ticket;
   // v13 — current-run scoped counters for challenge achievements.
   final RunStats run;
 
@@ -185,7 +185,7 @@ class AchContext {
     required this.totalStockTrades,
     required this.totalGoldSpent,
     required this.prestigeCoins,
-    required this.essence,
+    required this.ticket,
     required this.run,
   });
 }
@@ -195,7 +195,7 @@ class AchievementDef {
   final String name;
   final String description;
   final AchievementCategory category;
-  final int essenceReward;
+  final int ticketReward;
   final AchProgress Function(AchContext) progress;
 
   const AchievementDef({
@@ -203,7 +203,7 @@ class AchievementDef {
     required this.name,
     required this.description,
     required this.category,
-    required this.essenceReward,
+    required this.ticketReward,
     required this.progress,
   });
 }
