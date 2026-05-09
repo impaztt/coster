@@ -13,7 +13,7 @@ import '../services/audio_service.dart';
 import '../widgets/booster_shop_dialog.dart';
 import '../widgets/gold_exchange_dialog.dart';
 import '../widgets/main_coaster_enhance_dialog.dart';
-import '../widgets/main_coaster_widget.dart';
+import '../widgets/park_scene.dart';
 import '../widgets/dps_display.dart';
 import '../widgets/floating_number.dart';
 import '../widgets/feature_unlock_guide.dart';
@@ -175,9 +175,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ? constraints.maxHeight
                           : 240.0;
                       final size = height.clamp(128.0, 240.0).toDouble();
-                      return MainCoasterWidget(
+                      return ParkSceneWidget(
                         onTap: _handleTap,
-                        stage: game.mainCoasterStage,
                         size: size,
                       );
                     },
