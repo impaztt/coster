@@ -46,3 +46,7 @@ coverage/
 
 # Claude Code (keep shared settings.json, ignore user-local)
 .claude/settings.local.json
+
+# Asset extraction scratch dirs (downloaded zips + extracted pre-curation)
+assets/_dl/
+assets/_extracted/

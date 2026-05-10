@@ -13,7 +13,7 @@ import '../services/audio_service.dart';
 import '../widgets/booster_shop_dialog.dart';
 import '../widgets/gold_exchange_dialog.dart';
 import '../widgets/main_coaster_enhance_dialog.dart';
-import '../widgets/park_scene.dart';
+import '../widgets/park_scene_fullscreen.dart';
 import '../widgets/dps_display.dart';
 import '../widgets/floating_number.dart';
 import '../widgets/feature_unlock_guide.dart';
@@ -30,6 +30,11 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<FloatingNumberData> _floats = [];
   final List<_SlimeSpawn> _slimes = [];
+  // When false, the locked-feature peek + status panel + action bar
+  // are hidden behind a small toggle bar so the park scene takes
+  // the full middle area. Defaults to false (start with the park
+  // visible) — the user pings the toggle to bring HUD back.
+  bool _bottomExpanded = false;
   int _nextId = 0;
   int _nextSlimeId = 0;
   final _rng = Random();
@@ -167,61 +172,77 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 10),
               DpsDisplay(dps: game.dps),
+              // Park scene fills the available middle area between
+              // the top HUD and the bottom controls. Bounded so its
+              // painter never overflows behind the locked-feature
+              // card / status panel / action bar.
               Expanded(
-                child: Center(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final height = constraints.maxHeight.isFinite
-                          ? constraints.maxHeight
-                          : 240.0;
-                      final size = height.clamp(128.0, 240.0).toDouble();
-                      return ParkSceneWidget(
-                        onTap: _handleTap,
-                        size: size,
-                      );
-                    },
-                  ),
-                ),
+                child: ParkSceneFullscreen(onTap: _handleTap),
               ),
-              if (lockedFeatures.isNotEmpty && nextLocked != null) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  child: _LockedFeaturePeekCard(
-                    lockedCount: lockedFeatures.length,
-                    def: nextLocked,
-                    progress: nextLocked.progress(game),
-                    onTap: _openUnlockRoadmap,
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: _CompactBattleStatusPanel(
-                  combo: game.combo,
-                  tapPower: game.tapPower,
-                  maxIdleReward: game.dps * offlineMaxSeconds,
-                  idleHours: offlineMaxHours,
-                  prestigeMultiplier: game.prestigeMultiplier,
-                  collectionFraction: notifier.collectionBonusFraction,
-                  boosters: game.activeBoosters,
-                ),
+              // Toggle bar — always visible. Tap to expand/collapse
+              // the bottom HUD stack so the park scene can grow into
+              // the freed space.
+              _BottomHudToggle(
+                expanded: _bottomExpanded,
+                onTap: () =>
+                    setState(() => _bottomExpanded = !_bottomExpanded),
               ),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: _HomeActionBar(
-                  boosterUnlocked:
-                      game.isFeatureUnlocked(FeatureUnlocks.boosterShop),
-                  exchangeUnlocked:
-                      game.isFeatureUnlocked(FeatureUnlocks.goldExchange),
-                  stage: game.mainCoasterStage,
-                  onBooster: _openBoosterShop,
-                  onExchange: _openGoldExchange,
-                  onEnhance: _openMainCoasterEnhance,
-                ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeInOut,
+                alignment: Alignment.topCenter,
+                child: _bottomExpanded
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (lockedFeatures.isNotEmpty &&
+                              nextLocked != null) ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14),
+                              child: _LockedFeaturePeekCard(
+                                lockedCount: lockedFeatures.length,
+                                def: nextLocked,
+                                progress: nextLocked.progress(game),
+                                onTap: _openUnlockRoadmap,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 14),
+                            child: _CompactBattleStatusPanel(
+                              combo: game.combo,
+                              tapPower: game.tapPower,
+                              maxIdleReward: game.dps * offlineMaxSeconds,
+                              idleHours: offlineMaxHours,
+                              prestigeMultiplier: game.prestigeMultiplier,
+                              collectionFraction:
+                                  notifier.collectionBonusFraction,
+                              boosters: game.activeBoosters,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 14),
+                            child: _HomeActionBar(
+                              boosterUnlocked: game.isFeatureUnlocked(
+                                  FeatureUnlocks.boosterShop),
+                              exchangeUnlocked: game.isFeatureUnlocked(
+                                  FeatureUnlocks.goldExchange),
+                              stage: game.mainCoasterStage,
+                              onBooster: _openBoosterShop,
+                              onExchange: _openGoldExchange,
+                              onEnhance: _openMainCoasterEnhance,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                      )
+                    : const SizedBox(height: 6),
               ),
-              const SizedBox(height: 10),
             ],
           ),
           FloatingNumberLayer(items: _floats, onDone: _removeFloat),
@@ -783,6 +804,65 @@ class _SlimeProgressBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Slim handle bar above the bottom HUD stack. Tapping toggles the
+/// expanded state — when collapsed, the park scene grows into the
+/// space the HUD would occupy. The chevron icon flips to indicate
+/// the action it'll perform on next tap.
+class _BottomHudToggle extends StatelessWidget {
+  final bool expanded;
+  final VoidCallback onTap;
+  const _BottomHudToggle({required this.expanded, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        child: Container(
+          height: 22,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.85),
+            borderRadius: BorderRadius.circular(11),
+            border: Border.all(
+                color: Colors.black.withValues(alpha: 0.06), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                expanded
+                    ? Icons.keyboard_arrow_down_rounded
+                    : Icons.keyboard_arrow_up_rounded,
+                size: 16,
+                color: Colors.black.withValues(alpha: 0.65),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                expanded ? '대시보드 접기' : '대시보드 펼치기',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black.withValues(alpha: 0.65),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
