@@ -125,7 +125,7 @@ class _MainCoasterEnhanceDialogState
     return switch (currency) {
       MainCoasterEnhanceCurrency.gold => _EnhancePlan(
           currency: currency,
-          title: '골드 강화',
+          title: '골드 시공',
           subtitle: '가장 기본적인 시도',
           icon: Icons.paid,
           color: AppColors.deepCoral,
@@ -134,12 +134,12 @@ class _MainCoasterEnhanceDialogState
               boostCost + (useProtection ? mainCoasterProtectionTicketCost : 0),
           successRate: (cost.goldSuccessBase + boostBonus).clamp(0.0, 1.0),
           failureLabel:
-              useProtection ? '실패 시 단계 유지' : '실패 시 -${cost.penaltyOnFail}강',
+              useProtection ? '실패 시 단계 유지' : '실패 시 ${cost.penaltyOnFail}단계 하락',
           protectedOnFail: useProtection,
         ),
       MainCoasterEnhanceCurrency.ticket => _EnhancePlan(
           currency: currency,
-          title: '티켓 강화',
+          title: '티켓 시공',
           subtitle: '실패해도 단계 유지',
           icon: Icons.diamond,
           color: const Color(0xFF7C4DFF),
@@ -181,10 +181,10 @@ class _MainCoasterEnhanceDialogState
       return;
     }
     if (result.success) {
-      _toast(
-          '성공! +${result.newStage}강 · ${mainCoasterStageUpgradeLabel(result.newStage)}');
+      setState(() {});
+      return;
     } else if (result.penaltyApplied > 0) {
-      _toast('실패: ${result.penaltyApplied}강 하락 (+${result.newStage})');
+      _toast('실패: ${result.penaltyApplied}단계 하락 (${result.newStage}단계)');
     } else {
       _toast('실패: 단계 유지');
     }
@@ -268,7 +268,7 @@ class _Header extends StatelessWidget {
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
               ),
               Text(
-                '$tierLabel · +$stage강',
+                '$tierLabel · $stage단계',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -373,7 +373,7 @@ class _CoasterPreviewCard extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            '$label +$stage',
+            '$label $stage단계',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w900,
@@ -410,7 +410,7 @@ class _NextStageBar extends StatelessWidget {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              '목표 +$targetStage · ${mainCoasterStageUpgradeLabel(targetStage)} · $tierName',
+              '목표 $targetStage단계 · ${mainCoasterStageUpgradeLabel(targetStage)} · $tierName',
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
             ),
           ),
@@ -496,7 +496,7 @@ class _OptionPanel extends StatelessWidget {
                         ),
                         Text(
                           protectionRelevant
-                              ? '골드 강화 실패 시 단계 하락 방지 · 티켓 $mainCoasterProtectionTicketCost'
+                              ? '골드 시공 실패 시 단계 하락 방지 · 티켓 $mainCoasterProtectionTicketCost'
                               : '티켓/하이브리드는 기본적으로 실패 시 단계가 유지됩니다',
                           style: TextStyle(
                             fontSize: 10,
@@ -547,7 +547,7 @@ class _ModeGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _Panel(
-      title: '강화 방식',
+      title: '업그레이드 방식',
       child: LayoutBuilder(
         builder: (context, constraints) {
           final twoColumns = constraints.maxWidth >= 390;
@@ -906,7 +906,7 @@ class _MaxedPanel extends StatelessWidget {
     return const Expanded(
       child: Center(
         child: Text(
-          '+50강 도달! 더 이상 강화할 수 없습니다',
+          '50단계 도달! 더 이상 업그레이드할 수 없습니다',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
         ),

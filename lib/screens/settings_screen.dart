@@ -144,7 +144,7 @@ class SettingsScreen extends ConsumerWidget {
         ),
         title: const Text('정말 초기화할까요?'),
         content: const Text(
-          '모든 진행도, 골드, 강화 레벨, 브랜드 포인트, 통계가 삭제됩니다.\n'
+          '모든 진행도, 골드, 운영 업그레이드, 브랜드 포인트, 통계가 삭제됩니다.\n'
           '이 작업은 되돌릴 수 없습니다.',
         ),
         actions: [
@@ -689,7 +689,7 @@ class _DangerZone extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '골드, 강화, 브랜드 포인트, 통계가 삭제되며 복구할 수 없습니다.',
+                '골드, 운영 업그레이드, 브랜드 포인트, 통계가 삭제되며 복구할 수 없습니다.',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,

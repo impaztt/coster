@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Static metadata for the 17 시/도 in the stock-market system.
+/// Static metadata for the 17 시/도 in the regional-investment system.
 ///
 /// Volatility is per-minute σ% — converted to per-tick σ in the price
 /// simulation. Hourly yield is the dividend rate per hour (e.g. 0.08 = 8%
@@ -9,8 +9,8 @@ import 'package:flutter/material.dart';
 ///
 /// Market cap design: 경기도 = 100aa (1×10^17 골드). 이후 지역은
 /// 10.0×에서 시작해 뒤로 갈수록 배수가 커지는 계단형 곡선으로 증가한다.
-/// 모든 지역 총주식수는 10M (1,000만주)으로 통일.
-/// 1주 가격 = 시가총액 / 10M.
+/// 모든 지역 총지분수는 10M으로 통일.
+/// 1지분 가치 = 지역 가치 / 10M.
 class RegionDef {
   final String id;
   final String name;

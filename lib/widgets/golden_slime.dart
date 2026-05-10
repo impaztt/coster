@@ -102,12 +102,13 @@ class _GoldenSlimeState extends State<GoldenSlime>
           final flash = (1.0 - _hitC.value).clamp(0.0, 1.0) < 0.5
               ? (0.5 - (1.0 - _hitC.value)).clamp(0.0, 0.5) * 1.4
               : 0.0;
-          final hpRatio = (_hp / slimeMaxHp).clamp(0.0, 1.0);
+          final responseRatio =
+              ((slimeMaxHp - _hp) / slimeMaxHp).clamp(0.0, 1.0);
           return Opacity(
             opacity: opacity,
             child: SizedBox(
-              width: 80,
-              height: 96,
+              width: 88,
+              height: 108,
               child: Stack(
                 clipBehavior: Clip.none,
                 alignment: Alignment.center,
@@ -122,7 +123,11 @@ class _GoldenSlimeState extends State<GoldenSlime>
                     top: 18,
                     left: 6,
                     right: 6,
-                    child: _HpBar(ratio: hpRatio, hp: _hp, max: slimeMaxHp),
+                    child: _HpBar(
+                      ratio: responseRatio,
+                      handled: slimeMaxHp - _hp,
+                      max: slimeMaxHp,
+                    ),
                   ),
                   Positioned(
                     bottom: 0,
@@ -130,39 +135,7 @@ class _GoldenSlimeState extends State<GoldenSlime>
                       offset: Offset(hitShake, 0),
                       child: Transform.scale(
                         scale: pulse * deathScale,
-                        child: Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const RadialGradient(
-                              colors: [Color(0xFFFFF176), Color(0xFFFFB300)],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFFB300)
-                                    .withValues(alpha: 0.55),
-                                blurRadius: 14,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              const Icon(Icons.monetization_on,
-                                  color: Color(0xFF7A4F00), size: 32),
-                              if (flash > 0)
-                                Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color:
-                                        Colors.white.withValues(alpha: flash),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
+                        child: _VipGuestAvatar(flash: flash),
                       ),
                     ),
                   ),
@@ -178,9 +151,13 @@ class _GoldenSlimeState extends State<GoldenSlime>
 
 class _HpBar extends StatelessWidget {
   final double ratio;
-  final int hp;
+  final int handled;
   final int max;
-  const _HpBar({required this.ratio, required this.hp, required this.max});
+  const _HpBar({
+    required this.ratio,
+    required this.handled,
+    required this.max,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +176,7 @@ class _HpBar extends StatelessWidget {
                   child: Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFFFF8A65), Color(0xFFE53935)],
+                        colors: [Color(0xFFFFF176), Color(0xFFFFB300)],
                       ),
                     ),
                   ),
@@ -210,7 +187,7 @@ class _HpBar extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          '$hp / $max',
+          '응대 $handled / $max',
           style: const TextStyle(
             fontSize: 9,
             fontWeight: FontWeight.w800,
@@ -229,6 +206,196 @@ class _HpBar extends StatelessWidget {
   }
 }
 
+class _VipGuestAvatar extends StatelessWidget {
+  final double flash;
+  const _VipGuestAvatar({required this.flash});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 68,
+      height: 72,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.bottomCenter,
+        children: [
+          Positioned(
+            bottom: 0,
+            child: Container(
+              width: 54,
+              height: 42,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF4A148C), Color(0xFF1A237E)],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFB300).withValues(alpha: 0.48),
+                    blurRadius: 16,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Positioned(
+                    top: 7,
+                    child: Container(
+                      width: 24,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD54F),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    ),
+                  ),
+                  const Positioned(
+                    bottom: 9,
+                    child: Icon(
+                      Icons.workspace_premium,
+                      color: Color(0xFFFFD54F),
+                      size: 19,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 13,
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const RadialGradient(
+                  colors: [Color(0xFFFFE0B2), Color(0xFFFFB74D)],
+                ),
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Positioned(
+                    top: 14,
+                    child: Container(
+                      width: 29,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF212121),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 17,
+                    left: 9,
+                    child: Container(width: 7, height: 2, color: Colors.white),
+                  ),
+                  Positioned(
+                    top: 17,
+                    right: 9,
+                    child: Container(width: 7, height: 2, color: Colors.white),
+                  ),
+                  Positioned(
+                    bottom: 8,
+                    child: Container(
+                      width: 13,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8D4A00),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            child: Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _CrownPoint(height: 13),
+                    _CrownPoint(height: 18),
+                    _CrownPoint(height: 13),
+                  ],
+                ),
+                Container(
+                  width: 34,
+                  height: 9,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD54F),
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: const Color(0xFFFF8F00)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 0,
+            bottom: 17,
+            child: Container(
+              width: 21,
+              height: 15,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8E1),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: const Color(0xFFFFB300)),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'VIP',
+                style: TextStyle(
+                  fontSize: 7,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF8D6E00),
+                ),
+              ),
+            ),
+          ),
+          if (flash > 0)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: flash),
+                  borderRadius: BorderRadius.circular(22),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CrownPoint extends StatelessWidget {
+  final double height;
+  const _CrownPoint({required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 11,
+      height: height,
+      margin: const EdgeInsets.symmetric(horizontal: 1),
+      decoration: const BoxDecoration(
+        color: Color(0xFFFFD54F),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+      ),
+    );
+  }
+}
+
 class _RewardChip extends StatelessWidget {
   final double reward;
   const _RewardChip({required this.reward});
@@ -243,7 +410,7 @@ class _RewardChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
-          '+${NumberFormatter.format(reward)}',
+          'VIP +${NumberFormatter.format(reward)}',
           style: const TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w900,

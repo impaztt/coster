@@ -740,7 +740,7 @@ class _FormationRuleCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '역할을 다양하게 섞으면 피버 보너스가 오르고, 같은 지역 코스터를 묶으면 해당 지역 주식의 내재가치와 배당이 강해집니다.',
+            '역할을 다양하게 섞으면 피버 보너스가 오르고, 같은 지역 코스터를 묶으면 해당 지역 지분의 내재가치와 배당이 강해집니다.',
             style: TextStyle(
               fontSize: 11,
               color: Colors.black.withValues(alpha: 0.55),

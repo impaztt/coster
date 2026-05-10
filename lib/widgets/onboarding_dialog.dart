@@ -177,7 +177,7 @@ class _QuickStartPage extends StatelessWidget {
         ),
         const _StepRow(
           icon: Icons.upgrade,
-          title: '2) 강화에서 터치·어트랙션을 균형 구매',
+          title: '2) 운영에서 터치·어트랙션을 균형 구매',
           desc: '즉시 수익(터치)과 방치 수익(어트랙션)을 같이 키우는 것이 안정적입니다.',
         ),
         const _StepRow(

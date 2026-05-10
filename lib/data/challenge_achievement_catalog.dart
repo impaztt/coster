@@ -125,8 +125,8 @@ final challengeAchievementCatalog = <AchievementDef>[
   ),
   _challenge(
     id: 'ch_no_tap_upgrade',
-    name: '운영 강화 없이',
-    description: '운영 강화 한 번도 안 사고 재개장',
+    name: '운영 업그레이드 없이',
+    description: '운영 업그레이드 한 번도 안 사고 재개장',
     ticketReward: 70,
     test: (_) => false,
   ),
@@ -161,25 +161,25 @@ final challengeAchievementCatalog = <AchievementDef>[
     test: (c) => c.ticket >= 10000,
   ),
 
-  // ── 주식 트레이딩 챌린지 ──
+  // ── 지역 투자 챌린지 ──
   _challenge(
     id: 'ch_stock_run_trades_50',
-    name: '단타 데이트레이더',
-    description: '한 재개장 안에 주식 거래 50회',
+    name: '지역 순환 투자',
+    description: '한 재개장 안에 지역 투자/회수 50회',
     ticketReward: 50,
     test: (c) => c.run.stockTrades >= 50,
   ),
   _challenge(
     id: 'ch_stock_run_buys_20',
-    name: '한 런 주식 20매수',
-    description: '한 재개장 안에 주식 매수 20회',
+    name: '한 런 지역 20투자',
+    description: '한 재개장 안에 지역 지분 투자 20회',
     ticketReward: 30,
     test: (c) => c.run.stockBuys >= 20,
   ),
   _challenge(
     id: 'ch_stock_run_sells_10',
-    name: '한 런 주식 10매도',
-    description: '한 재개장 안에 주식 매도 10회',
+    name: '한 런 지역 10회수',
+    description: '한 재개장 안에 지역 지분 회수 10회',
     ticketReward: 30,
     test: (c) => c.run.stockSells >= 10,
   ),
@@ -215,8 +215,8 @@ final challengeAchievementCatalog = <AchievementDef>[
   ),
   _challenge(
     id: 'ch_run_producer_lv_500',
-    name: '한 런 직원 강화 500',
-    description: '한 재개장 안에 직원 누적 강화 500레벨',
+    name: '한 런 직원 교육 500',
+    description: '한 재개장 안에 직원 누적 교육 500레벨',
     ticketReward: 40,
     test: (c) => c.run.producerLevelsBought >= 500,
   ),

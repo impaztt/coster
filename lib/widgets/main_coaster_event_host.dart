@@ -9,8 +9,9 @@ import '../providers/game_provider.dart';
 import 'main_coaster_widget.dart';
 
 /// Listens to [mainCoasterEventProvider] and displays:
+///   • A SnackBar when a normal stage upgrade succeeds.
 ///   • A modal evolution overlay when the player crosses into a new tier.
-///   • A modal naming prompt the very first time +1 succeeds.
+///   • A modal naming prompt the very first time stage 1 succeeds.
 ///   • A SnackBar for milestone rewards.
 class MainCoasterEventHost extends ConsumerStatefulWidget {
   final Widget child;
@@ -29,6 +30,8 @@ class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
       (prev, next) {
         next.whenData((evt) async {
           switch (evt.type) {
+            case MainCoasterEventType.stageUp:
+              _showStageUp(evt.stage ?? 0);
             case MainCoasterEventType.tierUp:
               await _showTierUp(evt);
             case MainCoasterEventType.milestone:
@@ -40,6 +43,19 @@ class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
       },
     );
     return widget.child;
+  }
+
+  void _showStageUp(int stage) {
+    if (!mounted || stage <= 0) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '$stage단계 업그레이드 완료 · ${mainCoasterStageUpgradeLabel(stage)}',
+        ),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _showTierUp(MainCoasterEvent evt) async {
@@ -76,7 +92,7 @@ class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '+${reward.stage} 도달 · ${mainCoasterStageUpgradeLabel(reward.stage)} — ${parts.join(' · ')}',
+          '${reward.stage}단계 도달 · ${mainCoasterStageUpgradeLabel(reward.stage)} — ${parts.join(' · ')}',
         ),
         duration: const Duration(seconds: 4),
         behavior: SnackBarBehavior.floating,
@@ -100,7 +116,7 @@ class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '첫 강화를 시그니처화합니다. 이 코스터의 이름을 지어주세요.',
+              '첫 업그레이드를 시그니처화합니다. 이 코스터의 이름을 지어주세요.',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.black.withValues(alpha: 0.6),

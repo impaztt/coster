@@ -8,7 +8,7 @@ const prestigeUpgradeCatalog = <PrestigeUpgradeDef>[
   PrestigeUpgradeDef(
     id: prestigeOverallUpgradeId,
     name: '브랜드 연구',
-    description: '전체 배율을 영구 강화합니다.',
+    description: '전체 배율을 영구 성장시킵니다.',
     icon: Icons.auto_awesome,
     accent: Color(0xFF00695C),
     baseCost: 5,
@@ -19,7 +19,7 @@ const prestigeUpgradeCatalog = <PrestigeUpgradeDef>[
   PrestigeUpgradeDef(
     id: 'legacy_tap',
     name: '코스터의 유산',
-    description: '터치 위력을 영구 강화합니다.',
+    description: '터치 위력을 영구 성장시킵니다.',
     icon: Icons.touch_app,
     accent: Color(0xFFFF7043),
     baseCost: 12,
@@ -30,7 +30,7 @@ const prestigeUpgradeCatalog = <PrestigeUpgradeDef>[
   PrestigeUpgradeDef(
     id: 'legacy_dps',
     name: '동력의 유산',
-    description: '초당 수익을 영구 강화합니다.',
+    description: '초당 수익을 영구 성장시킵니다.',
     icon: Icons.bolt,
     accent: Color(0xFF26A69A),
     baseCost: 12,
@@ -41,7 +41,7 @@ const prestigeUpgradeCatalog = <PrestigeUpgradeDef>[
   PrestigeUpgradeDef(
     id: 'legacy_all',
     name: '초월 핵심',
-    description: '터치와 초당 수익을 모두 영구 강화합니다.',
+    description: '터치와 초당 수익을 모두 영구 성장시킵니다.',
     icon: Icons.auto_awesome,
     accent: Color(0xFFFFB300),
     baseCost: 40,

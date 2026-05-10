@@ -176,7 +176,7 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
     benefitSummary: '업적 기반 티켓 수급 루트 오픈',
     stageHint: '초반',
     tips: const [
-      '처음엔 터치/골드/강화 관련 업적이 가장 빨리 열립니다.',
+      '처음엔 터치/골드/운영 업그레이드 관련 업적이 가장 빨리 열립니다.',
       '업적 탭이 열리면 보상을 즉시 수령해 다음 성장에 재투자하세요.',
     ],
     progress: (s) => FeatureUnlockProgress(
@@ -218,7 +218,7 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
     benefitSummary: '영구 성장 루프(브랜드 연구) 시작',
     stageHint: '중후반',
     tips: const [
-      '재개장 직전에는 골드/강화를 충분히 올려 브랜드 포인트 획득량을 극대화하세요.',
+      '재개장 직전에는 골드/운영 업그레이드를 충분히 올려 브랜드 포인트 획득량을 극대화하세요.',
       '짧은 재개장 반복보다 목표 브랜드 포인트 구간을 정해서 길게 모으는 편이 효율적입니다.',
     ],
     progress: (s) => FeatureUnlockProgress(
@@ -250,8 +250,8 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
   ),
   FeatureUnlockDef(
     id: FeatureUnlocks.stockMarket,
-    label: '주식 시장',
-    description: '상점 탭의 투자 메뉴가 열립니다. 지역 지분을 매수해 시간당 배당 수익을 얻을 수 있어요.',
+    label: '지역 투자',
+    description: '상점 탭의 투자 메뉴가 열립니다. 지역 지분에 투자해 시간당 배당 수익을 얻을 수 있어요.',
     icon: Icons.show_chart,
     color: const Color(0xFFD32F2F),
     trigger: (s) => s.lifetimeGold >= stockMarketLifetimeGoldTrigger,
@@ -261,8 +261,8 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
     benefitSummary: '배당 기반의 장기 방치 수익 루트 오픈',
     stageHint: '엔드게임',
     tips: const [
-      '주식 해금 직전에는 누적 골드를 빠르게 올릴 수 있는 구간에 집중하세요.',
-      '해금 후에는 배당 회수를 루틴화하면 장기 성장 속도가 안정됩니다.',
+      '지역 투자 해금 직전에는 누적 골드를 빠르게 올릴 수 있는 구간에 집중하세요.',
+      '해금 후에는 지역 배당 회수를 루틴화하면 장기 성장 속도가 안정됩니다.',
     ],
     progress: (s) => FeatureUnlockProgress(
       current: s.lifetimeGold,
@@ -285,7 +285,7 @@ final featureUnlockCatalog = <FeatureUnlockDef>[
     stageHint: '중후반',
     tips: const [
       '8시간 환금 슬롯이 티켓 효율이 가장 좋아요. 자기 전 한 번 사용해 보세요.',
-      '환전한 골드를 강화/주식에 쓰면 그때부터 브랜드 포인트 계산에 정상 반영됩니다.',
+      '환전한 골드를 운영 업그레이드/지역 투자에 쓰면 그때부터 브랜드 포인트 계산에 정상 반영됩니다.',
     ],
     progress: (s) => FeatureUnlockProgress(
       current:

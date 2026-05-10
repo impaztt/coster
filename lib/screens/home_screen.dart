@@ -129,6 +129,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  void _openRevenueDetails() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Consumer(
+        builder: (context, ref, _) {
+          final game = ref.watch(gameProvider);
+          final notifier = ref.read(gameProvider.notifier);
+          return _RevenueDetailSheet(game: game, notifier: notifier);
+        },
+      ),
+    );
+  }
+
   void _openUnlockRoadmap() {
     final game = ref.read(gameProvider);
     showFeatureUnlockRoadmapSheet(
@@ -157,6 +172,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Row(
                   children: [
                     Expanded(child: GoldDisplay(amount: game.gold)),
+                    const SizedBox(width: 8),
+                    _RevenueDetailsButton(onTap: _openRevenueDetails),
                   ],
                 ),
               ),
@@ -289,7 +306,7 @@ class _HomeActionBar extends StatelessWidget {
         Expanded(
           child: _HomeActionButton(
             icon: Icons.auto_fix_high,
-            label: '강화 +$stage',
+            label: '업그레이드 $stage',
             color: const Color(0xFF7C4DFF),
             onTap: onEnhance,
           ),
@@ -363,6 +380,51 @@ class _HomeActionButton extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RevenueDetailsButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _RevenueDetailsButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: '수익 상세',
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        elevation: 1,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: onTap,
+          child: Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.query_stats, size: 18, color: AppColors.deepCoral),
+                SizedBox(width: 5),
+                Text(
+                  '수익',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.deepCoral,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -608,6 +670,278 @@ class _CompactBattleStatusPanel extends StatelessWidget {
   }
 }
 
+class _RevenueDetailSheet extends StatelessWidget {
+  final GameState game;
+  final GameNotifier notifier;
+
+  const _RevenueDetailSheet({required this.game, required this.notifier});
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final activeBoosters =
+        game.activeBoosters.where((b) => b.isActive(now)).toList();
+    final comboPct = (game.combo * comboBonusPerStack).clamp(0.0, 0.5);
+    final permanentPct = (game.prestigeMultiplier - 1).clamp(0.0, 9999999.0);
+    final collectionPct = notifier.collectionBonusFraction;
+    final mainCoasterPct = notifier.mainCoasterRevenueBonusFraction;
+    final pendingDividend = notifier.totalPendingDividend;
+    final holdingsValue = notifier.totalHoldingsValue;
+    final strongestBoost = activeBoosters.isEmpty
+        ? 1.0
+        : activeBoosters
+            .map((b) => b.multiplier)
+            .fold<double>(1.0, (a, b) => a > b ? a : b);
+
+    return SafeArea(
+      top: false,
+      child: Container(
+        margin: const EdgeInsets.all(10),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(18)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              const Row(
+                children: [
+                  Icon(Icons.query_stats, color: AppColors.deepCoral),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '수익 상세',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _RevenueSection(
+                title: '현재 수익',
+                children: [
+                  _RevenueMetric(
+                    icon: Icons.touch_app,
+                    label: '탭당 골드',
+                    value: '+${NumberFormatter.formatPrecise(game.tapPower)}',
+                    color: const Color(0xFF8D6E00),
+                  ),
+                  _RevenueMetric(
+                    icon: Icons.bolt,
+                    label: '초당 수익',
+                    value: '${NumberFormatter.formatPrecise(game.dps)} /s',
+                    color: const Color(0xFF00838F),
+                  ),
+                  _RevenueMetric(
+                    icon: Icons.nightlight_round,
+                    label: '최대 방치 보상',
+                    value:
+                        '+${NumberFormatter.format(game.dps * offlineMaxSeconds)}',
+                    subLabel: '$offlineMaxHours시간 기준',
+                    color: const Color(0xFF5E35B1),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              _RevenueSection(
+                title: '배율 구성',
+                children: [
+                  _RevenueMetric(
+                    icon: Icons.auto_awesome,
+                    label: '브랜드 연구',
+                    value: _pct(permanentPct),
+                    color: const Color(0xFF00695C),
+                  ),
+                  _RevenueMetric(
+                    icon: Icons.collections_bookmark,
+                    label: '코스터 수집',
+                    value: _pct(collectionPct),
+                    color: const Color(0xFF6A1B9A),
+                  ),
+                  _RevenueMetric(
+                    icon: Icons.train,
+                    label: '메인 코스터',
+                    value: _pct(mainCoasterPct),
+                    subLabel: '${game.mainCoasterStage}단계',
+                    color: AppColors.deepCoral,
+                  ),
+                  _RevenueMetric(
+                    icon: Icons.local_fire_department,
+                    label: '현재 콤보',
+                    value: _pct(comboPct),
+                    subLabel: 'x${game.combo}',
+                    color: const Color(0xFFE53935),
+                  ),
+                  _RevenueMetric(
+                    icon: Icons.flash_on,
+                    label: '활성 부스터',
+                    value: activeBoosters.isEmpty
+                        ? '없음'
+                        : '${activeBoosters.length}개 · x${_multLabel(strongestBoost)}',
+                    color: const Color(0xFFFF8A00),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              _RevenueSection(
+                title: '지역 투자',
+                children: [
+                  _RevenueMetric(
+                    icon: Icons.location_city,
+                    label: '평가 가치',
+                    value: NumberFormatter.format(holdingsValue),
+                    color: const Color(0xFF7C4DFF),
+                  ),
+                  _RevenueMetric(
+                    icon: Icons.payments,
+                    label: '미수령 배당',
+                    value: '+${NumberFormatter.format(pendingDividend)}',
+                    color: AppColors.deepCoral,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static String _pct(num fraction) {
+    final pct = fraction * 100;
+    final digits = pct >= 100 ? 0 : 1;
+    return '+${pct.toStringAsFixed(digits)}%';
+  }
+
+  static String _multLabel(double value) {
+    final digits = value % 1 == 0 ? 0 : 1;
+    return value.toStringAsFixed(digits);
+  }
+}
+
+class _RevenueSection extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
+
+  const _RevenueSection({required this.title, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.035),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 8),
+          for (var i = 0; i < children.length; i++) ...[
+            children[i],
+            if (i != children.length - 1) const SizedBox(height: 7),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RevenueMetric extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final String? subLabel;
+  final Color color;
+
+  const _RevenueMetric({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.subLabel,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        const SizedBox(width: 9),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              if (subLabel != null)
+                Text(
+                  subLabel!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black.withValues(alpha: 0.5),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              color: color,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _CompactBattleMetric extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -751,7 +1085,7 @@ class _SlimeProgressBar extends StatelessWidget {
               color: accent.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(AppRadii.control),
             ),
-            child: Icon(Icons.bubble_chart, color: accent, size: 18),
+            child: Icon(Icons.workspace_premium, color: accent, size: 18),
           ),
           const SizedBox(width: 9),
           Expanded(

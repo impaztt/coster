@@ -511,10 +511,10 @@ final achievementCatalog = <AchievementDef>[
     target: 3,
   ),
 
-  // ============ 7. 코스터 강화 (5) ============
+  // ============ 7. 코스터 업그레이드 (5) ============
   _num(
     id: 'coaster_lv_3',
-    name: '코스터 단련 입문',
+    name: '코스터 점검 입문',
     description: '코스터 하나를 Lv 3으로',
     category: AchievementCategory.coasterLevel,
     ticketReward: 1,
@@ -523,7 +523,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'coaster_lv_5',
-    name: '코스터 절반 각성',
+    name: '코스터 중급 점검',
     description: '코스터 하나를 Lv 5으로',
     category: AchievementCategory.coasterLevel,
     ticketReward: 2,
@@ -541,7 +541,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'coaster_lv_max',
-    name: '완전 각성',
+    name: '완전 정비',
     description: '코스터 하나를 최대 Lv 10으로',
     category: AchievementCategory.coasterLevel,
     ticketReward: 10,
@@ -702,7 +702,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'slime_200',
-    name: '황금 손님 달인',
+    name: 'VIP 단골 관리',
     description: 'VIP 손님 200명 응대',
     category: AchievementCategory.slime,
     ticketReward: 20,
@@ -889,8 +889,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'master_tap_upgrades',
-    name: '강화의 달인',
-    description: '운영 강화 누적 10회 구매',
+    name: '운영 관리의 달인',
+    description: '운영 업그레이드 누적 10회 구매',
     category: AchievementCategory.master,
     ticketReward: 2,
     current: (c) => c.totalTapUpgradesBought.toDouble(),
@@ -969,7 +969,7 @@ final achievementCatalog = <AchievementDef>[
     target: 10000000000,
   ),
 
-  // -- 골드 후속 단계 (주식 endgame까지 대응) --
+  // -- 골드 후속 단계 (지역 투자 엔드게임까지 대응) --
   _num(
     id: 'gold_1t',
     name: '조 단위 거상',
@@ -999,7 +999,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'gold_100aa',
-    name: '시장의 지배자',
+    name: '파크 재벌',
     description: '누적 골드 100aa',
     category: AchievementCategory.gold,
     ticketReward: 250,
@@ -1216,10 +1216,10 @@ final achievementCatalog = <AchievementDef>[
     target: 66,
   ),
 
-  // -- 코스터 강화 후속 단계 --
+  // -- 코스터 업그레이드 후속 단계 --
   _num(
     id: 'coaster_max_5',
-    name: '5대 풀강',
+    name: '5대 풀업',
     description: '최대 레벨 코스터 5대',
     category: AchievementCategory.coasterLevel,
     ticketReward: 50,
@@ -1228,7 +1228,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'coaster_max_10',
-    name: '10대 풀강',
+    name: '10대 풀업',
     description: '최대 레벨 코스터 10대',
     category: AchievementCategory.coasterLevel,
     ticketReward: 90,
@@ -1237,7 +1237,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'coaster_max_20',
-    name: '20대 풀강',
+    name: '20대 풀업',
     description: '최대 레벨 코스터 20대',
     category: AchievementCategory.coasterLevel,
     ticketReward: 150,
@@ -1246,7 +1246,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'coaster_max_40',
-    name: '대장간의 신',
+    name: '차고 정비의 신',
     description: '최대 레벨 코스터 40대',
     category: AchievementCategory.coasterLevel,
     ticketReward: 250,
@@ -1527,11 +1527,11 @@ final achievementCatalog = <AchievementDef>[
         c.ownedCoasterCount / c.totalCoasterCatalogCount >= 0.9,
   ),
 
-  // ============ 신규 카테고리 — 주식 (15) ============
+  // ============ 신규 카테고리 — 지역 투자 (15) ============
   _bool(
     id: 'stock_unlocked',
-    name: '시장 입문',
-    description: '주식 시장 해금',
+    name: '지역 투자 입문',
+    description: '지역 투자 해금',
     category: AchievementCategory.stocks,
     ticketReward: 20,
     test: (c) => c.unlockedRegionCount > 0,
@@ -1539,7 +1539,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'stock_regions_5',
     name: '다섯 지역 점령',
-    description: '5개 지역 거래 가능',
+    description: '5개 지역 투자 가능',
     category: AchievementCategory.stocks,
     ticketReward: 40,
     current: (c) => c.unlockedRegionCount.toDouble(),
@@ -1548,7 +1548,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'stock_regions_10',
     name: '열 지역 점령',
-    description: '10개 지역 거래 가능',
+    description: '10개 지역 투자 가능',
     category: AchievementCategory.stocks,
     ticketReward: 80,
     current: (c) => c.unlockedRegionCount.toDouble(),
@@ -1556,8 +1556,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'stock_regions_all',
-    name: '전국 시장',
-    description: '17개 지역 모두 거래 가능',
+    name: '전국 파크 네트워크',
+    description: '17개 지역 모두 투자 가능',
     category: AchievementCategory.stocks,
     ticketReward: 200,
     current: (c) => c.unlockedRegionCount.toDouble(),
@@ -1565,8 +1565,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'stock_maxed_1',
-    name: '대주주',
-    description: '한 지역 80% 보유 (최대치 도달)',
+    name: '거점 운영권',
+    description: '한 지역 80% 지분 보유 (최대치 도달)',
     category: AchievementCategory.stocks,
     ticketReward: 60,
     current: (c) => c.regionsAtMaxOwnership.toDouble(),
@@ -1574,8 +1574,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'stock_maxed_5',
-    name: '5지역 대주주',
-    description: '5개 지역 80% 보유 도달',
+    name: '5지역 운영권',
+    description: '5개 지역 80% 지분 보유 도달',
     category: AchievementCategory.stocks,
     ticketReward: 150,
     current: (c) => c.regionsAtMaxOwnership.toDouble(),
@@ -1583,8 +1583,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'stock_maxed_10',
-    name: '10지역 대주주',
-    description: '10개 지역 80% 보유 도달',
+    name: '10지역 운영권',
+    description: '10개 지역 80% 지분 보유 도달',
     category: AchievementCategory.stocks,
     ticketReward: 300,
     current: (c) => c.regionsAtMaxOwnership.toDouble(),
@@ -1592,8 +1592,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'stock_maxed_all',
-    name: '대한민국의 회장',
-    description: '17개 지역 모두 80% 보유',
+    name: '전국 파크 회장',
+    description: '17개 지역 모두 80% 지분 보유',
     category: AchievementCategory.stocks,
     ticketReward: 700,
     current: (c) => c.regionsAtMaxOwnership.toDouble(),
@@ -1601,8 +1601,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'stock_trades_10',
-    name: '시장 입문자',
-    description: '주식 거래 10회',
+    name: '지역 투자 입문자',
+    description: '지역 투자/회수 10회',
     category: AchievementCategory.stocks,
     ticketReward: 15,
     current: (c) => c.totalStockTrades.toDouble(),
@@ -1610,8 +1610,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'stock_trades_100',
-    name: '단타 트레이더',
-    description: '주식 거래 100회',
+    name: '지역 운용가',
+    description: '지역 투자/회수 100회',
     category: AchievementCategory.stocks,
     ticketReward: 50,
     current: (c) => c.totalStockTrades.toDouble(),
@@ -1619,8 +1619,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'stock_trades_1k',
-    name: '시장 베테랑',
-    description: '주식 거래 1,000회',
+    name: '지역 투자 베테랑',
+    description: '지역 투자/회수 1,000회',
     category: AchievementCategory.stocks,
     ticketReward: 150,
     current: (c) => c.totalStockTrades.toDouble(),

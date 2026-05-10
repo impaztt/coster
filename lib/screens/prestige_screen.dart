@@ -22,7 +22,7 @@ class PrestigeScreen extends ConsumerWidget {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              '재개장',
+              '파크 재개장',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w900,
@@ -32,7 +32,7 @@ class PrestigeScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
             child: Text(
-              '이번 회차를 영구 성장으로 전환합니다.',
+              '이번 회차 매출을 브랜드 포인트로 전환하고 다음 운영을 빠르게 시작합니다.',
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.black.withValues(alpha: 0.6),
@@ -150,6 +150,8 @@ class _PrestigeOverview extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
+        const _PrestigeLoopPanel(),
+        const SizedBox(height: 12),
         const _PrestigeChangePanel(),
       ],
     );
@@ -170,7 +172,7 @@ class _PrestigeOverview extends ConsumerWidget {
         content: Text(
           '브랜드 포인트를 +$coinsGain 획득합니다.\n'
           '획득한 브랜드 포인트로 브랜드 연구/영구 업그레이드를 구매할 수 있습니다.\n\n'
-          '현재 회차 골드와 업그레이드는 초기화됩니다.',
+          '현재 회차 골드, 운영 업그레이드, 직원 레벨, 지역 투자는 초기화됩니다.',
         ),
         actions: [
           TextButton(
@@ -418,6 +420,98 @@ class _PrestigeSummaryGrid extends StatelessWidget {
   }
 }
 
+class _PrestigeLoopPanel extends StatelessWidget {
+  const _PrestigeLoopPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF7C4DFF).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color(0xFF7C4DFF).withValues(alpha: 0.18),
+        ),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '재개장 루프',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
+          ),
+          SizedBox(height: 10),
+          _PrestigeLoopStep(
+            icon: Icons.receipt_long,
+            title: '회차 매출 정산',
+            desc: '이번 회차 누적 골드와 성장도를 브랜드 포인트 보상으로 계산',
+          ),
+          _PrestigeLoopStep(
+            icon: Icons.restart_alt,
+            title: '파크 재오픈',
+            desc: '운영 업그레이드, 직원, 지역 투자는 새 회차로 초기화',
+          ),
+          _PrestigeLoopStep(
+            icon: Icons.auto_graph,
+            title: '브랜드 연구',
+            desc: '브랜드 포인트로 다음 회차의 터치와 초당 수익을 영구 성장',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PrestigeLoopStep extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String desc;
+
+  const _PrestigeLoopStep({
+    required this.icon,
+    required this.title,
+    required this.desc,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: const Color(0xFF7C4DFF)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  desc,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black.withValues(alpha: 0.58),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _PrestigeSummaryItem {
   final IconData icon;
   final Color color;
@@ -507,7 +601,7 @@ class _PrestigeChangePanel extends StatelessWidget {
               title: '초기화됨',
               color: AppColors.deepCoral,
               icon: Icons.restart_alt,
-              items: ['골드', '일반 강화', '현재 회차 진행'],
+              items: ['골드', '운영 업그레이드', '직원 레벨', '현재 회차 지역 투자'],
             ),
           ),
           SizedBox(width: 12),
@@ -516,7 +610,7 @@ class _PrestigeChangePanel extends StatelessWidget {
               title: '유지됨',
               color: Color(0xFF00695C),
               icon: Icons.verified,
-              items: ['브랜드 포인트', '브랜드 연구', '수집 보너스'],
+              items: ['브랜드 포인트', '브랜드 연구', '코스터 도감/차고', '업적/구매 상품'],
             ),
           ),
         ],
@@ -621,7 +715,7 @@ class _PrestigeShop extends ConsumerWidget {
         const SizedBox(height: 16),
         _UpgradeSection(
           title: '성장 연구',
-          subtitle: '터치, 초당 수익, 전체 수익을 영구 강화',
+          subtitle: '터치, 초당 수익, 전체 수익을 영구 성장',
           children: [
             for (final def in growthUpgrades)
               _ShopTile(

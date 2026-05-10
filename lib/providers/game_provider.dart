@@ -593,7 +593,7 @@ class MainCoasterEnhanceAttemptResult {
   });
 }
 
-enum MainCoasterEventType { tierUp, milestone, namingPrompt }
+enum MainCoasterEventType { stageUp, tierUp, milestone, namingPrompt }
 
 class MainCoasterEvent {
   final MainCoasterEventType type;
@@ -608,6 +608,12 @@ class MainCoasterEvent {
     this.stage,
     this.milestone,
   });
+
+  const MainCoasterEvent.stageUp({required int stage})
+      : this._(
+          type: MainCoasterEventType.stageUp,
+          stage: stage,
+        );
 
   const MainCoasterEvent.tierUp({
     required int tierIndex,
@@ -722,8 +728,8 @@ const dailyMissionDefs = <MissionDef>[
   ),
   MissionDef(
     id: 'daily_upgrade_30',
-    title: '강화 루틴',
-    description: '강화 레벨 30회 구매',
+    title: '운영 루틴',
+    description: '운영 업그레이드 30회 구매',
     target: 30,
     rewardTicket: 18,
     rewardPrestigeCoins: 14,
@@ -797,7 +803,7 @@ const weeklyMissionDefs = <MissionDef>[
   ),
   MissionDef(
     id: 'weekly_slime_40',
-    title: '황금 사냥',
+    title: 'VIP 라운지 운영',
     description: 'VIP 손님 40명 응대',
     target: 40,
     rewardTicket: 80,
@@ -824,8 +830,8 @@ const weeklyMissionDefs = <MissionDef>[
   ),
   MissionDef(
     id: 'weekly_upgrade_200',
-    title: '강화 매니아',
-    description: '강화 200회 구매',
+    title: '운영 매니아',
+    description: '운영 업그레이드 200회 구매',
     target: 200,
     rewardTicket: 100,
     rewardPrestigeCoins: 110,
@@ -2355,6 +2361,9 @@ class GameNotifier extends Notifier<GameState> {
   double get mainCoasterBonusFraction =>
       _mainCoasterMult() - 1.0 + _summonRateBonusFromMainCoaster();
 
+  /// Revenue-only portion of the home-tab main coaster bonus.
+  double get mainCoasterRevenueBonusFraction => _mainCoasterMult() - 1.0;
+
   /// Permanent +5% summon-rate bonus from clearing +50.
   double _summonRateBonusFromMainCoaster() =>
       _save.mainCoasterHighestStage >= 50 ? 0.05 : 0.0;
@@ -2816,7 +2825,8 @@ class GameNotifier extends Notifier<GameState> {
   // Main coaster enhancement
   // ─────────────────────────────────────────────────────────────────────────
 
-  /// Stream of milestone awards / tier evolutions / first-naming prompts.
+  /// Stream of stage-up feedback / milestone awards / tier evolutions /
+  /// first-naming prompts.
   final _mainCoasterEvents = StreamController<MainCoasterEvent>.broadcast();
   Stream<MainCoasterEvent> get mainCoasterEventStream =>
       _mainCoasterEvents.stream;
@@ -2970,6 +2980,9 @@ class GameNotifier extends Notifier<GameState> {
         }
         _mainCoasterEvents.add(MainCoasterEvent.milestone(milestone));
       }
+    }
+    if (success && milestone == null && !crossedTierUp) {
+      _mainCoasterEvents.add(MainCoasterEvent.stageUp(stage: newStage));
     }
     if (firstEverEnhance && success && _save.mainCoasterName == null) {
       _mainCoasterEvents.add(const MainCoasterEvent.namingPrompt());

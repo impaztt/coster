@@ -49,7 +49,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       pageIndex: _navUpgrade,
       icon: Icons.upgrade_outlined,
       selectedIcon: Icons.upgrade_rounded,
-      label: '강화',
+      label: '운영',
     ),
     _NavDestSpec(
       pageIndex: _navStore,

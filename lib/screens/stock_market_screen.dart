@@ -69,13 +69,13 @@ class StockMarketView extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         if (owned.isNotEmpty) ...[
-          const _SectionLabel(label: '보유 종목', accent: AppColors.coral),
+          const _SectionLabel(label: '보유 지역', accent: AppColors.coral),
           for (final r in owned) _RegionListTile(row: r, status: _Status.owned),
           const SizedBox(height: 12),
         ],
         if (tradable.isNotEmpty) ...[
           const _SectionLabel(
-            label: '거래 가능 종목',
+            label: '투자 가능 지역',
             accent: Color(0xFF7C4DFF),
           ),
           for (final r in tradable)
@@ -83,7 +83,7 @@ class StockMarketView extends ConsumerWidget {
           const SizedBox(height: 12),
         ],
         if (locked.isNotEmpty) ...[
-          const _SectionLabel(label: '잠긴 종목', accent: Colors.black38),
+          const _SectionLabel(label: '잠긴 지역', accent: Colors.black38),
           for (final r in locked)
             _LockedTile(
               row: r,
@@ -111,11 +111,11 @@ Future<void> _confirmAndSellAll(
     context: context,
     builder: (ctx) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text('전체 매도'),
+      title: const Text('전체 회수'),
       content: Text(
-        '보유한 모든 지역의 주식을 현재가로 매도합니다.\n'
-        '예상 평가액: ${NumberFormatter.format(totalHoldings)}골드\n'
-        '매도 시 2% 수수료가 차감됩니다.',
+        '보유한 모든 지역 지분을 현재 가치로 회수합니다.\n'
+        '예상 평가 가치: ${NumberFormatter.format(totalHoldings)}골드\n'
+        '회수 시 2% 수수료가 차감됩니다.',
       ),
       actions: [
         TextButton(
@@ -127,7 +127,7 @@ Future<void> _confirmAndSellAll(
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFF1976D2),
           ),
-          child: const Text('매도'),
+          child: const Text('회수'),
         ),
       ],
     ),
@@ -140,7 +140,7 @@ Future<void> _confirmAndSellAll(
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(
-        '${r.regionsSold}개 지역 ${NumberFormatter.formatInt(r.sharesSold)}주 매도 · 순 ${NumberFormatter.format(r.netProceeds)}골드 ($realizedSign${NumberFormatter.format(r.realizedProfit.abs())})',
+        '${r.regionsSold}개 지역 ${NumberFormatter.formatInt(r.sharesSold)}지분 회수 · 순 ${NumberFormatter.format(r.netProceeds)}골드 ($realizedSign${NumberFormatter.format(r.realizedProfit.abs())})',
       ),
       duration: const Duration(seconds: 3),
       behavior: SnackBarBehavior.floating,
@@ -182,7 +182,7 @@ class _MarketSummary extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '📈 주식 시장',
+            '📍 지역 투자',
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -194,7 +194,7 @@ class _MarketSummary extends StatelessWidget {
             children: [
               Expanded(
                 child: _SummaryStat(
-                  label: '평가액',
+                  label: '평가 가치',
                   value: NumberFormatter.format(totalHoldings),
                 ),
               ),
@@ -284,7 +284,7 @@ class _MarketSummary extends StatelessWidget {
             onPressed: onSellAll,
             icon: const Icon(Icons.sell, size: 16, color: Colors.white),
             label: const Text(
-              '전체 매도',
+              '전체 회수',
               style: TextStyle(fontWeight: FontWeight.w900),
             ),
             style: OutlinedButton.styleFrom(
@@ -466,7 +466,7 @@ class _RegionListTile extends ConsumerWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '시가총액 ${NumberFormatter.format(st.currentPrice * def.totalShares)} · 배당 ${(effectiveYield * 100).toStringAsFixed(1)}%/h',
+                          '지역 가치 ${NumberFormatter.format(st.currentPrice * def.totalShares)} · 배당 ${(effectiveYield * 100).toStringAsFixed(1)}%/h',
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.black.withValues(alpha: 0.55),
@@ -520,7 +520,7 @@ class _RegionListTile extends ConsumerWidget {
                     ),
                     Expanded(
                       child: _MiniStat(
-                        label: '평단',
+                        label: '평균가',
                         value: NumberFormatter.formatPrecise(st.avgCost),
                       ),
                     ),
@@ -569,7 +569,7 @@ class _RegionListTile extends ConsumerWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    '📈 ${def.name} 배당 +${NumberFormatter.format(paid)}골드',
+                                    '📍 ${def.name} 배당 +${NumberFormatter.format(paid)}골드',
                                   ),
                                   duration: const Duration(seconds: 2),
                                   behavior: SnackBarBehavior.floating,
@@ -764,7 +764,8 @@ class RegionDetailScreen extends ConsumerWidget {
     final hourlyEst = notifier.regionHourlyDividendEstimate(regionId);
     final districtBonus = notifier.regionCoasterDistrictBonusFraction(regionId);
     final effectiveYield = notifier.regionEffectiveHourlyYield(regionId);
-    final regionOwned = ownedCoasterCountForRegion(regionId, game.ownedCoasters);
+    final regionOwned =
+        ownedCoasterCountForRegion(regionId, game.ownedCoasters);
     final regionTotal = totalCoasterCountForRegion(regionId);
 
     return Scaffold(
@@ -784,7 +785,7 @@ class RegionDetailScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '시가총액 ${NumberFormatter.format(marketCap)}',
+                      '지역 가치 ${NumberFormatter.format(marketCap)}',
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.black.withValues(alpha: 0.6),
@@ -822,7 +823,7 @@ class RegionDetailScreen extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        '📈 ${def.name} 배당 +${NumberFormatter.format(paid)}골드 수령',
+                        '📍 ${def.name} 배당 +${NumberFormatter.format(paid)}골드 수령',
                       ),
                       duration: const Duration(seconds: 2),
                       behavior: SnackBarBehavior.floating,
@@ -875,7 +876,7 @@ class RegionDetailScreen extends ConsumerWidget {
                     minimumSize: const Size.fromHeight(50),
                   ),
                   child: const Text(
-                    '매수',
+                    '투자',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
@@ -895,7 +896,7 @@ class RegionDetailScreen extends ConsumerWidget {
                     disabledBackgroundColor: Colors.grey.shade300,
                   ),
                   child: const Text(
-                    '매도',
+                    '회수',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
@@ -913,7 +914,7 @@ class RegionDetailScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              '왕복 수수료 4% — 단기 매매보다 장기 보유 + 시간당 배당이 정석입니다.',
+              '왕복 수수료 4% — 잦은 회수보다 장기 보유 + 시간당 배당이 정석입니다.',
               style: TextStyle(
                 fontSize: 11,
                 color: Colors.black.withValues(alpha: 0.55),
@@ -1087,7 +1088,7 @@ class _DistrictBondCard extends StatelessWidget {
               ),
               Expanded(
                 child: _MiniStat(
-                  label: '내재가',
+                  label: '내재가치',
                   value: NumberFormatter.formatPrecise(intrinsicPrice),
                   valueColor: region.accent,
                 ),
@@ -1096,7 +1097,7 @@ class _DistrictBondCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '이 지역에 연결된 코스터를 모으거나 착용에 배치하면 주식의 내재가치와 배당률이 올라갑니다.',
+            '이 지역에 연결된 코스터를 모으거나 착용에 배치하면 지역 지분의 내재가치와 배당률이 올라갑니다.',
             style: TextStyle(
               fontSize: 11,
               color: Colors.black.withValues(alpha: 0.58),
@@ -1140,8 +1141,8 @@ class _HoldingPanel extends StatelessWidget {
             children: [
               Expanded(
                 child: _MiniStat(
-                  label: '보유 수량',
-                  value: '${NumberFormatter.formatInt(shares)} 주',
+                  label: '보유 지분',
+                  value: '${NumberFormatter.formatInt(shares)} 지분',
                 ),
               ),
               Expanded(
@@ -1222,17 +1223,17 @@ class _BuyDialogState extends ConsumerState<_BuyDialog> {
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Text('${def.name} 매수'),
+      title: Text('${def.name} 투자'),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _kv('현재가', NumberFormatter.formatPrecise(price)),
+            _kv('현재 가치', NumberFormatter.formatPrecise(price)),
             _kv('보유 골드', NumberFormatter.format(game.gold)),
             _kv(
-              '최대 매수 가능',
-              '${NumberFormatter.formatInt(cap)} 주 (지분 ${(regionMaxOwnershipFraction * 100).toStringAsFixed(0)}% 한도)',
+              '최대 투자 가능',
+              '${NumberFormatter.formatInt(cap)} 지분 (${(regionMaxOwnershipFraction * 100).toStringAsFixed(0)}% 한도)',
             ),
             const SizedBox(height: 10),
             _QtyStepper(
@@ -1241,12 +1242,12 @@ class _BuyDialogState extends ConsumerState<_BuyDialog> {
               onChanged: (v) => setState(() => _qty = v),
             ),
             const SizedBox(height: 12),
-            _kv('매수 금액', NumberFormatter.format(gross)),
+            _kv('투자 금액', NumberFormatter.format(gross)),
             _kv('수수료(2%)', NumberFormatter.format(fee)),
             const Divider(height: 16),
             _kv('총 차감', NumberFormatter.format(total), bold: true),
             const SizedBox(height: 4),
-            _kv('매수 후 보유율', '${(newOwn * 100).toStringAsFixed(3)}%'),
+            _kv('투자 후 보유율', '${(newOwn * 100).toStringAsFixed(3)}%'),
           ],
         ),
       ),
@@ -1265,7 +1266,7 @@ class _BuyDialogState extends ConsumerState<_BuyDialog> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                            '${def.name} ${NumberFormatter.formatInt(bought)}주 매수 완료'),
+                            '${def.name} ${NumberFormatter.formatInt(bought)}지분 투자 완료'),
                         duration: const Duration(seconds: 2),
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -1275,7 +1276,7 @@ class _BuyDialogState extends ConsumerState<_BuyDialog> {
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFFD32F2F),
           ),
-          child: const Text('매수 확정'),
+          child: const Text('투자 확정'),
         ),
       ],
     );
@@ -1312,15 +1313,15 @@ class _SellDialogState extends ConsumerState<_SellDialog> {
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Text('${def.name} 매도'),
+      title: Text('${def.name} 회수'),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _kv('현재가', NumberFormatter.formatPrecise(price)),
-            _kv('평단가', NumberFormatter.formatPrecise(st.avgCost)),
-            _kv('보유 수량', '${NumberFormatter.formatInt(st.shares)} 주'),
+            _kv('현재 가치', NumberFormatter.formatPrecise(price)),
+            _kv('평균가', NumberFormatter.formatPrecise(st.avgCost)),
+            _kv('보유 지분', '${NumberFormatter.formatInt(st.shares)} 지분'),
             const SizedBox(height: 10),
             _QtyStepper(
               value: _qty,
@@ -1328,7 +1329,7 @@ class _SellDialogState extends ConsumerState<_SellDialog> {
               onChanged: (v) => setState(() => _qty = v),
             ),
             const SizedBox(height: 12),
-            _kv('매도 금액', NumberFormatter.format(gross)),
+            _kv('회수 금액', NumberFormatter.format(gross)),
             _kv('수수료(2%)', NumberFormatter.format(fee)),
             const Divider(height: 16),
             _kv('순 수령액', NumberFormatter.format(net), bold: true),
@@ -1359,7 +1360,7 @@ class _SellDialogState extends ConsumerState<_SellDialog> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          '${def.name} ${NumberFormatter.formatInt(r.sharesSold)}주 매도 · 순 ${NumberFormatter.format(r.netProceeds)}골드',
+                          '${def.name} ${NumberFormatter.formatInt(r.sharesSold)}지분 회수 · 순 ${NumberFormatter.format(r.netProceeds)}골드',
                         ),
                         duration: const Duration(seconds: 2),
                         behavior: SnackBarBehavior.floating,
@@ -1370,7 +1371,7 @@ class _SellDialogState extends ConsumerState<_SellDialog> {
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFF1976D2),
           ),
-          child: const Text('매도 확정'),
+          child: const Text('회수 확정'),
         ),
       ],
     );
@@ -1463,7 +1464,7 @@ class _QtyStepper extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text(
-            '${NumberFormatter.formatInt(value)} 주',
+            '${NumberFormatter.formatInt(value)} 지분',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w900,

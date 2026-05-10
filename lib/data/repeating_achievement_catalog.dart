@@ -140,8 +140,8 @@ final repeatingAchievementCatalog = <RepeatingAchievementDef>[
   ),
   RepeatingAchievementDef(
     id: 'rep_stock_trades',
-    name: '시장 트레이더',
-    description: '주식 거래 단계 상승',
+    name: '지역 투자자',
+    description: '지역 투자 단계 상승',
     category: AchievementCategory.stocks,
     icon: Icons.show_chart,
     color: _trackStock,

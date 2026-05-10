@@ -89,7 +89,7 @@ class GoldExchangeDialog extends ConsumerWidget {
                     ],
                     const SizedBox(height: 4),
                     Text(
-                      '환금한 골드는 브랜드 포인트 계산에서 제외돼요. 강화/주식에 쓰면 그때부터 정상 반영됩니다.',
+                      '환금한 골드는 브랜드 포인트 계산에서 제외돼요. 운영 업그레이드/지역 투자에 쓰면 그때부터 정상 반영됩니다.',
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.black.withValues(alpha: 0.5),
@@ -141,7 +141,7 @@ class GoldExchangeDialog extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               '환금 골드는 브랜드 포인트에 즉시 반영되지 않으며, '
-              '강화/주식 등에 사용한 만큼만 브랜드 포인트 계산에 들어갑니다.',
+              '운영 업그레이드/지역 투자 등에 사용한 만큼만 브랜드 포인트 계산에 들어갑니다.',
               style: TextStyle(
                 fontSize: 11,
                 color: Colors.black.withValues(alpha: 0.55),
