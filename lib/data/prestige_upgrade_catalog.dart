@@ -7,7 +7,7 @@ const prestigeOverallUpgradeId = 'legacy_overall';
 const prestigeUpgradeCatalog = <PrestigeUpgradeDef>[
   PrestigeUpgradeDef(
     id: prestigeOverallUpgradeId,
-    name: '영구 각인',
+    name: '브랜드 연구',
     description: '전체 배율을 영구 강화합니다.',
     icon: Icons.auto_awesome,
     accent: Color(0xFF00695C),
@@ -30,7 +30,7 @@ const prestigeUpgradeCatalog = <PrestigeUpgradeDef>[
   PrestigeUpgradeDef(
     id: 'legacy_dps',
     name: '동력의 유산',
-    description: 'DPS를 영구 강화합니다.',
+    description: '초당 수익을 영구 강화합니다.',
     icon: Icons.bolt,
     accent: Color(0xFF26A69A),
     baseCost: 12,
@@ -41,7 +41,7 @@ const prestigeUpgradeCatalog = <PrestigeUpgradeDef>[
   PrestigeUpgradeDef(
     id: 'legacy_all',
     name: '초월 핵심',
-    description: '터치와 DPS를 모두 영구 강화합니다.',
+    description: '터치와 초당 수익을 모두 영구 강화합니다.',
     icon: Icons.auto_awesome,
     accent: Color(0xFFFFB300),
     baseCost: 40,
@@ -53,7 +53,7 @@ const prestigeUpgradeCatalog = <PrestigeUpgradeDef>[
   PrestigeUpgradeDef(
     id: 'legacy_coin',
     name: '명성 재순환',
-    description: '환생 시 획득하는 코인을 늘립니다.',
+    description: '재개장 시 획득하는 브랜드 포인트를 늘립니다.',
     icon: Icons.currency_exchange,
     accent: Color(0xFF7C4DFF),
     baseCost: 20,

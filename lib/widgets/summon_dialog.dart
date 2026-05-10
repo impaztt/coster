@@ -93,8 +93,8 @@ class _SummonRevealDialogState extends State<_SummonRevealDialog>
           children: [
             Text(
               _summary
-                  ? '소환 결과 (${widget.results.length}개)'
-                  : '소환 중...',
+                  ? '도입 결과 (${widget.results.length}개)'
+                  : '도입 중...',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -219,7 +219,7 @@ class _SingleReveal extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${role.label} · ${region.shortName} 검세권',
+                  '${role.label} · ${region.shortName} 지역 인지도',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.72),
                     fontSize: 11,

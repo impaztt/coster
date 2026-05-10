@@ -13,8 +13,8 @@ const coasterCatalog = <CoasterDef>[
   // ============ N (일반) 15종 ============
   CoasterDef(
     id: 'rusty_blade',
-    name: '녹슨 검',
-    description: '오래 방치된 검. 그래도 쓸 만은 하다',
+    name: '낡은 미니 코스터',
+    description: '오래된 미니 트랙. 작지만 첫 수익을 만든다',
     tier: CoasterTier.n,
     baseTapMult: 1.05,
     visual: CoasterVisual(
@@ -30,8 +30,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'wooden_practice',
-    name: '나무 훈련검',
-    description: '아이도 다루는 기초 중의 기초',
+    name: '키즈 우든 코스터',
+    description: '아이들도 탈 수 있는 입문형 우든 코스터',
     tier: CoasterTier.n,
     baseTapMult: 1.08,
     visual: CoasterVisual(
@@ -47,8 +47,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'bronze_blade',
-    name: '동검',
-    description: '푸른 빛이 도는 동 합금',
+    name: '브론즈 레일 코스터',
+    description: '브론즈 레일이 반짝이는 소형 코스터',
     tier: CoasterTier.n,
     baseTapMult: 1.10,
     visual: CoasterVisual(
@@ -64,8 +64,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'iron_shortcoaster',
-    name: '철 단검',
-    description: '짧지만 날카롭다',
+    name: '아이언 미니 코스터',
+    description: '짧은 코스지만 회전율이 빠르다',
     tier: CoasterTier.n,
     baseTapMult: 1.13,
     visual: CoasterVisual(
@@ -81,8 +81,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'iron_longcoaster',
-    name: '철 장검',
-    description: '표준적인 철제 장검',
+    name: '아이언 클래식 코스터',
+    description: '기본기가 탄탄한 스틸 트랙',
     tier: CoasterTier.n,
     baseTapMult: 1.16,
     visual: CoasterVisual(
@@ -98,8 +98,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'steel_blade',
-    name: '강철검',
-    description: '단단히 제련된 강철',
+    name: '클래식 우든 코스터',
+    description: '강철 레일로 안정감을 높였다',
     tier: CoasterTier.n,
     baseTapMult: 1.19,
     visual: CoasterVisual(
@@ -115,8 +115,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'hunters_knife',
-    name: '사냥꾼의 검',
-    description: '숲에서 단련된 실용검',
+    name: '포레스트 체이스',
+    description: '숲 테마 구간을 빠르게 질주한다',
     tier: CoasterTier.n,
     baseTapMult: 1.22,
     visual: CoasterVisual(
@@ -132,8 +132,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'apprentice_coaster',
-    name: '도제의 검',
-    description: '수련생에게 주는 기본 장비',
+    name: '루키 레일',
+    description: '초보 운영자에게 맞는 기본 설계',
     tier: CoasterTier.n,
     baseTapMult: 1.25,
     visual: CoasterVisual(
@@ -149,8 +149,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'guard_saber',
-    name: '경비대 세이버',
-    description: '도시 경비병의 표준 무기',
+    name: '게이트 가드 코스터',
+    description: '입구 보안 게이트를 테마로 한 코스터',
     tier: CoasterTier.n,
     baseTapMult: 1.28,
     visual: CoasterVisual(
@@ -166,8 +166,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'militia_coaster',
-    name: '민병대 검',
-    description: '마을을 지키는 자들의 검',
+    name: '타운 가드 코스터',
+    description: '마을 시그니처제 분위기의 패밀리 코스터',
     tier: CoasterTier.n,
     baseTapMult: 1.31,
     visual: CoasterVisual(
@@ -183,8 +183,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'forest_blade',
-    name: '숲속의 검',
-    description: '덩굴이 감긴 검',
+    name: '그린우드 코스터',
+    description: '덩굴 장식이 감긴 숲속 트랙',
     tier: CoasterTier.n,
     baseTapMult: 1.34,
     visual: CoasterVisual(
@@ -200,8 +200,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'farmers_blade',
-    name: '농부의 검',
-    description: '호미보다 조금 길 뿐',
+    name: '팜랜드 레일',
+    description: '농장 테마의 짧고 편안한 코스',
     tier: CoasterTier.n,
     baseTapMult: 1.37,
     visual: CoasterVisual(
@@ -217,8 +217,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'travelers_coaster',
-    name: '여행자 검',
-    description: '긴 길동무',
+    name: '트래블러 익스프레스',
+    description: '긴 산책로를 따라 달리는 여행 코스',
     tier: CoasterTier.n,
     baseTapMult: 1.40,
     visual: CoasterVisual(
@@ -234,8 +234,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'scout_knife',
-    name: '척후 단검',
-    description: '가볍고 빠르다',
+    name: '스카우트 셔틀',
+    description: '가볍고 빠른 셔틀형 코스터',
     tier: CoasterTier.n,
     baseTapMult: 1.43,
     visual: CoasterVisual(
@@ -251,8 +251,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'cursed_rusty',
-    name: '녹슨 저주검',
-    description: '쓸 만한데 왠지 찝찝하다',
+    name: '낡은 고스트 코스터',
+    description: '낡은 유령역을 통과하는 고스트 코스터',
     tier: CoasterTier.n,
     baseTapMult: 1.46,
     visual: CoasterVisual(
@@ -271,8 +271,8 @@ const coasterCatalog = <CoasterDef>[
   // ============ R (희귀) 12종 ============
   CoasterDef(
     id: 'knights_coaster',
-    name: '기사의 검',
-    description: '명예로운 기사의 정식 장비',
+    name: '나이트 퍼레이드 코스터',
+    description: '기사 퍼레이드를 테마로 한 레일',
     tier: CoasterTier.r,
     baseTapMult: 1.60,
     baseDpsMult: 1.05,
@@ -290,8 +290,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'mercenary_blade',
-    name: '용병의 검',
-    description: '수많은 전장을 누빈 베테랑',
+    name: '어드벤처 레일',
+    description: '거친 모험 구간을 누비는 코스터',
     tier: CoasterTier.r,
     baseTapMult: 1.65,
     baseDpsMult: 1.05,
@@ -308,8 +308,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'paladin_coaster',
-    name: '성기사 검',
-    description: '신성한 빛이 깃든',
+    name: '홀리 라이트 코스터',
+    description: '성당풍 조명이 반짝이는 코스터',
     tier: CoasterTier.r,
     baseTapMult: 1.70,
     baseDpsMult: 1.05,
@@ -327,8 +327,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'ranger_blade',
-    name: '순찰자 검',
-    description: '국경을 지키는 칼',
+    name: '레인저 루프',
+    description: '파크 외곽을 순찰하듯 달리는 루프',
     tier: CoasterTier.r,
     baseTapMult: 1.75,
     baseDpsMult: 1.06,
@@ -345,8 +345,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'cavalry_sabre',
-    name: '기병 세이버',
-    description: '말 위에서도 정확히',
+    name: '캐벌리 대시',
+    description: '말발굽 리듬처럼 경쾌한 코스',
     tier: CoasterTier.r,
     baseTapMult: 1.80,
     baseDpsMult: 1.07,
@@ -363,8 +363,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'beastslayer',
-    name: '짐승 사냥꾼',
-    description: '큰 짐승도 한 번에',
+    name: '와일드 체이서',
+    description: '사파리 구간을 크게 휘도는 와일드 트랙',
     tier: CoasterTier.r,
     baseTapMult: 1.85,
     baseDpsMult: 1.08,
@@ -381,8 +381,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'rune_iron',
-    name: '룬 새겨진 철검',
-    description: '알 수 없는 문자가 빛난다',
+    name: '룬 레일 코스터',
+    description: '트랙 곳곳의 룬 조명이 빛난다',
     tier: CoasterTier.r,
     baseTapMult: 1.90,
     baseDpsMult: 1.08,
@@ -400,8 +400,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'silvered_blade',
-    name: '은도금 검',
-    description: '빛나는 은빛 날',
+    name: '실버 라인 코스터',
+    description: '은빛 레일이 햇빛을 반사한다',
     tier: CoasterTier.r,
     baseTapMult: 1.95,
     baseDpsMult: 1.09,
@@ -419,8 +419,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'crimson_edge',
-    name: '진홍빛 칼날',
-    description: '검붉게 물든 날',
+    name: '크림슨 런',
+    description: '진홍 조명이 트랙을 물들인다',
     tier: CoasterTier.r,
     baseTapMult: 2.00,
     baseDpsMult: 1.10,
@@ -437,8 +437,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'azure_blade',
-    name: '푸른 칼날',
-    description: '심해의 색을 담은 검',
+    name: '아주어 다이브',
+    description: '심해빛 터널을 지나는 다이브 코스터',
     tier: CoasterTier.r,
     baseTapMult: 2.05,
     baseDpsMult: 1.10,
@@ -456,8 +456,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'golden_saber',
-    name: '황금 세이버',
-    description: '장식인가 무기인가',
+    name: '골든 익스프레스',
+    description: '금빛 장식이 돋보이는 프리미엄 열차',
     tier: CoasterTier.r,
     baseTapMult: 2.10,
     baseDpsMult: 1.12,
@@ -475,8 +475,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'wind_slicer',
-    name: '바람 가르는 검',
-    description: '휘두르면 휘파람 소리가',
+    name: '윈드 러너',
+    description: '바람을 가르며 휘파람 소리를 낸다',
     tier: CoasterTier.r,
     baseTapMult: 2.15,
     baseDpsMult: 1.13,
@@ -494,8 +494,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'rose_blade',
-    name: '장미 검',
-    description: '아름답지만 가시가 있다',
+    name: '로즈 가든 코스터',
+    description: '장미 정원을 휘감는 테마 트랙',
     tier: CoasterTier.r,
     baseTapMult: 2.20,
     baseDpsMult: 1.14,
@@ -513,8 +513,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'tide_blade',
-    name: '조수의 검',
-    description: '파도와 함께 흔들린다',
+    name: '타이드 웨이브',
+    description: '파도처럼 출렁이는 워터 코스',
     tier: CoasterTier.r,
     baseTapMult: 2.25,
     baseDpsMult: 1.14,
@@ -532,8 +532,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'ember_dagger',
-    name: '잔불 단검',
-    description: '꺼지지 않는 불씨',
+    name: '엠버 미니 코스터',
+    description: '작은 불꽃 이펙트가 계속 살아난다',
     tier: CoasterTier.r,
     baseTapMult: 2.30,
     baseDpsMult: 1.15,
@@ -551,8 +551,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'verdant_blade',
-    name: '신록의 검',
-    description: '봄의 생명력이 깃든',
+    name: '버던트 레일',
+    description: '봄꽃과 새싹 장식이 가득하다',
     tier: CoasterTier.r,
     baseTapMult: 2.35,
     baseDpsMult: 1.16,
@@ -572,8 +572,8 @@ const coasterCatalog = <CoasterDef>[
   // ============ SR (초희귀) 8 → 14종 ============
   CoasterDef(
     id: 'flame_blade',
-    name: '화염검',
-    description: '날이 타오르는 마검',
+    name: '파이어 런치 코스터',
+    description: '불꽃 이펙트가 열차를 감싼다',
     tier: CoasterTier.sr,
     baseTapMult: 2.60,
     baseDpsMult: 1.20,
@@ -591,8 +591,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'frost_edge',
-    name: '빙하검',
-    description: '닿는 것을 얼린다',
+    name: '프로스트 캐니언',
+    description: '얼음 협곡을 지나며 냉기가 흐른다',
     tier: CoasterTier.sr,
     baseTapMult: 2.80,
     baseDpsMult: 1.22,
@@ -610,8 +610,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'thunder_slicer',
-    name: '뇌전검',
-    description: '번개가 깃든 검',
+    name: '라이트닝 레일',
+    description: '번개 조명이 레일을 따라 번쩍인다',
     tier: CoasterTier.sr,
     baseTapMult: 3.00,
     baseDpsMult: 1.25,
@@ -629,8 +629,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'shadow_fang',
-    name: '그림자 송곳니',
-    description: '어둠을 엮어 만든 검',
+    name: '섀도우 팡 코스터',
+    description: '어두운 터널과 그림자 연출이 특징이다',
     tier: CoasterTier.sr,
     baseTapMult: 3.20,
     baseDpsMult: 1.28,
@@ -648,8 +648,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'moon_blade',
-    name: '월광검',
-    description: '달빛을 품은 검',
+    name: '문라이트 코스터',
+    description: '달빛 아래 은은하게 달리는 야간 코스터',
     tier: CoasterTier.sr,
     baseTapMult: 3.40,
     baseDpsMult: 1.30,
@@ -667,8 +667,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'sun_blade',
-    name: '태양검',
-    description: '한낮의 햇살을 벼려낸',
+    name: '선버스트 코스터',
+    description: '태양광처럼 밝은 조명을 두른 코스터',
     tier: CoasterTier.sr,
     baseTapMult: 3.60,
     baseDpsMult: 1.32,
@@ -686,8 +686,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'dragon_tooth',
-    name: '용의 이빨',
-    description: '고대 용의 송곳니로',
+    name: '드래곤 투스 코스터',
+    description: '드래곤 동굴을 통과하는 거친 코스',
     tier: CoasterTier.sr,
     baseTapMult: 3.90,
     baseDpsMult: 1.35,
@@ -705,8 +705,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'rune_blade',
-    name: '고대 룬검',
-    description: '잊혀진 룬어가 새겨진',
+    name: '에인션트 룬 레일',
+    description: '고대 문양 조명이 새겨진 레일',
     tier: CoasterTier.sr,
     baseTapMult: 4.20,
     baseDpsMult: 1.38,
@@ -724,8 +724,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'storm_glaive',
-    name: '폭풍 글레이브',
-    description: '내려치면 천둥소리가',
+    name: '스톰 글라이더',
+    description: '낙하 구간마다 천둥 사운드가 울린다',
     tier: CoasterTier.sr,
     baseTapMult: 4.40,
     baseDpsMult: 1.40,
@@ -743,8 +743,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'venom_fang',
-    name: '독아검',
-    description: '닿기만 해도 위험하다',
+    name: '베놈 바이퍼',
+    description: '독사 테마의 급회전 구간이 이어진다',
     tier: CoasterTier.sr,
     baseTapMult: 4.60,
     baseDpsMult: 1.42,
@@ -762,8 +762,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'crystal_edge',
-    name: '수정 칼날',
-    description: '투명하지만 단단하다',
+    name: '크리스털 레일',
+    description: '수정 터널과 투명 레일 장식이 돋보인다',
     tier: CoasterTier.sr,
     baseTapMult: 4.80,
     baseDpsMult: 1.44,
@@ -781,8 +781,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'phantom_edge',
-    name: '환영검',
-    description: '실체가 흐릿하다',
+    name: '팬텀 익스프레스',
+    description: '안개와 홀로그램으로 모습을 감춘다',
     tier: CoasterTier.sr,
     baseTapMult: 5.00,
     baseDpsMult: 1.46,
@@ -800,8 +800,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'inferno_blade',
-    name: '지옥불검',
-    description: '베어낸 자리가 타오른다',
+    name: '인페르노 런',
+    description: '지나간 레일 뒤로 불꽃 잔상이 남는다',
     tier: CoasterTier.sr,
     baseTapMult: 5.20,
     baseDpsMult: 1.48,
@@ -821,8 +821,8 @@ const coasterCatalog = <CoasterDef>[
   // ============ SSR (전설) 3 → 8종 ============
   CoasterDef(
     id: 'coaster_saint',
-    name: '검성의 검',
-    description: '한 획에 하늘을 가르는',
+    name: '마스터 코스터',
+    description: '정상에서 하늘을 가르듯 낙하한다',
     tier: CoasterTier.ssr,
     baseTapMult: 5.00,
     baseDpsMult: 1.50,
@@ -840,8 +840,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'dragon_king',
-    name: '용왕검',
-    description: '용의 왕이 휘두르던 검',
+    name: '드래곤 킹 코스터',
+    description: '드래곤 왕좌를 통과하는 웅장한 트랙',
     tier: CoasterTier.ssr,
     baseTapMult: 5.60,
     baseDpsMult: 1.55,
@@ -859,8 +859,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'holy_relic',
-    name: '성스러운 유물',
-    description: '잃어버린 신의 무기',
+    name: '홀리 렐릭 코스터',
+    description: '성스러운 유적을 배경으로 달린다',
     tier: CoasterTier.ssr,
     baseTapMult: 6.20,
     baseDpsMult: 1.60,
@@ -878,8 +878,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'demon_slayer',
-    name: '마코스터 사신',
-    description: '마(魔)를 베는 검',
+    name: '다크니스 코스터',
+    description: '어둠 테마를 밝히며 질주한다',
     tier: CoasterTier.ssr,
     baseTapMult: 6.60,
     baseDpsMult: 1.62,
@@ -897,8 +897,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'celestial_blade',
-    name: '천공검',
-    description: '하늘에서 내려온 검',
+    name: '스타라이트 익스프레스',
+    description: '하늘섬을 잇는 고공 코스터',
     tier: CoasterTier.ssr,
     baseTapMult: 7.00,
     baseDpsMult: 1.65,
@@ -916,8 +916,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'phoenix_blade',
-    name: '불사조의 검',
-    description: '꺼지지 않는 화염',
+    name: '피닉스 레일',
+    description: '불사조 날개처럼 붉게 빛난다',
     tier: CoasterTier.ssr,
     baseTapMult: 7.40,
     baseDpsMult: 1.68,
@@ -935,8 +935,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'leviathan_fang',
-    name: '리바이어던 송곳니',
-    description: '심해의 군주가 남긴',
+    name: '리바이어던 다이브',
+    description: '거대한 심해 생물을 테마로 한다',
     tier: CoasterTier.ssr,
     baseTapMult: 7.80,
     baseDpsMult: 1.70,
@@ -956,8 +956,8 @@ const coasterCatalog = <CoasterDef>[
   // ============ LR (영웅) 5종 [신규] ============
   CoasterDef(
     id: 'hero_excalibur',
-    name: '엑스칼리버',
-    description: '전설의 왕이 뽑아 든 검',
+    name: '킹스 레전드 코스터',
+    description: '왕의 시그니처제를 상징하는 전설 코스터',
     tier: CoasterTier.lr,
     baseTapMult: 8.50,
     baseDpsMult: 1.80,
@@ -975,8 +975,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'hero_durandal',
-    name: '듀란달',
-    description: '결코 부러지지 않는 칼',
+    name: '언브레이커블 레일',
+    description: '긴 운행에도 흔들림 없는 레일',
     tier: CoasterTier.lr,
     baseTapMult: 9.00,
     baseDpsMult: 1.85,
@@ -994,8 +994,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'hero_gram',
-    name: '그람',
-    description: '용을 베는 영웅의 검',
+    name: '드래곤 슬레이어 런',
+    description: '드래곤 사냥 이야기를 따라 달린다',
     tier: CoasterTier.lr,
     baseTapMult: 9.50,
     baseDpsMult: 1.90,
@@ -1013,8 +1013,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'hero_kusanagi',
-    name: '쿠사나기노 츠루기',
-    description: '바람의 신이 휘둘렀다는',
+    name: '스톰 클라우드 익스프레스',
+    description: '폭풍과 구름 사이를 가르는 코스',
     tier: CoasterTier.lr,
     baseTapMult: 10.00,
     baseDpsMult: 1.95,
@@ -1032,8 +1032,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'hero_balmung',
-    name: '발뭉크',
-    description: '용살의 영웅이 남긴 보검',
+    name: '히어로즈 드래곤 레일',
+    description: '영웅담을 담은 드래곤 테마 레일',
     tier: CoasterTier.lr,
     baseTapMult: 10.50,
     baseDpsMult: 2.00,
@@ -1053,8 +1053,8 @@ const coasterCatalog = <CoasterDef>[
   // ============ UR (신화) 2 → 5종 ============
   CoasterDef(
     id: 'cosmic_blade',
-    name: '우주의 검',
-    description: '별과 별 사이를 벼린',
+    name: '코스믹 코스터',
+    description: '우주 터널을 가로지르는 은하 코스터',
     tier: CoasterTier.ur,
     baseTapMult: 10.00,
     baseDpsMult: 2.00,
@@ -1072,8 +1072,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'eternal_excalibur',
-    name: '영겁의 엑스칼리버',
-    description: '이 세상의 왕이 되는 증표',
+    name: '영겁의 킹스 레전드 코스터',
+    description: '파크의 대표 킹스 라인',
     tier: CoasterTier.ur,
     baseTapMult: 12.00,
     baseDpsMult: 2.20,
@@ -1091,8 +1091,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'world_tree_blade',
-    name: '세계수의 검',
-    description: '세계의 뿌리를 다듬어 만든',
+    name: '월드트리 가든 코스터',
+    description: '거대한 세계수 주변을 도는 코스터',
     tier: CoasterTier.ur,
     baseTapMult: 14.00,
     baseDpsMult: 2.40,
@@ -1110,8 +1110,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'void_render',
-    name: '공허의 절단검',
-    description: '존재 자체를 베어낸다',
+    name: '공허의 절소형 열차',
+    description: '차원문을 통과하는 워프 트랙',
     tier: CoasterTier.ur,
     baseTapMult: 16.00,
     baseDpsMult: 2.60,
@@ -1129,8 +1129,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'creation_blade',
-    name: '창조의 검',
-    description: '시작과 끝을 함께 품은',
+    name: '크리에이션 코스터',
+    description: '파크의 모든 테마를 담은 궁극 코스',
     tier: CoasterTier.ur,
     baseTapMult: 18.00,
     baseDpsMult: 2.80,
@@ -1150,8 +1150,8 @@ const coasterCatalog = <CoasterDef>[
   // ============ 이벤트 코스터 (event-tagged, 일반 풀에 포함) ============
   CoasterDef(
     id: 'event_cherry_blossom',
-    name: '벚꽃의 검',
-    description: '봄날의 한 장면을 베어낸 듯',
+    name: '벚꽃 시즌 코스터',
+    description: '벚꽃 터널을 지나는 시즌 한정 코스',
     tier: CoasterTier.sr,
     baseTapMult: 3.50,
     baseDpsMult: 1.30,
@@ -1170,8 +1170,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'event_summer_wave',
-    name: '여름 파도검',
-    description: '시원한 한 줄기',
+    name: '썸머 웨이브 코스터',
+    description: '시원한 파도 이펙트의 여름 한정 코스',
     tier: CoasterTier.sr,
     baseTapMult: 3.55,
     baseDpsMult: 1.32,
@@ -1190,8 +1190,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'event_autumn_maple',
-    name: '단풍의 검',
-    description: '잎이 떨어지듯 베어낸다',
+    name: '메이플 시즌 코스터',
+    description: '단풍잎이 흩날리는 가을 한정 코스',
     tier: CoasterTier.ssr,
     baseTapMult: 6.40,
     baseDpsMult: 1.62,
@@ -1210,8 +1210,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'event_winter_frost',
-    name: '겨울 서리검',
-    description: '한 번의 휘둘림에 모든 게 얼어붙는다',
+    name: '윈터 프로스트 코스터',
+    description: '눈꽃과 서리 조명이 흐르는 겨울 한정 코스',
     tier: CoasterTier.ssr,
     baseTapMult: 6.50,
     baseDpsMult: 1.65,
@@ -1230,8 +1230,8 @@ const coasterCatalog = <CoasterDef>[
   ),
   CoasterDef(
     id: 'event_lunar_gold',
-    name: '설날 황금검',
-    description: '복(福) 자가 새겨진 명절 한정',
+    name: '설날 골든 코스터',
+    description: '복(福) 장식이 달린 명절 한정 코스터',
     tier: CoasterTier.lr,
     baseTapMult: 9.20,
     baseDpsMult: 1.88,

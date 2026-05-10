@@ -1,5 +1,5 @@
-/// Coaster set definitions. Owning every member of a set grants the
-/// listed bonuses globally (multiplicative on tap and/or DPS).
+﻿/// Coaster set definitions. Owning every member of a set grants the
+/// listed bonuses globally (multiplicative on tap and/or 초당 수익).
 class CoasterSet {
   final String id;
   final String name;
@@ -21,8 +21,8 @@ class CoasterSet {
 const coasterSets = <CoasterSet>[
   CoasterSet(
     id: 'iron_path',
-    name: '강철의 길',
-    description: '평범한 검들의 정점',
+    name: '클래식 파크 라인',
+    description: '기본 코스터 라인을 완성한 운영자',
     coasterIds: [
       'iron_shortcoaster',
       'iron_longcoaster',
@@ -34,8 +34,8 @@ const coasterSets = <CoasterSet>[
   ),
   CoasterSet(
     id: 'elements',
-    name: '원소의 티켓',
-    description: '불·물·바람·번개·대지를 한자리에',
+    name: '원소 테마 존',
+    description: '불·물·바람·번개·대지 테마를 한자리에',
     coasterIds: [
       'flame_blade',
       'frost_edge',
@@ -48,8 +48,8 @@ const coasterSets = <CoasterSet>[
   ),
   CoasterSet(
     id: 'celestial_bodies',
-    name: '천체의 광휘',
-    description: '해, 달, 별을 모두 거느리는 자',
+    name: '스카이 & 스타 존',
+    description: '해, 달, 별빛을 모두 담은 야간 명소',
     coasterIds: [
       'sun_blade',
       'moon_blade',
@@ -60,8 +60,8 @@ const coasterSets = <CoasterSet>[
   ),
   CoasterSet(
     id: 'dragons_grace',
-    name: '용의 가호',
-    description: '고대 용들의 의지가 한데 모였다',
+    name: '드래곤 어드벤처',
+    description: '고대 용 테마가 한데 모인 스릴 구역',
     coasterIds: [
       'dragon_tooth',
       'dragon_king',
@@ -73,8 +73,8 @@ const coasterSets = <CoasterSet>[
   ),
   CoasterSet(
     id: 'legend_heroes',
-    name: '전설의 영웅',
-    description: '이름만으로도 적이 떨었던 검들',
+    name: '레전드 어트랙션',
+    description: '이름만으로도 손님이 모이는 대표 코스터',
     coasterIds: [
       'hero_excalibur',
       'hero_durandal',

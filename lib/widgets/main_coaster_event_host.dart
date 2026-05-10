@@ -65,15 +65,19 @@ class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
     if (reward.ticket > 0) parts.add('티켓 +${reward.ticket}');
     if (reward.title != null) parts.add('호칭 "${reward.title}"');
     if (reward.collectionBonusFraction != null) {
-      parts.add('컬렉션 +${(reward.collectionBonusFraction! * 100).toStringAsFixed(0)}%');
+      parts.add(
+          '컬렉션 +${(reward.collectionBonusFraction! * 100).toStringAsFixed(0)}%');
     }
     if (reward.summonRateBonusFraction != null) {
-      parts.add('소환률 +${(reward.summonRateBonusFraction! * 100).toStringAsFixed(0)}%');
+      parts.add(
+          '도입률 +${(reward.summonRateBonusFraction! * 100).toStringAsFixed(0)}%');
     }
     if (reward.goldenFrame) parts.add('도감 황금 프레임');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('🎉 +${reward.stage} 도달 — ${parts.join(' · ')}'),
+        content: Text(
+          '+${reward.stage} 도달 · ${mainCoasterStageUpgradeLabel(reward.stage)} — ${parts.join(' · ')}',
+        ),
         duration: const Duration(seconds: 4),
         behavior: SnackBarBehavior.floating,
       ),
@@ -96,7 +100,7 @@ class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '첫 강화를 축하합니다. 이 코스터의 이름을 지어주세요.',
+              '첫 강화를 시그니처화합니다. 이 코스터의 이름을 지어주세요.',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.black.withValues(alpha: 0.6),
@@ -107,7 +111,7 @@ class _MainCoasterEventHostState extends ConsumerState<MainCoasterEventHost> {
               controller: controller,
               maxLength: 14,
               decoration: const InputDecoration(
-                hintText: '여명의 검',
+                hintText: '선라이즈 익스프레스',
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
@@ -176,7 +180,8 @@ class _TierUpOverlayState extends State<_TierUpOverlay>
         animation: _ctrl,
         builder: (_, __) {
           final t = _ctrl.value;
-          final scale = 0.6 + 0.4 * Curves.easeOutBack.transform(t.clamp(0.0, 1.0));
+          final scale =
+              0.6 + 0.4 * Curves.easeOutBack.transform(t.clamp(0.0, 1.0));
           return Container(
             decoration: BoxDecoration(
               gradient: RadialGradient(

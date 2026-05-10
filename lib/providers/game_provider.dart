@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -89,7 +89,8 @@ Map<CoasterTier, double> summonRatesForTotalSummons(int totalSummons) {
   );
   rates[CoasterTier.r] = max(
     summonRateMinR,
-    (rates[CoasterTier.r] ?? 0) - boostedTotal * (1 - summonRateDrainFromNRatio),
+    (rates[CoasterTier.r] ?? 0) -
+        boostedTotal * (1 - summonRateDrainFromNRatio),
   );
 
   final total = rates.values.fold<double>(0, (a, b) => a + b);
@@ -112,23 +113,22 @@ const offlineMinSeconds = 30;
 const comebackTicketStepSeconds = 15 * 60; // +1 ticket per 15m
 const comebackTicketCap = 120;
 
-/// Crit + combo config.
+/// Big-ride + combo config.
 const critChance = 0.05; // 5%
 const critMultiplier = 10.0;
 const comboWindowMs = 1500; // taps within this many ms extend the combo
 const comboMax = 50;
 const comboBonusPerStack = 0.01; // +1% tap per combo stack, cap +50%
 
-/// Boost gauge config (β charge-bar tap mechanic).
-/// Tap charges the gauge; while gauge > 0 the simulation runs at
-/// [boostTimeMultiplier] (cycles complete faster, idle DPS accrues
-/// faster). Gauge drains over real time.
+/// Boost gauge config (β support mechanic).
+/// A tap earns gold immediately, and also charges this gauge. While gauge > 0
+/// the simulation runs at [boostTimeMultiplier] (cycles complete faster,
+/// idle 초당 수익 accrues faster). Gauge drains over real time.
 const boostGaugeMax = 100.0;
 const boostGaugeDecayPerSec = 10.0;
 const boostTimeMultiplier = 1.5;
-const boostChargePerTapPerPower = 5.0; // 1 tapPower ⇒ +5 gauge
-const boostChargeCritBonus = 30.0; // crit adds an extra pulse
-const boostChargeComboPerStack = 0.01; // +1% per combo stack
+const boostChargePerTapPerPower = 5.0; // 1 tapPower also gives +5 gauge
+const boostChargeCritBonus = 30.0; // big ride adds an extra pulse
 
 /// Coaster operating cycle (ride loop) — fixed-revenue floor regardless
 /// of how many producers / passengers exist. A single cycle takes
@@ -208,7 +208,7 @@ const boosterOffers = <BoosterOffer>[
   BoosterOffer(
     id: 'dps_2x_30m',
     title: '자동 수익 x2 · 30분',
-    subtitle: '동료들의 DPS가 두 배가 돼요',
+    subtitle: '어트랙션들의 초당 수익이 두 배가 돼요',
     type: BoosterType.dps,
     multiplier: 2.0,
     durationSec: 1800,
@@ -226,7 +226,7 @@ const boosterOffers = <BoosterOffer>[
   BoosterOffer(
     id: 'rush_3x_5m',
     title: '골드러시 x3 · 5분',
-    subtitle: 'DPS + 터치 모두 3배',
+    subtitle: '초당 수익 + 터치 모두 3배',
     type: BoosterType.rush,
     multiplier: 3.0,
     durationSec: 300,
@@ -307,7 +307,7 @@ const premiumProducts = <PremiumProductDef>[
   PremiumProductDef(
     id: premiumMonthlyTicketPassProductId,
     title: '월간 티켓 보급권',
-    subtitle: '30일 동안 매일 티켓를 안정적으로 확보',
+    subtitle: '30일 동안 매일 티켓을 안정적으로 확보',
     priceLabel: '₩5,900',
     benefits: [
       '구매 즉시 티켓 300',
@@ -318,7 +318,7 @@ const premiumProducts = <PremiumProductDef>[
   PremiumProductDef(
     id: premiumStarterPackageProductId,
     title: '초보자 패키지',
-    subtitle: '초반 소환과 성장 템포를 한 번에 보강',
+    subtitle: '초반 도입과 성장 템포를 한 번에 보강',
     priceLabel: '₩4,900',
     benefits: [
       '티켓 1,400',
@@ -333,7 +333,7 @@ const premiumProducts = <PremiumProductDef>[
     priceLabel: '₩1,100',
     benefits: [
       '티켓 500',
-      'SR 확정 소환권 1',
+      'SR 확정 도입권 1',
       '24시간 한정 노출',
     ],
   ),
@@ -383,7 +383,7 @@ const premiumProducts = <PremiumProductDef>[
     priceLabel: '₩49,900',
     benefits: [
       '티켓 7,500',
-      'UR 확정 소환권 1',
+      'UR 확정 도입권 1',
       '강 보호권 10',
       '24시간 모든 부스터',
     ],
@@ -395,10 +395,10 @@ const premiumProducts = <PremiumProductDef>[
 const slimeSpawnEvery = 250;
 const slimeLifetimeMs = 7000;
 
-/// HP the slime takes to defeat — each tap on the slime deals 1 damage.
+/// Response steps required to satisfy a bonus VIP guest.
 const slimeMaxHp = 10;
 
-/// Reward when the slime is killed: gold = tapPower × this many taps.
+/// Reward when the VIP guest is handled: gold = tapPower × this many taps.
 const slimeRewardTaps = 5000;
 
 /// Auto-tap config: when an autoTap booster is active, fire a tap every
@@ -407,7 +407,7 @@ const slimeRewardTaps = 5000;
 const autoTapIntervalMs = 250;
 
 /// Combo burst: triggered the first time combo reaches comboMax during a
-/// single combo streak. Reward = current DPS × this many seconds.
+/// single combo streak. Reward = current 초당 수익 × this many seconds.
 const comboBurstWorthSeconds = 60;
 
 /// Combo surge skill: extra combo stacks per tap and bonus multiplier
@@ -415,7 +415,7 @@ const comboBurstWorthSeconds = 60;
 const comboSurgePerTap = 2;
 const comboSurgeBonus = 2.0; // tap reward × this while surging
 
-/// Slash burst skill: instant gold equal to current DPS × this seconds.
+/// Parade fever skill: instant gold equal to current 초당 수익 × this seconds.
 const slashBurstWorthSeconds = 300;
 const ticketGatherAmount = 30;
 const ascensionCoreBonusPerLevel = 0.015;
@@ -428,7 +428,7 @@ const ascensionCoreBonusPerLevel = 0.015;
 //                Auto-scales with player power, so a single offer stays
 //                relevant across the whole game.
 //   • fixed    — pays out a constant gold amount. Useful in early runs
-//                before DPS is meaningful, becomes obsolete late-game.
+//                before 초당 수익 is meaningful, becomes obsolete late-game.
 //
 // The earned gold is added to currentGold AND tracked separately in
 // `purchasedGoldUnconverted` so it is excluded from the prestige-coin
@@ -469,7 +469,7 @@ class GoldExchangeOffer {
 /// "instant time" never feels strictly better than just playing.
 const dpsTimeYieldFactor = 0.85;
 
-/// Floor for dpsTime offers right after prestige (when DPS = 0). We pay out
+/// Floor for dpsTime offers right after prestige (when 초당 수익 = 0). We pay out
 /// `floor * ticketCost` so a freshly-prestiged player still gets a small
 /// nudge instead of zero gold.
 const dpsTimeFloorPerTicket = 10000.0; // 10K gold per ticket
@@ -482,11 +482,11 @@ const goldExchangeDailyLimit = 5;
 const goldExchangePrestigeLimit = 15;
 
 const goldExchangeOffers = <GoldExchangeOffer>[
-  // DPS-time line.
+  // 초당 수익-time line.
   GoldExchangeOffer(
     id: 'dps_5m',
     title: '5분 환금',
-    subtitle: '현재 DPS 기준 5분치 골드',
+    subtitle: '현재 초당 수익 기준 5분치 골드',
     ticketCost: 12,
     kind: GoldExchangeKind.dpsTime,
     dpsSeconds: 300,
@@ -494,7 +494,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
   GoldExchangeOffer(
     id: 'dps_30m',
     title: '30분 환금',
-    subtitle: '현재 DPS 기준 30분치 골드',
+    subtitle: '현재 초당 수익 기준 30분치 골드',
     ticketCost: 50,
     kind: GoldExchangeKind.dpsTime,
     dpsSeconds: 1800,
@@ -502,7 +502,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
   GoldExchangeOffer(
     id: 'dps_2h',
     title: '2시간 환금',
-    subtitle: '현재 DPS 기준 2시간치 골드',
+    subtitle: '현재 초당 수익 기준 2시간치 골드',
     ticketCost: 180,
     kind: GoldExchangeKind.dpsTime,
     dpsSeconds: 7200,
@@ -510,7 +510,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
   GoldExchangeOffer(
     id: 'dps_8h',
     title: '8시간 환금',
-    subtitle: '현재 DPS 기준 8시간치 골드 · 하루 1회',
+    subtitle: '현재 초당 수익 기준 8시간치 골드 · 하루 1회',
     ticketCost: 600,
     kind: GoldExchangeKind.dpsTime,
     dpsSeconds: 28800,
@@ -553,7 +553,7 @@ const goldExchangeOffers = <GoldExchangeOffer>[
 ];
 
 /// Hide the fixed line once the player has prestiged this many times — by
-/// then their DPS is large enough that fixed packs are noise.
+/// then their 초당 수익 is large enough that fixed packs are noise.
 const goldExchangeFixedHideAfterPrestiges = 3;
 
 // Main coaster enhancement types ------------------------------------------------
@@ -731,8 +731,8 @@ const dailyMissionDefs = <MissionDef>[
   ),
   MissionDef(
     id: 'daily_skill_5',
-    title: '스킬 숙련',
-    description: '스킬 5회 사용',
+    title: '이벤트 숙련',
+    description: '이벤트 5회 사용',
     target: 5,
     rewardTicket: 20,
     rewardPrestigeCoins: 16,
@@ -740,8 +740,8 @@ const dailyMissionDefs = <MissionDef>[
   ),
   MissionDef(
     id: 'daily_crit_30',
-    title: '정밀 타격',
-    description: '치명타 30회 발동',
+    title: '정밀 운영',
+    description: '대박 탑승 30회 발동',
     target: 30,
     rewardTicket: 18,
     rewardPrestigeCoins: 14,
@@ -749,8 +749,8 @@ const dailyMissionDefs = <MissionDef>[
   ),
   MissionDef(
     id: 'daily_slime_5',
-    title: '슬라임 처치',
-    description: '슬라임 5마리 처치',
+    title: 'VIP 손님 응대',
+    description: 'VIP 손님 5명 응대',
     target: 5,
     rewardTicket: 16,
     rewardPrestigeCoins: 12,
@@ -758,8 +758,8 @@ const dailyMissionDefs = <MissionDef>[
   ),
   MissionDef(
     id: 'daily_summon_15',
-    title: '소환 의식',
-    description: '소환 15회',
+    title: '신규 코스터 도입',
+    description: '도입 15회',
     target: 15,
     rewardTicket: 22,
     rewardPrestigeCoins: 18,
@@ -776,7 +776,7 @@ const dailyMissionDefs = <MissionDef>[
   ),
   MissionDef(
     id: 'daily_booster_1',
-    title: '가속 점검',
+    title: '부스터 점검',
     description: '부스터 1회 사용',
     target: 1,
     rewardTicket: 20,
@@ -788,8 +788,8 @@ const dailyMissionDefs = <MissionDef>[
 const weeklyMissionDefs = <MissionDef>[
   MissionDef(
     id: 'weekly_prestige_5',
-    title: '환생 순환',
-    description: '환생 5회 달성',
+    title: '재개장 순환',
+    description: '재개장 5회 달성',
     target: 5,
     rewardTicket: 90,
     rewardPrestigeCoins: 120,
@@ -798,7 +798,7 @@ const weeklyMissionDefs = <MissionDef>[
   MissionDef(
     id: 'weekly_slime_40',
     title: '황금 사냥',
-    description: '슬라임 40마리 처치',
+    description: 'VIP 손님 40명 응대',
     target: 40,
     rewardTicket: 80,
     rewardPrestigeCoins: 90,
@@ -807,7 +807,7 @@ const weeklyMissionDefs = <MissionDef>[
   MissionDef(
     id: 'weekly_summon_120',
     title: '수집 주간',
-    description: '소환 120회',
+    description: '도입 120회',
     target: 120,
     rewardTicket: 110,
     rewardPrestigeCoins: 110,
@@ -833,8 +833,8 @@ const weeklyMissionDefs = <MissionDef>[
   ),
   MissionDef(
     id: 'weekly_skill_50',
-    title: '스킬 마스터',
-    description: '스킬 50회 사용',
+    title: '이벤트 마스터',
+    description: '이벤트 50회 사용',
     target: 50,
     rewardTicket: 90,
     rewardPrestigeCoins: 100,
@@ -842,8 +842,8 @@ const weeklyMissionDefs = <MissionDef>[
   ),
   MissionDef(
     id: 'weekly_crit_300',
-    title: '폭풍 일격',
-    description: '치명타 300회 발동',
+    title: '폭풍 매진',
+    description: '대박 탑승 300회 발동',
     target: 300,
     rewardTicket: 80,
     rewardPrestigeCoins: 90,
@@ -851,7 +851,7 @@ const weeklyMissionDefs = <MissionDef>[
   ),
   MissionDef(
     id: 'weekly_booster_5',
-    title: '가속 의존',
+    title: '부스터 루틴',
     description: '부스터 5회 사용',
     target: 5,
     rewardTicket: 120,
@@ -1346,8 +1346,9 @@ class GameNotifier extends Notifier<GameState> {
   double _stockTickAcc = 0;
   bool _spareGaussReady = false;
   double _spareGauss = 0;
-  // Tap-charge boost (β bar). Ephemeral — resets to 0 on app restart, not
-  // saved. While > 0 the sim ticks at boostTimeMultiplier; decays at
+  // Tap-support boost (β bar). Ephemeral — resets to 0 on app restart, not
+  // saved. Tapping earns gold immediately and also fills this gauge; while
+  // > 0 the sim ticks at boostTimeMultiplier and decays at
   // boostGaugeDecayPerSec in real time.
   double _boostGauge = 0;
   // Coaster ride-cycle progress (0..1). Each completed cycle pays a fixed
@@ -1394,8 +1395,8 @@ class GameNotifier extends Notifier<GameState> {
           blockedByClockGuard: true,
         );
       } else if (cappedSeconds >= offlineMinSeconds && dpsNow > 0) {
-        final ticketBonus = min(
-            comebackTicketCap, cappedSeconds ~/ comebackTicketStepSeconds);
+        final ticketBonus =
+            min(comebackTicketCap, cappedSeconds ~/ comebackTicketStepSeconds);
         _pendingOffline = OfflineReward(
           duration: Duration(seconds: cappedSeconds),
           gold: dpsNow * cappedSeconds,
@@ -1699,11 +1700,11 @@ class GameNotifier extends Notifier<GameState> {
       // Boost gauge decays in real time regardless of in-sim speed —
       // otherwise tapping would extend its own duration nonlinearly.
       if (_boostGauge > 0) {
-        _boostGauge =
-            (_boostGauge - boostGaugeDecayPerSec * dt).clamp(0.0, boostGaugeMax);
+        _boostGauge = (_boostGauge - boostGaugeDecayPerSec * dt)
+            .clamp(0.0, boostGaugeMax);
       }
       // Effective sim dt: while gauge>0 the world runs at 1.5x. Cycles
-      // complete faster AND DPS income accrues faster, matching the
+      // complete faster AND 초당 수익 income accrues faster, matching the
       // "fast-forward the whole scene" mental model.
       final boosted = _boostGauge > 0;
       final simDt = boosted ? dt * boostTimeMultiplier : dt;
@@ -2345,9 +2346,10 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   /// Multiplier from the home-tab main coaster's enhancement stage. Applies
-  /// to BOTH tap and DPS so progression on the main coaster scales evenly
+  /// to BOTH tap and 초당 수익 so progression on the main coaster scales evenly
   /// with the rest of the build.
-  double _mainCoasterMult() => mainCoasterStageBonusMult(_save.mainCoasterStage);
+  double _mainCoasterMult() =>
+      mainCoasterStageBonusMult(_save.mainCoasterStage);
 
   /// Public read so the UI can show "+X% from 메인코스터 +N단계".
   double get mainCoasterBonusFraction =>
@@ -2444,7 +2446,8 @@ class GameNotifier extends Notifier<GameState> {
     }
 
     final ownedRatio = owned / regionCoasters.length;
-    final levelRatio = levelTotal / (regionCoasters.length * CoasterDef.maxLevel);
+    final levelRatio =
+        levelTotal / (regionCoasters.length * CoasterDef.maxLevel);
     final collectionBonus = ownedRatio * 0.18 + levelRatio * 0.22;
 
     var formationBonus = 0.0;
@@ -2473,7 +2476,8 @@ class GameNotifier extends Notifier<GameState> {
 
   double regionEffectiveHourlyYield(String regionId) {
     final def = regionDefById(regionId);
-    return def.hourlyYield * (1.0 + regionCoasterDistrictBonusFraction(regionId));
+    return def.hourlyYield *
+        (1.0 + regionCoasterDistrictBonusFraction(regionId));
   }
 
   double regionIntrinsicPrice(String regionId) {
@@ -2482,10 +2486,10 @@ class GameNotifier extends Notifier<GameState> {
         (1.0 + regionCoasterDistrictBonusFraction(regionId) * 0.45);
   }
 
-  /// All multipliers that turn a producer's raw DPS into the effective DPS
+  /// All multipliers that turn a producer's raw 초당 수익 into the effective 초당 수익
   /// shown on the home screen. Upgrade tiles use this to display the gain
   /// the player will actually see (e.g. so the coaster-collection bonus
-  /// visibly improves the "DPS +N" preview on companion/transcendent buys).
+  /// visibly improves the "초당 수익 +N" preview on companion/transcendent buys).
   double get dpsMultiplier =>
       _prestigeMult() *
       _ascensionCoreMult() *
@@ -2537,7 +2541,7 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   /// Back-compat shim for callers that still treat tap() as "give me gold".
-  /// New UI should prefer [tapWithFeedback] to access crit/combo info.
+  /// New UI should prefer [tapWithFeedback] to access big-ride/combo info.
   double tap() => tapWithFeedback().amount;
 
   TapResult tapWithFeedback() {
@@ -2552,22 +2556,22 @@ class GameNotifier extends Notifier<GameState> {
     _lastTapAt = now;
     if (_combo > _save.stats.maxCombo) _save.stats.maxCombo = _combo;
 
-    // Tap = boost-gauge charge, NOT instant gold. Income flows from the
-    // ride-cycle floor + idle DPS, both of which run faster while the
-    // gauge is non-empty. tapPower / combo / crit / surge all funnel
-    // into how much gauge a single tap deposits.
+    // Tap = immediate clicker gold. The boost gauge is now a supporting
+    // tempo bonus, not the primary tap reward.
     final base = _calcTapPower();
-    final comboMult = 1.0 + (_combo * boostChargeComboPerStack).clamp(0.0, 0.5);
+    final comboMult = 1.0 + (_combo * comboBonusPerStack).clamp(0.0, 0.5);
     final surgeMult = surge ? comboSurgeBonus : 1.0;
     final isCrit = _random.nextDouble() < critChance;
-    var charge =
-        base * boostChargePerTapPerPower * comboMult * surgeMult;
+    var amount = base * comboMult * surgeMult;
+    if (isCrit) amount *= critMultiplier;
+    _save.gold += amount;
+    _save.totalGoldEarned += amount;
+    _save.stats.lifetimeGold += amount;
+    _save.run.goldEarned += amount;
+
+    var charge = base * boostChargePerTapPerPower * comboMult * surgeMult;
     if (isCrit) charge += boostChargeCritBonus;
     _boostGauge = (_boostGauge + charge).clamp(0.0, boostGaugeMax);
-    // [amount] is reused as the floating-number value the UI animates;
-    // it now represents charge units rather than gold. The HUD widget
-    // styles the popup accordingly.
-    final amount = charge;
 
     _save.stats.totalTaps++;
     _save.run.taps++;
@@ -2790,7 +2794,7 @@ class GameNotifier extends Notifier<GameState> {
     final goldGranted = previewGoldExchangeYield(offer);
     _save.ticket -= offer.ticketCost;
     _save.gold += goldGranted;
-    // Critical: do NOT touch totalGoldEarned. The whole point of this
+    // Important: do NOT touch totalGoldEarned. The whole point of this
     // tracker is to keep purchased gold out of prestige-coin math until
     // the player actually spends it on producers/upgrades.
     _save.purchasedGoldUnconverted += goldGranted;
@@ -2814,7 +2818,8 @@ class GameNotifier extends Notifier<GameState> {
 
   /// Stream of milestone awards / tier evolutions / first-naming prompts.
   final _mainCoasterEvents = StreamController<MainCoasterEvent>.broadcast();
-  Stream<MainCoasterEvent> get mainCoasterEventStream => _mainCoasterEvents.stream;
+  Stream<MainCoasterEvent> get mainCoasterEventStream =>
+      _mainCoasterEvents.stream;
 
   /// Set/replace the main coaster's nickname. Empty/whitespace input is
   /// rejected so the UI can default to a placeholder.
@@ -3624,7 +3629,7 @@ class GameNotifier extends Notifier<GameState> {
         result = SkillResult(
           id: id,
           ok: true,
-          message: '검기 폭발!',
+          message: '퍼레이드 피버!',
           payload: reward,
         );
       case SkillId.comboSurge:
@@ -3654,8 +3659,8 @@ class GameNotifier extends Notifier<GameState> {
     return result;
   }
 
-  /// Called by the home screen when a golden slime is killed (its HP drops
-  /// to 0). Grants gold equal to [slimeRewardTaps] × current tap power and
+  /// Called by the home screen when a golden VIP guest is handled. Grants
+  /// gold equal to [slimeRewardTaps] × current tap power and
   /// returns the awarded amount so the UI can show a floating number.
   double defeatGoldenSlime() {
     final reward = _calcTapPower() * slimeRewardTaps;
@@ -3671,7 +3676,7 @@ class GameNotifier extends Notifier<GameState> {
     return reward;
   }
 
-  /// Estimated reward shown on the slime HP bar so the player can see what
+  /// Estimated reward shown on the VIP response bar so the player can see what
   /// finishing it off is worth at the current moment.
   double get slimePreviewReward => _calcTapPower() * slimeRewardTaps;
 
@@ -3739,7 +3744,12 @@ class GameNotifier extends Notifier<GameState> {
 
   CoasterTier _rollTier({required bool forceSrPlus}) {
     final pool = forceSrPlus
-        ? const [CoasterTier.sr, CoasterTier.ssr, CoasterTier.lr, CoasterTier.ur]
+        ? const [
+            CoasterTier.sr,
+            CoasterTier.ssr,
+            CoasterTier.lr,
+            CoasterTier.ur
+          ]
         : CoasterTier.values;
     final rates = summonRatesForTotalSummons(_save.stats.totalSummons);
     final totalWeight =
@@ -3781,7 +3791,8 @@ class GameNotifier extends Notifier<GameState> {
     _save.ownedCoasters[def.id] = newLv;
     _save.equippedCoasterId ??= def.id;
     if (!wasOwned && !_save.formationCoasterIds.contains(def.id)) {
-      final emptySlot = _save.formationCoasterIds.indexWhere((id) => id == null);
+      final emptySlot =
+          _save.formationCoasterIds.indexWhere((id) => id == null);
       if (emptySlot >= 0) _save.formationCoasterIds[emptySlot] = def.id;
     }
     _save.stats.totalSummons++;

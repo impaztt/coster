@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../models/achievement.dart';
 import '../models/repeating_achievement.dart';
@@ -74,8 +74,8 @@ final repeatingAchievementCatalog = <RepeatingAchievementDef>[
   ),
   RepeatingAchievementDef(
     id: 'rep_dps',
-    name: 'DPS 폭주',
-    description: '최대 DPS 단계 상승',
+    name: '초당 수익 폭주',
+    description: '최대 초당 수익 단계 상승',
     category: AchievementCategory.dps,
     icon: Icons.bolt,
     color: _trackDps,
@@ -85,8 +85,8 @@ final repeatingAchievementCatalog = <RepeatingAchievementDef>[
   ),
   RepeatingAchievementDef(
     id: 'rep_prestige',
-    name: '환생 순례자',
-    description: '환생 누적 단계 상승',
+    name: '재개장 순례자',
+    description: '재개장 누적 단계 상승',
     category: AchievementCategory.prestige,
     icon: Icons.auto_awesome,
     color: _trackPrestige,
@@ -96,8 +96,8 @@ final repeatingAchievementCatalog = <RepeatingAchievementDef>[
   ),
   RepeatingAchievementDef(
     id: 'rep_slime',
-    name: '슬라임 사냥꾼',
-    description: '슬라임 처치 단계 상승',
+    name: 'VIP 응대 전문가',
+    description: 'VIP 손님 응대 단계 상승',
     category: AchievementCategory.slime,
     icon: Icons.bubble_chart,
     color: _trackSlime,
@@ -118,8 +118,8 @@ final repeatingAchievementCatalog = <RepeatingAchievementDef>[
   ),
   RepeatingAchievementDef(
     id: 'rep_skill',
-    name: '스킬 학자',
-    description: '스킬 사용 단계 상승',
+    name: '이벤트 학자',
+    description: '이벤트 사용 단계 상승',
     category: AchievementCategory.skill,
     icon: Icons.flash_on,
     color: _trackSkill,
@@ -129,8 +129,8 @@ final repeatingAchievementCatalog = <RepeatingAchievementDef>[
   ),
   RepeatingAchievementDef(
     id: 'rep_summon',
-    name: '소환 광신도',
-    description: '소환 횟수 단계 상승',
+    name: '도입 전문가',
+    description: '도입 횟수 단계 상승',
     category: AchievementCategory.summon,
     icon: Icons.diamond,
     color: _trackSummon,

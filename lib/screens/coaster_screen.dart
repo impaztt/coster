@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme.dart';
@@ -34,12 +34,12 @@ class _CoasterScreenState extends ConsumerState<CoasterScreen> {
           tabs: [
             const _StoreHubTab(label: '상품', view: _PremiumStoreView()),
             if (game.isFeatureUnlocked(FeatureUnlocks.summonTab))
-              const _StoreHubTab(label: '소환', view: _SummonView()),
+              const _StoreHubTab(label: '도입', view: _SummonView()),
           ],
         ),
       ),
       _StoreHubTab(
-        label: '무기고',
+        label: '코스터 차고',
         view: _NestedStoreTabView(
           tabs: [
             const _StoreHubTab(label: '수집', view: _CollectionView()),
@@ -250,7 +250,7 @@ class _HeaderBar extends ConsumerWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        '수집 보너스 +${(bonus * 100).toStringAsFixed(bonus >= 1 ? 0 : 1)}% — 터치·동료·초월(초당 수입) 모두 증가',
+                        '수집 보너스 +${(bonus * 100).toStringAsFixed(bonus >= 1 ? 0 : 1)}% — 터치·어트랙션·초월(초당 수입) 모두 증가',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
@@ -404,7 +404,8 @@ class _FormationView extends ConsumerWidget {
       children: [
         _FormationSummaryCard(
           summary: summary,
-          onAuto: game.ownedCoasters.isEmpty ? null : notifier.autoFillFormation,
+          onAuto:
+              game.ownedCoasters.isEmpty ? null : notifier.autoFillFormation,
           onClear: summary.filledSlots == 0 ? null : notifier.clearFormation,
         ),
         const SizedBox(height: 12),
@@ -458,7 +459,7 @@ class _FormationSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '보유 코스터 5대를 배치해 전투력과 검세권을 동시에 키웁니다.',
+            '보유 코스터 5대를 배치해 운영력과 지역 인지도를 동시에 키웁니다.',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.86),
               fontSize: 12,
@@ -477,14 +478,14 @@ class _FormationSummaryCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _FormationBonusTile(
-                  label: 'DPS',
+                  label: '초당 수익',
                   value: _bonusPct(summary.dpsBonus),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _FormationBonusTile(
-                  label: '검세권',
+                  label: '지역 인지도',
                   value: _bonusPct(summary.marketBonus),
                 ),
               ),
@@ -730,7 +731,7 @@ class _FormationRuleCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '역할 ${summary.distinctRoles}/5 · 지역 ${summary.distinctRegions}/${summary.filledSlots == 0 ? 5 : summary.filledSlots} · 최다 검세권 ${summary.strongestRegionCount}',
+            '역할 ${summary.distinctRoles}/5 · 지역 ${summary.distinctRegions}/${summary.filledSlots == 0 ? 5 : summary.filledSlots} · 최다 지역 인지도 ${summary.strongestRegionCount}',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
@@ -739,7 +740,7 @@ class _FormationRuleCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '역할을 다양하게 섞으면 전투 보너스가 오르고, 같은 지역 코스터를 묶으면 해당 지역 주식의 내재가치와 배당이 강해집니다.',
+            '역할을 다양하게 섞으면 피버 보너스가 오르고, 같은 지역 코스터를 묶으면 해당 지역 주식의 내재가치와 배당이 강해집니다.',
             style: TextStyle(
               fontSize: 11,
               color: Colors.black.withValues(alpha: 0.55),
@@ -816,7 +817,7 @@ void _openFormationPicker(BuildContext context, WidgetRef ref, int slot) {
       if (owned.isEmpty) {
         return const SizedBox(
           height: 220,
-          child: Center(child: Text('배치할 수 있는 보유 검이 없습니다.')),
+          child: Center(child: Text('배치할 수 있는 보유 코스터가 없습니다.')),
         );
       }
       return ListView.builder(
@@ -860,7 +861,9 @@ void _openFormationPicker(BuildContext context, WidgetRef ref, int slot) {
                 ? const Icon(Icons.check_circle, color: AppColors.coral)
                 : Icon(Icons.add_circle_outline, color: coaster.tier.color),
             onTap: () {
-              ref.read(gameProvider.notifier).setFormationCoaster(slot, coaster.id);
+              ref
+                  .read(gameProvider.notifier)
+                  .setFormationCoaster(slot, coaster.id);
               Navigator.of(ctx).pop();
             },
           );
@@ -1272,7 +1275,7 @@ class _CoasterDetailSheet extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      owned ? def.description : '소환해서 정보를 확인하세요',
+                      owned ? def.description : '도입해서 정보를 확인하세요',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.black.withValues(alpha: 0.6),
@@ -1289,7 +1292,7 @@ class _CoasterDetailSheet extends ConsumerWidget {
                           icon: role.icon,
                         ),
                         _MiniTag(
-                          label: '검세권 ${region.shortName}',
+                          label: '지역 인지도 ${region.shortName}',
                           color: region.accent,
                           icon: Icons.location_city,
                         ),
@@ -1311,7 +1314,7 @@ class _CoasterDetailSheet extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             _StatRow(
-              label: '장착 시 DPS 배율',
+              label: '장착 시 초당 수익 배율',
               value: '×${def.dpsMultAt(level).toStringAsFixed(2)}',
               sub: level < CoasterDef.maxLevel
                   ? '최대 Lv ${CoasterDef.maxLevel}: ×${def.dpsMultAt(CoasterDef.maxLevel).toStringAsFixed(2)}'
@@ -1322,8 +1325,8 @@ class _CoasterDetailSheet extends ConsumerWidget {
               label: '보유 효과 (장착 안해도 적용)',
               value: '+${(def.ownedBonusAt(level) * 100).toStringAsFixed(2)}%',
               sub: level < CoasterDef.maxLevel
-                  ? '최대 Lv ${CoasterDef.maxLevel}: +${(def.ownedBonusAt(CoasterDef.maxLevel) * 100).toStringAsFixed(2)}% — 터치·동료·초월 모두에 적용'
-                  : '터치·동료·초월(초당 수입) 모두에 적용',
+                  ? '최대 Lv ${CoasterDef.maxLevel}: +${(def.ownedBonusAt(CoasterDef.maxLevel) * 100).toStringAsFixed(2)}% — 터치·어트랙션·초월 모두에 적용'
+                  : '터치·어트랙션·초월(초당 수입) 모두에 적용',
             ),
             const SizedBox(height: 8),
             _StatRow(
@@ -1358,19 +1361,19 @@ class _CoasterDetailSheet extends ConsumerWidget {
             const _StatRow(
               label: '장착 시 터치 배율',
               value: '?',
-              sub: '소환 후 표시',
+              sub: '도입 후 표시',
             ),
             const SizedBox(height: 8),
             const _StatRow(
-              label: '장착 시 DPS 배율',
+              label: '장착 시 초당 수익 배율',
               value: '?',
-              sub: '소환 후 표시',
+              sub: '도입 후 표시',
             ),
             const SizedBox(height: 8),
             _StatRow(
               label: '보유 효과',
               value: '+${(def.tier.ownedBonusBase * 100).toStringAsFixed(2)}%',
-              sub: '획득 즉시 터치·동료·초월(초당 수입) 모두에 적용 (Lv 1 기준)',
+              sub: '획득 즉시 터치·어트랙션·초월(초당 수입) 모두에 적용 (Lv 1 기준)',
             ),
           ],
         ],
@@ -1395,13 +1398,13 @@ class _DismantleButton extends ConsumerWidget {
     final refund = notifier.dismantleRefund(def.id);
     final disabled = equipped || refund <= 0;
     final hint =
-        equipped ? '장착 중인 검은 분해할 수 없어요' : '분해 시 티켓 +$refund (Lv $level 기준)';
+        equipped ? '편성 중인 코스터은 매각할 수 없어요' : '매각 시 티켓 +$refund (Lv $level 기준)';
     return Column(
       children: [
         OutlinedButton.icon(
           onPressed: disabled ? null : () => _confirm(context, ref, refund),
           icon: const Icon(Icons.recycling, size: 18),
-          label: Text('분해 (+$refund 티켓)'),
+          label: Text('매각 (+$refund 티켓)'),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size.fromHeight(44),
             foregroundColor: const Color(0xFF7C4DFF),
@@ -1433,9 +1436,9 @@ class _DismantleButton extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('${def.name} 분해'),
+        title: Text('${def.name} 매각'),
         content: Text(
-          '이 검은 컬렉션에서 영구 제거되고, 티켓 +$refund 가 지급돼요.\n'
+          '이 코스터는 컬렉션에서 영구 제거되고, 티켓 +$refund 가 지급돼요.\n'
           '되돌릴 수 없어요.',
         ),
         actions: [
@@ -1448,7 +1451,7 @@ class _DismantleButton extends ConsumerWidget {
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF7C4DFF),
             ),
-            child: const Text('분해'),
+            child: const Text('매각'),
           ),
         ],
       ),
@@ -1459,7 +1462,7 @@ class _DismantleButton extends ConsumerWidget {
       Navigator.of(context).pop(); // close detail sheet
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${def.name} 분해 · 티켓 +$granted'),
+          content: Text('${def.name} 매각 · 티켓 +$granted'),
           duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
@@ -1571,7 +1574,7 @@ class _MissionHubViewState extends ConsumerState<_MissionHubView> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            '미션 ${r.count}개 일괄 수령 · 티켓 +${r.ticket} · 코인 +${r.coins}',
+                            '미션 ${r.count}개 일괄 수령 · 티켓 +${r.ticket} · 브랜드 포인트 +${r.coins}',
                           ),
                           duration: const Duration(seconds: 2),
                           behavior: SnackBarBehavior.floating,
@@ -1871,7 +1874,7 @@ class _MissionTaskTile extends StatelessWidget {
           ),
           const SizedBox(height: 3),
           Text(
-            '${mission.progress}/${mission.target} · 티켓 +${mission.rewardTicket} · 코인 +${mission.rewardPrestigeCoins}',
+            '${mission.progress}/${mission.target} · 티켓 +${mission.rewardTicket} · 브랜드 포인트 +${mission.rewardPrestigeCoins}',
             style: TextStyle(
               fontSize: 10,
               color: Colors.black.withValues(alpha: 0.6),
@@ -2602,7 +2605,7 @@ class _PremiumStoreView extends ConsumerWidget {
                     ref.read(gameProvider.notifier).claimMonthlyPassTicket();
                 _toast(
                   context,
-                  amount > 0 ? '티켓 $amount개를 수령했어요' : '오늘 받을 티켓가 없어요',
+                  amount > 0 ? '티켓 $amount개를 수령했어요' : '오늘 받을 티켓이 없어요',
                 );
               },
               onClaimSeasonDaily: () {
@@ -2611,7 +2614,7 @@ class _PremiumStoreView extends ConsumerWidget {
                     .claimSeasonPassDailyTicket();
                 _toast(
                   context,
-                  amount > 0 ? '티켓 $amount개를 수령했어요' : '오늘 받을 티켓가 없어요',
+                  amount > 0 ? '티켓 $amount개를 수령했어요' : '오늘 받을 티켓이 없어요',
                 );
               },
               onClaimSeasonWeekly: () {
@@ -3241,8 +3244,7 @@ _StoreProductMeta _storeProductMeta(String productId) {
         summary: '티켓 500 · SR 확정권 · 첫 결제 보너스',
         badges: ['한정', '1회'],
       ),
-    premiumTicketSmallProductId =>
-      _ticketMeta('티켓 110', Colors.teal.shade600),
+    premiumTicketSmallProductId => _ticketMeta('티켓 110', Colors.teal.shade600),
     premiumTicketMediumProductId =>
       _ticketMeta('티켓 380', const Color(0xFF00897B)),
     premiumTicketLargeProductId =>
@@ -3340,7 +3342,7 @@ class _SummonView extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '코스터를 소환하여 수집하세요',
+                  '코스터를 도입하여 수집하세요',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -3358,7 +3360,7 @@ class _SummonView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  '천장 — $pityThreshold회 내에 SR+ 미획득 시 다음 소환 확정',
+                  '천장 — $pityThreshold회 내에 SR+ 미획득 시 다음 도입 확정',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 12,
@@ -3375,7 +3377,7 @@ class _SummonView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '소환 레벨 Lv$summonRateLevel / $summonRateMaxLevel',
+                  '도입 레벨 Lv$summonRateLevel / $summonRateMaxLevel',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.95),
                     fontSize: 12,
@@ -3384,8 +3386,8 @@ class _SummonView extends ConsumerWidget {
                 ),
                 Text(
                   summonRateLevel >= summonRateMaxLevel
-                      ? '누적 소환 ${game.totalSummons}회 · 확률 보정 최대치 도달'
-                      : '누적 소환 ${game.totalSummons}회 · 다음 레벨까지 $summonRateToNext회',
+                      ? '누적 도입 ${game.totalSummons}회 · 확률 보정 최대치 도달'
+                      : '누적 도입 ${game.totalSummons}회 · 다음 레벨까지 $summonRateToNext회',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.85),
                     fontSize: 11,
@@ -3397,7 +3399,7 @@ class _SummonView extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           _SummonButton(
-            label: '1연 소환',
+            label: '1연 도입',
             cost: summonCostSingle,
             ticket: game.ticket,
             primary: false,
@@ -3410,7 +3412,7 @@ class _SummonView extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
           _SummonButton(
-            label: '10연 소환 (마지막 R+ 확정)',
+            label: '10연 도입 (마지막 R+ 확정)',
             cost: summonCostTen,
             ticket: game.ticket,
             primary: true,
@@ -3423,7 +3425,7 @@ class _SummonView extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
           _SummonButton(
-            label: '100연 소환 (10회마다 R+ 확정)',
+            label: '100연 도입 (10회마다 R+ 확정)',
             cost: summonCostHundred,
             ticket: game.ticket,
             primary: false,
@@ -3568,8 +3570,8 @@ class _RateTable extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             isMaxLevel
-                ? '소환 레벨 Lv$rateLevel (최대)'
-                : '소환 레벨 Lv$rateLevel · 다음 레벨까지 $toNextLevel회',
+                ? '도입 레벨 Lv$rateLevel (최대)'
+                : '도입 레벨 Lv$rateLevel · 다음 레벨까지 $toNextLevel회',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -3651,7 +3653,7 @@ class _TicketSources extends StatelessWidget {
           const SizedBox(height: 8),
           const _SourceRow(
             icon: Icons.upgrade,
-            text: '동료 Lv 25 / 50 / 100 / 200 달성 시',
+            text: '어트랙션 Lv 25 / 50 / 100 / 200 달성 시',
           ),
           const _SourceRow(
             icon: Icons.calendar_month,
@@ -3663,7 +3665,7 @@ class _TicketSources extends StatelessWidget {
           ),
           const _SourceRow(
             icon: Icons.recycling,
-            text: '코스터 분해 시 (등급·레벨에 비례)',
+            text: '코스터 매각 시 (등급·레벨에 비례)',
           ),
         ],
       ),
@@ -3706,7 +3708,8 @@ class _CoasterSetsView extends ConsumerWidget {
     final inProgress = <CoasterSet>[];
     final untouched = <CoasterSet>[];
     for (final s in coasterSets) {
-      final ownedCount = s.coasterIds.where((id) => game.ownsCoaster(id)).length;
+      final ownedCount =
+          s.coasterIds.where((id) => game.ownsCoaster(id)).length;
       if (ownedCount == s.coasterIds.length) {
         completed.add(s);
       } else if (ownedCount > 0) {
@@ -3775,7 +3778,7 @@ class _CoasterSetsHeader extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '같은 세트의 코스터를 모두 모으면 영구적으로 터치·DPS 배율이 증가합니다.',
+            '같은 세트의 코스터를 모두 모으면 영구적으로 터치·초당 수익 배율이 증가합니다.',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.9),
               fontSize: 11,
@@ -3896,7 +3899,7 @@ class _CoasterSetCard extends StatelessWidget {
               if (set.dpsBonus > 0)
                 _BonusChip(
                   icon: Icons.bolt,
-                  label: 'DPS',
+                  label: '초당 수익',
                   value: '+${(set.dpsBonus * 100).toStringAsFixed(0)}%',
                   active: completed,
                 ),

@@ -48,7 +48,7 @@ class _MainCoasterEnhanceDialogState
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _Header(
-                name: game.mainCoasterName ?? '이름 없는 검',
+                name: game.mainCoasterName ?? '이름 없는 코스터',
                 stage: stage,
                 tierLabel: tierCurrent.name,
                 ticket: game.ticket,
@@ -159,9 +159,10 @@ class _MainCoasterEnhanceDialogState
           ticketCost:
               (cost.ticketCost * mainCoasterHybridTicketMultiplier).round() +
                   boostCost,
-          successRate:
-              (cost.goldSuccessBase + mainCoasterHybridSuccessBonus + boostBonus)
-                  .clamp(0.0, 1.0),
+          successRate: (cost.goldSuccessBase +
+                  mainCoasterHybridSuccessBonus +
+                  boostBonus)
+              .clamp(0.0, 1.0),
           failureLabel: '실패 시 단계 유지',
           protectedOnFail: true,
         ),
@@ -180,7 +181,8 @@ class _MainCoasterEnhanceDialogState
       return;
     }
     if (result.success) {
-      _toast('성공! +${result.newStage}강 진입');
+      _toast(
+          '성공! +${result.newStage}강 · ${mainCoasterStageUpgradeLabel(result.newStage)}');
     } else if (result.penaltyApplied > 0) {
       _toast('실패: ${result.penaltyApplied}강 하락 (+${result.newStage})');
     } else {
@@ -201,7 +203,7 @@ class _MainCoasterEnhanceDialogState
 
   String _failureLabel(MainCoasterEnhanceFailure reason) => switch (reason) {
         MainCoasterEnhanceFailure.notEnoughGold => '골드가 부족해요',
-        MainCoasterEnhanceFailure.notEnoughTicket => '티켓가 부족해요',
+        MainCoasterEnhanceFailure.notEnoughTicket => '티켓이 부족해요',
         MainCoasterEnhanceFailure.alreadyMaxed => '이미 최대 단계입니다',
         MainCoasterEnhanceFailure.rolledFailure ||
         MainCoasterEnhanceFailure.none =>
@@ -408,7 +410,7 @@ class _NextStageBar extends StatelessWidget {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              '목표 +$targetStage · $tierName',
+              '목표 +$targetStage · ${mainCoasterStageUpgradeLabel(targetStage)} · $tierName',
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
             ),
           ),

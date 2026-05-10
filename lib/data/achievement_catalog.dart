@@ -100,7 +100,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'tap_1m',
-    name: '백만 검객',
+    name: '백만 탭 운영자',
     description: '1,000,000회 터치',
     category: AchievementCategory.tap,
     ticketReward: 30,
@@ -147,7 +147,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'gold_1b',
-    name: '십억의 검',
+    name: '십억 매출 파크',
     description: '누적 골드 1B',
     category: AchievementCategory.gold,
     ticketReward: 5,
@@ -200,11 +200,11 @@ final achievementCatalog = <AchievementDef>[
     target: 1e18,
   ),
 
-  // ============ 3. DPS (6) ============
+  // ============ 3. 초당 수익 (6) ============
   _num(
     id: 'dps_10',
     name: '자동 수익 시작',
-    description: '최고 DPS 10',
+    description: '최고 초당 수익 10',
     category: AchievementCategory.dps,
     ticketReward: 1,
     current: (c) => c.maxDpsEver,
@@ -213,7 +213,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'dps_1k',
     name: '흘러넘치는 골드',
-    description: '최고 DPS 1K',
+    description: '최고 초당 수익 1K',
     category: AchievementCategory.dps,
     ticketReward: 2,
     current: (c) => c.maxDpsEver,
@@ -222,7 +222,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'dps_100k',
     name: '골드 공장',
-    description: '최고 DPS 100K',
+    description: '최고 초당 수익 100K',
     category: AchievementCategory.dps,
     ticketReward: 3,
     current: (c) => c.maxDpsEver,
@@ -231,7 +231,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'dps_1m',
     name: '황금 폭포',
-    description: '최고 DPS 1M',
+    description: '최고 초당 수익 1M',
     category: AchievementCategory.dps,
     ticketReward: 5,
     current: (c) => c.maxDpsEver,
@@ -240,7 +240,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'dps_100m',
     name: '초당 1억',
-    description: '최고 DPS 100M',
+    description: '최고 초당 수익 100M',
     category: AchievementCategory.dps,
     ticketReward: 10,
     current: (c) => c.maxDpsEver,
@@ -249,7 +249,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'dps_1b',
     name: '전설의 생산력',
-    description: '최고 DPS 1B',
+    description: '최고 초당 수익 1B',
     category: AchievementCategory.dps,
     ticketReward: 20,
     current: (c) => c.maxDpsEver,
@@ -303,11 +303,11 @@ final achievementCatalog = <AchievementDef>[
     target: 360000,
   ),
 
-  // ============ 5. 동료 (8) ============
+  // ============ 5. 직원 (8) ============
   _bool(
     id: 'hire_first',
-    name: '첫 동료',
-    description: '동료 1명 고용',
+    name: '첫 직원',
+    description: '직원 1명 고용',
     category: AchievementCategory.producer,
     ticketReward: 1,
     test: (c) => c.ownedProducerCount >= 1,
@@ -315,7 +315,7 @@ final achievementCatalog = <AchievementDef>[
   _bool(
     id: 'hire_5',
     name: '파티 구성',
-    description: '동료 5종 고용',
+    description: '직원 5종 고용',
     category: AchievementCategory.producer,
     ticketReward: 2,
     test: (c) => c.ownedProducerCount >= 5,
@@ -323,7 +323,7 @@ final achievementCatalog = <AchievementDef>[
   _bool(
     id: 'hire_all',
     name: '풀 라인업',
-    description: '모든 동료 종류 고용',
+    description: '모든 직원 종류 고용',
     category: AchievementCategory.producer,
     ticketReward: 8,
     test: (c) => c.ownedProducerCount >= c.totalProducerCatalogCount,
@@ -331,7 +331,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'producer_lv_10',
     name: '한 명을 집중 육성',
-    description: '동료 중 하나를 Lv 10으로',
+    description: '직원 중 하나를 Lv 10으로',
     category: AchievementCategory.producer,
     ticketReward: 2,
     current: (c) {
@@ -345,7 +345,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'producer_lv_25',
     name: '마일스톤 첫 돌파',
-    description: '동료 중 하나 Lv 25',
+    description: '직원 중 하나 Lv 25',
     category: AchievementCategory.producer,
     ticketReward: 3,
     current: (c) {
@@ -359,7 +359,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'producer_lv_50',
     name: '반환점',
-    description: '동료 중 하나 Lv 50',
+    description: '직원 중 하나 Lv 50',
     category: AchievementCategory.producer,
     ticketReward: 5,
     current: (c) {
@@ -373,7 +373,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'producer_lv_100',
     name: '세 자리수',
-    description: '동료 중 하나 Lv 100',
+    description: '직원 중 하나 Lv 100',
     category: AchievementCategory.producer,
     ticketReward: 10,
     current: (c) {
@@ -387,7 +387,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'producer_lv_200',
     name: '마일스톤 완주',
-    description: '동료 중 하나 Lv 200',
+    description: '직원 중 하나 Lv 200',
     category: AchievementCategory.producer,
     ticketReward: 25,
     current: (c) {
@@ -402,7 +402,7 @@ final achievementCatalog = <AchievementDef>[
   // ============ 6. 코스터 수집 (10) ============
   _bool(
     id: 'coaster_first',
-    name: '첫 검',
+    name: '첫 코스터',
     description: '코스터 1대 획득',
     category: AchievementCategory.coasterCollect,
     ticketReward: 1,
@@ -558,11 +558,11 @@ final achievementCatalog = <AchievementDef>[
     target: 5,
   ),
 
-  // ============ 8. 소환 (5) ============
+  // ============ 8. 도입 (5) ============
   _num(
     id: 'summon_10',
     name: '열 번의 기원',
-    description: '소환 10회',
+    description: '도입 10회',
     category: AchievementCategory.summon,
     ticketReward: 1,
     current: (c) => c.totalSummons.toDouble(),
@@ -570,8 +570,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'summon_50',
-    name: '소환 애호가',
-    description: '소환 50회',
+    name: '도입 애호가',
+    description: '도입 50회',
     category: AchievementCategory.summon,
     ticketReward: 3,
     current: (c) => c.totalSummons.toDouble(),
@@ -580,7 +580,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'summon_100',
     name: '백 번의 운명',
-    description: '소환 100회',
+    description: '도입 100회',
     category: AchievementCategory.summon,
     ticketReward: 5,
     current: (c) => c.totalSummons.toDouble(),
@@ -588,8 +588,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'summon_500',
-    name: '소환 중독',
-    description: '소환 500회',
+    name: '도입 중독',
+    description: '도입 500회',
     category: AchievementCategory.summon,
     ticketReward: 15,
     current: (c) => c.totalSummons.toDouble(),
@@ -597,19 +597,19 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'summon_1000',
-    name: '천 번의 소환',
-    description: '소환 1000회',
+    name: '천 번의 도입',
+    description: '도입 1000회',
     category: AchievementCategory.summon,
     ticketReward: 30,
     current: (c) => c.totalSummons.toDouble(),
     target: 1000,
   ),
 
-  // ============ 9. 환생 (7) ============
+  // ============ 9. 재개장 (7) ============
   _num(
     id: 'prestige_1',
     name: '새로운 시작',
-    description: '첫 환생',
+    description: '첫 재개장',
     category: AchievementCategory.prestige,
     ticketReward: 3,
     current: (c) => c.prestigeCount.toDouble(),
@@ -618,7 +618,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'prestige_3',
     name: '세 번째 삶',
-    description: '환생 3회',
+    description: '재개장 3회',
     category: AchievementCategory.prestige,
     ticketReward: 5,
     current: (c) => c.prestigeCount.toDouble(),
@@ -626,8 +626,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'prestige_10',
-    name: '열 번의 환생',
-    description: '환생 10회',
+    name: '열 번의 재개장',
+    description: '재개장 10회',
     category: AchievementCategory.prestige,
     ticketReward: 10,
     current: (c) => c.prestigeCount.toDouble(),
@@ -636,7 +636,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'prestige_50',
     name: '영원한 순환',
-    description: '환생 50회',
+    description: '재개장 50회',
     category: AchievementCategory.prestige,
     ticketReward: 30,
     current: (c) => c.prestigeCount.toDouble(),
@@ -644,8 +644,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'souls_100',
-    name: '각인의 시작',
-    description: '영구 각인 Lv 10',
+    name: '브랜드 연구 시작',
+    description: '브랜드 연구 Lv 10',
     category: AchievementCategory.prestige,
     ticketReward: 5,
     current: (c) =>
@@ -654,8 +654,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'souls_1k',
-    name: '각인 장인',
-    description: '영구 각인 Lv 50',
+    name: '브랜드 연구 장인',
+    description: '브랜드 연구 Lv 50',
     category: AchievementCategory.prestige,
     ticketReward: 20,
     current: (c) =>
@@ -664,8 +664,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'souls_10k',
-    name: '끝없는 각인',
-    description: '영구 각인 Lv 150',
+    name: '끝없는 브랜드 연구',
+    description: '브랜드 연구 Lv 150',
     category: AchievementCategory.prestige,
     ticketReward: 60,
     current: (c) =>
@@ -673,19 +673,19 @@ final achievementCatalog = <AchievementDef>[
     target: 150,
   ),
 
-  // ============ 10. 슬라임 (6) ============
+  // ============ 10. VIP 손님 (6) ============
   _bool(
     id: 'slime_first',
-    name: '첫 슬라임 처치',
-    description: '황금 슬라임 1마리 처치',
+    name: '첫 VIP 응대',
+    description: 'VIP 손님 1명 응대',
     category: AchievementCategory.slime,
     ticketReward: 1,
     test: (c) => c.slimesDefeated >= 1,
   ),
   _num(
     id: 'slime_10',
-    name: '슬라임 사냥꾼',
-    description: '슬라임 10마리 처치',
+    name: 'VIP 응대원',
+    description: 'VIP 손님 10명 응대',
     category: AchievementCategory.slime,
     ticketReward: 3,
     current: (c) => c.slimesDefeated.toDouble(),
@@ -693,8 +693,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'slime_50',
-    name: '슬라임 도살자',
-    description: '슬라임 50마리 처치',
+    name: 'VIP 매니저',
+    description: 'VIP 손님 50명 응대',
     category: AchievementCategory.slime,
     ticketReward: 8,
     current: (c) => c.slimesDefeated.toDouble(),
@@ -702,8 +702,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'slime_200',
-    name: '황금 사냥의 달인',
-    description: '슬라임 200마리 처치',
+    name: '황금 손님 달인',
+    description: 'VIP 손님 200명 응대',
     category: AchievementCategory.slime,
     ticketReward: 20,
     current: (c) => c.slimesDefeated.toDouble(),
@@ -711,8 +711,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'slime_1000',
-    name: '슬라임 군주',
-    description: '슬라임 1,000마리 처치',
+    name: 'VIP 라운지 책임자',
+    description: 'VIP 손님 1,000명 응대',
     category: AchievementCategory.slime,
     ticketReward: 60,
     current: (c) => c.slimesDefeated.toDouble(),
@@ -720,19 +720,19 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'slime_5000',
-    name: '슬라임 전설',
-    description: '슬라임 5,000마리 처치',
+    name: 'VIP 전설',
+    description: 'VIP 손님 5,000명 응대',
     category: AchievementCategory.slime,
     ticketReward: 150,
     current: (c) => c.slimesDefeated.toDouble(),
     target: 5000,
   ),
 
-  // ============ 11. 전투 - 크리/콤보 (8) ============
+  // ============ 11. 피버 - 대박 탑승/콤보 (8) ============
   _num(
     id: 'crit_10',
-    name: '치명타 발견',
-    description: '크리티컬 10회',
+    name: '대박 탑승 발견',
+    description: '대박 탑승 10회',
     category: AchievementCategory.combat,
     ticketReward: 1,
     current: (c) => c.totalCrits.toDouble(),
@@ -740,8 +740,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'crit_100',
-    name: '날카로운 일격',
-    description: '크리티컬 100회',
+    name: '대박 탑승',
+    description: '대박 탑승 100회',
     category: AchievementCategory.combat,
     ticketReward: 3,
     current: (c) => c.totalCrits.toDouble(),
@@ -749,8 +749,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'crit_1k',
-    name: '치명타 장인',
-    description: '크리티컬 1,000회',
+    name: '대박 탑승 장인',
+    description: '대박 탑승 1,000회',
     category: AchievementCategory.combat,
     ticketReward: 10,
     current: (c) => c.totalCrits.toDouble(),
@@ -759,7 +759,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'crit_10k',
     name: '치명의 화신',
-    description: '크리티컬 10,000회',
+    description: '대박 탑승 10,000회',
     category: AchievementCategory.combat,
     ticketReward: 30,
     current: (c) => c.totalCrits.toDouble(),
@@ -802,11 +802,11 @@ final achievementCatalog = <AchievementDef>[
     target: 5,
   ),
 
-  // ============ 12. 스킬 (4) ============
+  // ============ 12. 이벤트 (4) ============
   _num(
     id: 'skill_first',
-    name: '첫 스킬',
-    description: '스킬 1회 사용',
+    name: '첫 이벤트',
+    description: '이벤트 1회 사용',
     category: AchievementCategory.skill,
     ticketReward: 1,
     current: (c) => c.skillsUsed.toDouble(),
@@ -815,7 +815,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'skill_10',
     name: '기술의 활용',
-    description: '스킬 10회 사용',
+    description: '이벤트 10회 사용',
     category: AchievementCategory.skill,
     ticketReward: 3,
     current: (c) => c.skillsUsed.toDouble(),
@@ -823,8 +823,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'skill_100',
-    name: '숙련된 검사',
-    description: '스킬 100회 사용',
+    name: '숙련된 운영자',
+    description: '이벤트 100회 사용',
     category: AchievementCategory.skill,
     ticketReward: 12,
     current: (c) => c.skillsUsed.toDouble(),
@@ -833,7 +833,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'skill_500',
     name: '오의 전수자',
-    description: '스킬 500회 사용',
+    description: '이벤트 500회 사용',
     category: AchievementCategory.skill,
     ticketReward: 40,
     current: (c) => c.skillsUsed.toDouble(),
@@ -890,7 +890,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'master_tap_upgrades',
     name: '강화의 달인',
-    description: '터치 강화 누적 10회 구매',
+    description: '운영 강화 누적 10회 구매',
     category: AchievementCategory.master,
     ticketReward: 2,
     current: (c) => c.totalTapUpgradesBought.toDouble(),
@@ -899,7 +899,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'master_all_producers_lv_10',
     name: '고른 성장',
-    description: '모든 동료를 Lv 10 이상으로',
+    description: '모든 직원을 Lv 10 이상으로',
     category: AchievementCategory.master,
     ticketReward: 15,
     current: (c) {
@@ -913,7 +913,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'master_total_producer_lv',
     name: '코스터의 군단',
-    description: '모든 동료 레벨 합계 500',
+    description: '모든 직원 레벨 합계 500',
     category: AchievementCategory.master,
     ticketReward: 25,
     current: (c) => c.totalProducerLevels.toDouble(),
@@ -961,7 +961,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'tap_10b',
-    name: '무한의 검수',
+    name: '무한의 탭 운영자',
     description: '100억 회 터치',
     category: AchievementCategory.tap,
     ticketReward: 240,
@@ -1016,11 +1016,11 @@ final achievementCatalog = <AchievementDef>[
     target: 1e18,
   ),
 
-  // -- DPS 후속 단계 --
+  // -- 초당 수익 후속 단계 --
   _num(
     id: 'dps_100m',
     name: '폭주 기관차',
-    description: '최대 DPS 100M/s',
+    description: '최대 초당 수익 100M/s',
     category: AchievementCategory.dps,
     ticketReward: 30,
     current: (c) => c.maxDpsEver,
@@ -1029,7 +1029,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'dps_1b',
     name: 'B/s 클래스',
-    description: '최대 DPS 1B/s',
+    description: '최대 초당 수익 1B/s',
     category: AchievementCategory.dps,
     ticketReward: 60,
     current: (c) => c.maxDpsEver,
@@ -1037,8 +1037,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'dps_100b',
-    name: '백억의 검신',
-    description: '최대 DPS 100B/s',
+    name: '백억 매출 파크',
+    description: '최대 초당 수익 100B/s',
     category: AchievementCategory.dps,
     ticketReward: 100,
     current: (c) => c.maxDpsEver,
@@ -1047,7 +1047,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'dps_1t',
     name: 'T/s 도달',
-    description: '최대 DPS 1T/s',
+    description: '최대 초당 수익 1T/s',
     category: AchievementCategory.dps,
     ticketReward: 150,
     current: (c) => c.maxDpsEver,
@@ -1055,8 +1055,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'dps_100t',
-    name: '광속 일격',
-    description: '최대 DPS 100T/s',
+    name: '광속 매진',
+    description: '최대 초당 수익 100T/s',
     category: AchievementCategory.dps,
     ticketReward: 220,
     current: (c) => c.maxDpsEver,
@@ -1064,8 +1064,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'dps_1aa',
-    name: '경 단위 DPS',
-    description: '최대 DPS 1aa/s',
+    name: '경 단위 초당 수익',
+    description: '최대 초당 수익 1aa/s',
     category: AchievementCategory.dps,
     ticketReward: 350,
     current: (c) => c.maxDpsEver,
@@ -1102,7 +1102,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'playtime_1000h',
-    name: '천일의 검사',
+    name: '천일의 운영자',
     description: '플레이타임 1,000시간',
     category: AchievementCategory.playtime,
     ticketReward: 350,
@@ -1110,11 +1110,11 @@ final achievementCatalog = <AchievementDef>[
     target: 3600000,
   ),
 
-  // -- 동료 후속 단계 --
+  // -- 직원 후속 단계 --
   _num(
     id: 'producer_total_1k',
-    name: '천 단위 동료군',
-    description: '동료 총 레벨 1,000',
+    name: '천 단위 운영팀',
+    description: '직원 총 레벨 1,000',
     category: AchievementCategory.producer,
     ticketReward: 50,
     current: (c) => c.totalProducerLevels.toDouble(),
@@ -1122,8 +1122,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'producer_total_5k',
-    name: '5천 동료 군단',
-    description: '동료 총 레벨 5,000',
+    name: '5천 운영팀',
+    description: '직원 총 레벨 5,000',
     category: AchievementCategory.producer,
     ticketReward: 100,
     current: (c) => c.totalProducerLevels.toDouble(),
@@ -1131,8 +1131,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'producer_total_10k',
-    name: '만 동료 군단',
-    description: '동료 총 레벨 10,000',
+    name: '만렙 운영본부',
+    description: '직원 총 레벨 10,000',
     category: AchievementCategory.producer,
     ticketReward: 180,
     current: (c) => c.totalProducerLevels.toDouble(),
@@ -1140,8 +1140,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'producer_max_lv_500',
-    name: '에이스 동료',
-    description: '한 동료 Lv 500 도달',
+    name: '에이스 직원',
+    description: '한 직원 Lv 500 도달',
     category: AchievementCategory.producer,
     ticketReward: 70,
     current: (c) {
@@ -1156,7 +1156,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'producer_max_lv_1k',
     name: '천 단위 에이스',
-    description: '한 동료 Lv 1,000 도달',
+    description: '한 직원 Lv 1,000 도달',
     category: AchievementCategory.producer,
     ticketReward: 140,
     current: (c) {
@@ -1171,7 +1171,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'producer_all_owned',
     name: '완전 군단',
-    description: '모든 동료 보유',
+    description: '모든 직원 보유',
     category: AchievementCategory.producer,
     ticketReward: 100,
     current: (c) => c.ownedProducerCount.toDouble(),
@@ -1255,7 +1255,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'coaster_max_all',
-    name: '완벽한 무기고',
+    name: '완벽한 코스터 차고',
     description: '모든 코스터 최대 레벨',
     category: AchievementCategory.coasterLevel,
     ticketReward: 500,
@@ -1263,11 +1263,11 @@ final achievementCatalog = <AchievementDef>[
     target: 66,
   ),
 
-  // -- 소환 후속 단계 --
+  // -- 도입 후속 단계 --
   _num(
     id: 'summon_1k',
     name: '천 번의 부름',
-    description: '소환 1,000회',
+    description: '도입 1,000회',
     category: AchievementCategory.summon,
     ticketReward: 50,
     current: (c) => c.totalSummons.toDouble(),
@@ -1276,7 +1276,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'summon_10k',
     name: '만 번의 부름',
-    description: '소환 10,000회',
+    description: '도입 10,000회',
     category: AchievementCategory.summon,
     ticketReward: 120,
     current: (c) => c.totalSummons.toDouble(),
@@ -1284,19 +1284,19 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'summon_100k',
-    name: '소환 광신도',
-    description: '소환 100,000회',
+    name: '도입 전문가',
+    description: '도입 100,000회',
     category: AchievementCategory.summon,
     ticketReward: 250,
     current: (c) => c.totalSummons.toDouble(),
     target: 100000,
   ),
 
-  // -- 환생 후속 단계 --
+  // -- 재개장 후속 단계 --
   _num(
     id: 'prestige_50',
-    name: '50회 환생',
-    description: '환생 50회',
+    name: '50회 재개장',
+    description: '재개장 50회',
     category: AchievementCategory.prestige,
     ticketReward: 80,
     current: (c) => c.prestigeCount.toDouble(),
@@ -1304,8 +1304,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'prestige_100',
-    name: '100회 환생',
-    description: '환생 100회',
+    name: '100회 재개장',
+    description: '재개장 100회',
     category: AchievementCategory.prestige,
     ticketReward: 150,
     current: (c) => c.prestigeCount.toDouble(),
@@ -1314,7 +1314,7 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'prestige_250',
     name: '윤회의 길',
-    description: '환생 250회',
+    description: '재개장 250회',
     category: AchievementCategory.prestige,
     ticketReward: 250,
     current: (c) => c.prestigeCount.toDouble(),
@@ -1322,8 +1322,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'prestige_500',
-    name: '500회 환생',
-    description: '환생 500회',
+    name: '500회 재개장',
+    description: '재개장 500회',
     category: AchievementCategory.prestige,
     ticketReward: 400,
     current: (c) => c.prestigeCount.toDouble(),
@@ -1332,18 +1332,18 @@ final achievementCatalog = <AchievementDef>[
   _num(
     id: 'prestige_1000',
     name: '천 번의 부활',
-    description: '환생 1,000회',
+    description: '재개장 1,000회',
     category: AchievementCategory.prestige,
     ticketReward: 700,
     current: (c) => c.prestigeCount.toDouble(),
     target: 1000,
   ),
 
-  // -- 슬라임 후속 단계 --
+  // -- VIP 손님 후속 단계 --
   _num(
     id: 'slime_1k',
-    name: '슬라임 학살자',
-    description: '슬라임 1,000마리 처치',
+    name: 'VIP 러시 매니저',
+    description: 'VIP 손님 1,000명 응대',
     category: AchievementCategory.slime,
     ticketReward: 40,
     current: (c) => c.slimesDefeated.toDouble(),
@@ -1351,8 +1351,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'slime_10k',
-    name: '슬라임 사냥꾼',
-    description: '슬라임 10,000마리 처치',
+    name: 'VIP 응대 전문가',
+    description: 'VIP 손님 10,000명 응대',
     category: AchievementCategory.slime,
     ticketReward: 90,
     current: (c) => c.slimesDefeated.toDouble(),
@@ -1360,15 +1360,15 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'slime_100k',
-    name: '슬라임 멸종',
-    description: '슬라임 100,000마리 처치',
+    name: 'VIP 웨이브 마스터',
+    description: 'VIP 손님 100,000명 응대',
     category: AchievementCategory.slime,
     ticketReward: 200,
     current: (c) => c.slimesDefeated.toDouble(),
     target: 100000,
   ),
 
-  // -- 전투 (콤보·크리티컬) 후속 단계 --
+  // -- 피버 (콤보·대박 탑승) 후속 단계 --
   _num(
     id: 'combo_100',
     name: '콤보 100',
@@ -1389,7 +1389,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'combo_500',
-    name: '폭주의 검사',
+    name: '폭주의 운영자',
     description: '콤보 500 도달',
     category: AchievementCategory.combat,
     ticketReward: 250,
@@ -1398,8 +1398,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'crit_100k',
-    name: '크리티컬 십만',
-    description: '치명타 100,000회',
+    name: '대박 탑승 십만',
+    description: '대박 탑승 100,000회',
     category: AchievementCategory.combat,
     ticketReward: 80,
     current: (c) => c.totalCrits.toDouble(),
@@ -1407,8 +1407,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'crit_1m',
-    name: '크리티컬 백만',
-    description: '치명타 1,000,000회',
+    name: '대박 탑승 백만',
+    description: '대박 탑승 1,000,000회',
     category: AchievementCategory.combat,
     ticketReward: 180,
     current: (c) => c.totalCrits.toDouble(),
@@ -1433,11 +1433,11 @@ final achievementCatalog = <AchievementDef>[
     target: 1000,
   ),
 
-  // -- 스킬 후속 단계 --
+  // -- 이벤트 후속 단계 --
   _num(
     id: 'skill_100',
-    name: '스킬 백번',
-    description: '스킬 100회 사용',
+    name: '이벤트 백번',
+    description: '이벤트 100회 사용',
     category: AchievementCategory.skill,
     ticketReward: 30,
     current: (c) => c.skillsUsed.toDouble(),
@@ -1445,8 +1445,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'skill_1k',
-    name: '스킬 천번',
-    description: '스킬 1,000회 사용',
+    name: '이벤트 천번',
+    description: '이벤트 1,000회 사용',
     category: AchievementCategory.skill,
     ticketReward: 80,
     current: (c) => c.skillsUsed.toDouble(),
@@ -1454,8 +1454,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'skill_10k',
-    name: '스킬 만번',
-    description: '스킬 10,000회 사용',
+    name: '이벤트 만번',
+    description: '이벤트 10,000회 사용',
     category: AchievementCategory.skill,
     ticketReward: 200,
     current: (c) => c.skillsUsed.toDouble(),
@@ -1517,7 +1517,7 @@ final achievementCatalog = <AchievementDef>[
   _bool(
     id: 'master_collector',
     name: '광신적 수집가',
-    description: '코스터 60종 + 환생 50회 + 도감 90% 달성',
+    description: '코스터 60종 + 재개장 50회 + 도감 90% 달성',
     category: AchievementCategory.master,
     ticketReward: 250,
     test: (c) =>
@@ -1711,8 +1711,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _bool(
     id: 'set_legend_complete',
-    name: '전설의 영웅',
-    description: '"전설의 영웅" 세트 완성 (모든 영웅 검)',
+    name: '레전드 어트랙션',
+    description: '"레전드 어트랙션" 세트 완성 (모든 대표 코스터)',
     category: AchievementCategory.coasterSets,
     ticketReward: 350,
     test: (c) =>
@@ -1829,7 +1829,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'booster_10',
-    name: '가속 마니아',
+    name: '부스터 마니아',
     description: '부스터 10회 사용',
     category: AchievementCategory.economy,
     ticketReward: 25,
@@ -1838,7 +1838,7 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'booster_100',
-    name: '가속 의존',
+    name: '부스터 루틴',
     description: '부스터 100회 사용',
     category: AchievementCategory.economy,
     ticketReward: 80,
@@ -1847,8 +1847,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'prestige_coins_1k',
-    name: '환생 코인 천',
-    description: '환생 코인 1,000 보유',
+    name: '브랜드 포인트 천',
+    description: '브랜드 포인트 1,000 보유',
     category: AchievementCategory.economy,
     ticketReward: 70,
     current: (c) => c.prestigeCoins.toDouble(),
@@ -1856,8 +1856,8 @@ final achievementCatalog = <AchievementDef>[
   ),
   _num(
     id: 'prestige_coins_10k',
-    name: '환생 코인 만',
-    description: '환생 코인 10,000 보유',
+    name: '브랜드 포인트 만',
+    description: '브랜드 포인트 10,000 보유',
     category: AchievementCategory.economy,
     ticketReward: 200,
     current: (c) => c.prestigeCoins.toDouble(),

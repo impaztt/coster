@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/number_format.dart';
@@ -63,9 +63,9 @@ class UpgradeScreen extends ConsumerWidget {
                 unselectedLabelStyle:
                     TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
                 tabs: [
-                  Tab(height: 34, text: '터치'),
-                  Tab(height: 34, text: '동료'),
-                  Tab(height: 34, text: '초월'),
+                  Tab(height: 34, text: '운영'),
+                  Tab(height: 34, text: '어트랙션'),
+                  Tab(height: 34, text: '프리미엄'),
                 ],
               ),
             ),
@@ -100,7 +100,7 @@ class UpgradeScreen extends ConsumerWidget {
                             cost: cost,
                             buyCount: n,
                             gainLabel:
-                                '터치당 +${NumberFormatter.formatPrecise(effTap)}',
+                                '탭당 골드 +${NumberFormatter.formatPrecise(effTap)}',
                             affordable: affordable,
                             onBuy: () =>
                                 notifier.buyTapUpgrade(def.id, multiplier),
@@ -119,7 +119,7 @@ class UpgradeScreen extends ConsumerWidget {
                     game: game,
                     multiplier: multiplier,
                     notifier: notifier,
-                    headerLabel: '동료보다 한참 위의 존재들. 가격이 무서울 정도지만 DPS도 자릿수가 다릅니다.',
+                    headerLabel: '테마파크 최상위 명소. 비용은 어마어마하지만 수익도 차원이 달라요.',
                   ),
                 ],
               ),
@@ -206,11 +206,11 @@ class _ProducerList extends StatelessWidget {
             final nextMs = def.nextMilestone(lv);
             final curMult = def.milestoneMultiplier(lv).toInt();
             final msLabel = nextMs == null
-                ? '마일스톤 완주! (x$curMult DPS)'
-                : '다음 Lv $nextMs → DPS x2 (현재 x$curMult)';
-            // Effective gain = raw producer DPS × every active multiplier
+                ? '마일스톤 완주! (x$curMult 초당 수익)'
+                : '다음 Lv $nextMs → 초당 수익 x2 (현재 x$curMult)';
+            // Effective gain = raw producer 초당 수익 × every active multiplier
             // (prestige, equipped coaster, boosters, set, COLLECTION). The
-            // collection bonus actually does affect 동료/초월 income — this
+            // collection bonus actually does affect 어트랙션/초월 income — this
             // surfaces it instead of leaving the player wondering.
             final rawDps = def.baseDps * n * def.milestoneMultiplier(lv);
             final effDps = rawDps * notifier.dpsMultiplier;
@@ -222,7 +222,7 @@ class _ProducerList extends StatelessWidget {
               level: lv,
               cost: cost,
               buyCount: n,
-              gainLabel: 'DPS +${NumberFormatter.formatPrecise(effDps)}',
+              gainLabel: '초당 수익 +${NumberFormatter.formatPrecise(effDps)}',
               milestoneLabel: msLabel,
               affordable: affordable,
               onBuy: () => notifier.buyProducer(def.id, multiplier),

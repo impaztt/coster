@@ -52,8 +52,8 @@ const mainCoasterTiers = <MainCoasterTier>[
   // T1 +1~+5
   MainCoasterTier(
     index: 0,
-    name: '녹슨 검',
-    description: '오래 잠들어 있던 시작의 검',
+    name: '낡은 미니 코스터',
+    description: '처음 손님을 태운 작은 출발점',
     shape: CoasterShape.longcoaster,
     blade: Color(0xFF8D6E63),
     bladeAccent: Color(0xFF5D4037),
@@ -68,8 +68,8 @@ const mainCoasterTiers = <MainCoasterTier>[
   // T2 +6~+10
   MainCoasterTier(
     index: 1,
-    name: '강철검',
-    description: '제련을 마친 단단한 검',
+    name: '클래식 우든 코스터',
+    description: '나무 트랙의 리듬이 살아난 기본 코스터',
     shape: CoasterShape.longcoaster,
     blade: Color(0xFFECEFF1),
     bladeAccent: Color(0xFF90A4AE),
@@ -84,8 +84,8 @@ const mainCoasterTiers = <MainCoasterTier>[
   // T3 +11~+15
   MainCoasterTier(
     index: 2,
-    name: '룬 검',
-    description: '고대 룬어가 깃든 검',
+    name: '스틸 루프 코스터',
+    description: '첫 루프와 조명이 추가된 스틸 코스터',
     shape: CoasterShape.longcoaster,
     blade: Color(0xFFB39DDB),
     bladeAccent: Color(0xFF4527A0),
@@ -100,8 +100,8 @@ const mainCoasterTiers = <MainCoasterTier>[
   // T4 +16~+20
   MainCoasterTier(
     index: 3,
-    name: '화염검',
-    description: '꺼지지 않는 불꽃이 깃들었다',
+    name: '파이어 런치 코스터',
+    description: '출발 순간 불꽃처럼 치고 나가는 런치 코스터',
     shape: CoasterShape.falchion,
     blade: Color(0xFFFFAB91),
     bladeAccent: Color(0xFFD84315),
@@ -116,8 +116,8 @@ const mainCoasterTiers = <MainCoasterTier>[
   // T5 +21~+25
   MainCoasterTier(
     index: 4,
-    name: '빙결검',
-    description: '숨이 닿는 모든 것을 얼린다',
+    name: '아이스 캐니언 코스터',
+    description: '서늘한 협곡 테마와 푸른 조명이 흐르는 코스터',
     shape: CoasterShape.katana,
     blade: Color(0xFFB3E5FC),
     bladeAccent: Color(0xFF0288D1),
@@ -132,8 +132,8 @@ const mainCoasterTiers = <MainCoasterTier>[
   // T6 +26~+30
   MainCoasterTier(
     index: 5,
-    name: '뇌전검',
-    description: '코스터 끝에서 번개가 흐른다',
+    name: '라이트닝 레일',
+    description: '전기 이펙트가 트랙을 타고 흐르는 고속 레일',
     shape: CoasterShape.rapier,
     blade: Color(0xFFFFF59D),
     bladeAccent: Color(0xFFFBC02D),
@@ -148,8 +148,8 @@ const mainCoasterTiers = <MainCoasterTier>[
   // T7 +31~+35
   MainCoasterTier(
     index: 6,
-    name: '신성검',
-    description: '하늘이 인정한 자만이 휘두를 수 있는',
+    name: '스카이 하이퍼 코스터',
+    description: '하늘 위로 치솟는 대표 하이퍼 코스터',
     shape: CoasterShape.claymore,
     blade: Color(0xFFFFFDE7),
     bladeAccent: Color(0xFFFFD54F),
@@ -164,8 +164,8 @@ const mainCoasterTiers = <MainCoasterTier>[
   // T8 +36~+40
   MainCoasterTier(
     index: 7,
-    name: '마룡검',
-    description: '검은 안개를 휘감고 떠오른다',
+    name: '나이트 드래곤 코스터',
+    description: '야간 조명과 드래곤 테마가 감싸는 시그니처 코스터',
     shape: CoasterShape.falchion,
     blade: Color(0xFF263238),
     bladeAccent: Color(0xFFB71C1C),
@@ -181,8 +181,8 @@ const mainCoasterTiers = <MainCoasterTier>[
   // T9 +41~+45
   MainCoasterTier(
     index: 8,
-    name: '천공검',
-    description: '별빛을 따라 호흡하는 검',
+    name: '스타라이트 익스프레스',
+    description: '별빛 조명과 긴 낙하가 이어지는 야간 특화 코스터',
     shape: CoasterShape.claymore,
     blade: Color(0xFFE3F2FD),
     bladeAccent: Color(0xFF42A5F5),
@@ -199,8 +199,8 @@ const mainCoasterTiers = <MainCoasterTier>[
   // T10 +46~+50
   MainCoasterTier(
     index: 9,
-    name: '창세검',
-    description: '세상을 처음 가른 검',
+    name: '갤럭시 오리진 코스터',
+    description: '파크의 시작과 끝을 상징하는 궁극 코스터',
     shape: CoasterShape.claymore,
     blade: Color(0xFFFFFFFF),
     bladeAccent: Color(0xFFE1BEE7),
@@ -233,6 +233,18 @@ double mainCoasterIntraTierProgress(int stage) {
 
 MainCoasterTier mainCoasterTierFor(int stage) =>
     mainCoasterTiers[mainCoasterTierIndex(stage)];
+
+String mainCoasterStageUpgradeLabel(int stage) {
+  if (stage <= 0) return '기본 코스터 설치';
+  final step = ((stage - 1) % mainCoasterTierSize) + 1;
+  return switch (step) {
+    1 => '트랙 확장',
+    2 => '지지대 보강',
+    3 => '열차 증편',
+    4 => '파크 조명 설치',
+    _ => '테마 장식 완성',
+  };
+}
 
 /// Resolve a stage to a [CoasterVisual] used by the renderer. Within a tier
 /// we interpolate aura intensity to give every substage a slightly different

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/producer.dart';
 
-// IDs are intentionally retained from the legacy sword theme so that
-// achievement targets, region affinities, and saved producerLevels
-// keys keep working after the coaster reskin. Only display fields are
-// new — name / description / icon / accent reflect the attraction.
+// IDs are intentionally retained so achievement targets, region affinities,
+// and saved producerLevels keys keep working after the coaster reskin. Only
+// display fields reflect the attraction.
 
 const producerCatalog = <ProducerDef>[
   // === Tier 1 — 어린이/패밀리 ===
@@ -250,7 +249,7 @@ const producerCatalog = <ProducerDef>[
     growthRate: 1.18,
   ),
 
-  // ============ 초월 (transcendent) — 동료보다 한참 상위 ============
+  // ============ 초월 (transcendent) — 일반 직원보다 한참 상위 ============
   ProducerDef(
     id: 'arcane_familiar',
     name: '마법의 정원',

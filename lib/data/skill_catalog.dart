@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../models/skill.dart';
 
 const skillCatalog = <SkillDef>[
   SkillDef(
     id: SkillId.slashBurst,
-    name: '검기 폭발',
-    description: '즉시 골드 = 현재 DPS × 5분',
+    name: '퍼레이드 피버',
+    description: '즉시 골드 = 현재 초당 수익 × 5분',
     icon: Icons.flash_on,
     color: Color(0xFFFFB300),
     cooldown: Duration(minutes: 30),
@@ -21,7 +21,7 @@ const skillCatalog = <SkillDef>[
   ),
   SkillDef(
     id: SkillId.ticketGather,
-    name: '티켓 모이기',
+    name: '티켓 모으기',
     description: '즉시 티켓 +30',
     icon: Icons.diamond,
     color: Color(0xFF7C4DFF),
@@ -29,5 +29,4 @@ const skillCatalog = <SkillDef>[
   ),
 ];
 
-SkillDef skillDefFor(SkillId id) =>
-    skillCatalog.firstWhere((s) => s.id == id);
+SkillDef skillDefFor(SkillId id) => skillCatalog.firstWhere((s) => s.id == id);

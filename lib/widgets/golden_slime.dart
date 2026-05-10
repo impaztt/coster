@@ -3,14 +3,11 @@ import 'package:flutter/material.dart';
 import '../core/number_format.dart';
 import '../providers/game_provider.dart';
 
-/// A golden slime that appears every [slimeSpawnEvery] taps. Each tap on the
-/// slime deals 1 damage; landing the killing blow fires [onDefeat] which the
-/// home screen uses to grant gold (≈ tapPower × [slimeRewardTaps]). If the
-/// player can't finish it within [slimeLifetimeMs], it escapes via
-/// [onTimeout] with no reward.
+/// A golden VIP guest that appears every [slimeSpawnEvery] taps. Each tap
+/// advances the response, and completing it fires [onDefeat] so the home
+/// screen can grant the bonus gold.
 class GoldenSlime extends StatefulWidget {
-  /// Estimated payout (current tapPower × slimeRewardTaps) — shown above the
-  /// HP bar so the player can see what landing the kill is worth right now.
+  /// Estimated payout shown above the response bar.
   final double previewReward;
   final VoidCallback onDefeat;
   final VoidCallback onTimeout;
@@ -159,8 +156,8 @@ class _GoldenSlimeState extends State<GoldenSlime>
                                 Container(
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white
-                                        .withValues(alpha: flash),
+                                    color:
+                                        Colors.white.withValues(alpha: flash),
                                   ),
                                 ),
                             ],

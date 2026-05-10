@@ -38,7 +38,7 @@ class SaveData {
   // Time-limited boosters (v6)
   List<Booster> activeBoosters;
 
-  // Deterministic golden-slime spawn counter (v7).
+  // Deterministic bonus VIP guest spawn counter (v7).
   int tapsSinceSlime;
 
   // Skill cooldowns (v8): skill id → moment when the skill becomes usable
@@ -173,7 +173,8 @@ class SaveData {
         stats = stats ?? GameStats(),
         settings = settings ?? GameSettings(),
         ownedCoasters = ownedCoasters ?? {},
-        formationCoasterIds = _normalizeFormationCoasterIds(formationCoasterIds),
+        formationCoasterIds =
+            _normalizeFormationCoasterIds(formationCoasterIds),
         unlockedAchievements = unlockedAchievements ?? <String>{},
         activeBoosters = activeBoosters ?? <Booster>[],
         skillReadyAt = skillReadyAt ?? <String, DateTime>{},
@@ -237,7 +238,8 @@ class SaveData {
         'mainCoasterHighestStage': mainCoasterHighestStage,
         'mainCoasterTiersShown': mainCoasterTiersShown.toList(),
         'mainCoasterEnhanceAttempts': mainCoasterEnhanceAttempts,
-        'mainCoasterCollectionBonusFraction': mainCoasterCollectionBonusFraction,
+        'mainCoasterCollectionBonusFraction':
+            mainCoasterCollectionBonusFraction,
         'firstPurchasePackageClaimed': firstPurchasePackageClaimed,
         'seasonPassExpiresAt': seasonPassExpiresAt?.toIso8601String(),
         'seasonPassLastClaimAt': seasonPassLastClaimAt?.toIso8601String(),
@@ -268,7 +270,8 @@ class SaveData {
         settings: GameSettings.fromJson(
             json['settings'] as Map<String, dynamic>? ?? {}),
         ticket: json['ticket'] as int? ?? 90,
-        ownedCoasters: Map<String, int>.from(json['ownedCoasters'] as Map? ?? {}),
+        ownedCoasters:
+            Map<String, int>.from(json['ownedCoasters'] as Map? ?? {}),
         equippedCoasterId: json['equippedCoasterId'] as String?,
         summonsSinceHighRare: json['summonsSinceHighRare'] as int? ?? 0,
         formationCoasterIds: (json['formationCoasterIds'] as List?)
@@ -342,9 +345,11 @@ class SaveData {
             ((json['mainCoasterTiersShown'] as List?) ?? const [])
                 .map((e) => e as int)
                 .toSet(),
-        mainCoasterEnhanceAttempts: json['mainCoasterEnhanceAttempts'] as int? ?? 0,
+        mainCoasterEnhanceAttempts:
+            json['mainCoasterEnhanceAttempts'] as int? ?? 0,
         mainCoasterCollectionBonusFraction:
-            (json['mainCoasterCollectionBonusFraction'] as num?)?.toDouble() ?? 0,
+            (json['mainCoasterCollectionBonusFraction'] as num?)?.toDouble() ??
+                0,
         firstPurchasePackageClaimed:
             json['firstPurchasePackageClaimed'] as bool? ?? false,
         seasonPassExpiresAt:

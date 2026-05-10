@@ -1,7 +1,7 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 
 /// Big number for idle-game magnitudes. Stored as `m * 10^e` with `m` normalized
-/// to `[1, 10)` (or `0` for zero). Use it instead of `double` for gold/DPS/
+/// to `[1, 10)` (or `0` for zero). Use it instead of `double` for gold/초당 수익/
 /// stats that can exceed ~1e300 over long play, where double precision drifts.
 ///
 /// Cost expressions (`baseCost * r^lv`) stay on `double` — they fit comfortably

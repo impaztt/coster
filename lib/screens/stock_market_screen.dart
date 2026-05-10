@@ -475,7 +475,7 @@ class _RegionListTile extends ConsumerWidget {
                         if (districtBonus > 0) ...[
                           const SizedBox(height: 3),
                           Text(
-                            '검세권 +${(districtBonus * 100).toStringAsFixed(1)}% · 지역 코스터 $regionOwned/$regionTotal',
+                            '지역 인지도 +${(districtBonus * 100).toStringAsFixed(1)}% · 지역 코스터 $regionOwned/$regionTotal',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
@@ -1040,7 +1040,7 @@ class _DistrictBondCard extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  '${region.shortName} 검세권',
+                  '${region.shortName} 지역 인지도',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
@@ -1073,7 +1073,7 @@ class _DistrictBondCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _MiniStat(
-                  label: '지역 검',
+                  label: '지역 코스터',
                   value: '$owned / $total',
                   valueColor: region.accent,
                 ),

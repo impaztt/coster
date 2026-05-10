@@ -85,11 +85,10 @@ class _FloatingNumberState extends State<_FloatingNumber>
         final t = _c.value;
         final dy = -80.0 * t;
         final opacity = (1.0 - t).clamp(0.0, 1.0);
-        // Crit numbers are bigger, pop in with a brief scale bounce, and use
-        // the warm yellow accent instead of coral for instant recognition.
-        final scale = isCrit
-            ? (t < 0.15 ? 0.6 + (t / 0.15) * 0.9 : 1.5 - t * 0.3)
-            : 1.0;
+        // Big-ride numbers pop in with a brief scale bounce and use the warm
+        // yellow accent instead of coral for instant recognition.
+        final scale =
+            isCrit ? (t < 0.15 ? 0.6 + (t / 0.15) * 0.9 : 1.5 - t * 0.3) : 1.0;
         final width = isCrit ? 140.0 : 80.0;
         return Positioned(
           left: widget.data.origin.dx - width / 2,
@@ -102,14 +101,13 @@ class _FloatingNumberState extends State<_FloatingNumber>
               child: Center(
                 child: Text(
                   isCrit
-                      ? 'CRIT! +${NumberFormatter.format(widget.data.amount)}'
+                      ? '대박! +${NumberFormatter.format(widget.data.amount)}'
                       : '+${NumberFormatter.format(widget.data.amount)}',
                   style: TextStyle(
                     fontSize: isCrit ? 26 : 22,
                     fontWeight: FontWeight.w900,
-                    color: isCrit
-                        ? const Color(0xFFB26A00)
-                        : AppColors.deepCoral,
+                    color:
+                        isCrit ? const Color(0xFFB26A00) : AppColors.deepCoral,
                     shadows: const [
                       Shadow(
                         offset: Offset(0, 1),

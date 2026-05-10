@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/auth_provider.dart';
@@ -61,7 +61,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       pageIndex: _navPrestige,
       icon: Icons.auto_awesome_outlined,
       selectedIcon: Icons.auto_awesome,
-      label: '환생',
+      label: '재개장',
     ),
     _NavDestSpec(
       pageIndex: _navSettings,

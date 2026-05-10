@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/number_format.dart';
@@ -22,7 +22,7 @@ class PrestigeScreen extends ConsumerWidget {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              '환생',
+              '재개장',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w900,
@@ -74,8 +74,8 @@ class PrestigeScreen extends ConsumerWidget {
                         fontWeight: FontWeight.w800,
                       ),
                       tabs: [
-                        Tab(height: 34, text: '환생 준비'),
-                        Tab(height: 34, text: '각인 연구'),
+                        Tab(height: 34, text: '재개장 준비'),
+                        Tab(height: 34, text: '브랜드 연구'),
                       ],
                     ),
                   ),
@@ -126,13 +126,13 @@ class _PrestigeOverview extends ConsumerWidget {
             _PrestigeSummaryItem(
               icon: Icons.currency_exchange,
               color: const Color(0xFF7C4DFF),
-              label: '보유 코인',
+              label: '보유 브랜드 포인트',
               value: '${game.prestigeCoins}',
             ),
             _PrestigeSummaryItem(
               icon: Icons.history_toggle_off,
               color: AppColors.deepCoral,
-              label: '환생 횟수',
+              label: '재개장 횟수',
               value: '${game.prestigeCount}회',
             ),
             _PrestigeSummaryItem(
@@ -166,10 +166,10 @@ class _PrestigeOverview extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.card),
         ),
-        title: const Text('환생 확인'),
+        title: const Text('재개장 확인'),
         content: Text(
-          '환생 코인 +$coinsGain 을 획득합니다.\n'
-          '획득한 코인으로 영구 각인/영구 업그레이드를 구매할 수 있습니다.\n\n'
+          '브랜드 포인트를 +$coinsGain 획득합니다.\n'
+          '획득한 브랜드 포인트로 브랜드 연구/영구 업그레이드를 구매할 수 있습니다.\n\n'
           '현재 회차 골드와 업그레이드는 초기화됩니다.',
         ),
         actions: [
@@ -180,7 +180,7 @@ class _PrestigeOverview extends ConsumerWidget {
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: AppColors.coral),
-            child: const Text('환생'),
+            child: const Text('재개장'),
           ),
         ],
       ),
@@ -190,7 +190,7 @@ class _PrestigeOverview extends ConsumerWidget {
     if (!success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('환생 보상이 아직 0입니다. 더 진행한 뒤 시도해 주세요.'),
+          content: Text('재개장 보상이 아직 0입니다. 더 진행한 뒤 시도해 주세요.'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -252,7 +252,7 @@ class _PrestigeActionPanel extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      '지금 환생 시',
+                      '지금 재개장 시',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
@@ -260,7 +260,7 @@ class _PrestigeActionPanel extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '+$coinsGain 코인',
+                      '+$coinsGain 브랜드 포인트',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -289,8 +289,8 @@ class _PrestigeActionPanel extends StatelessWidget {
               const SizedBox(width: 8),
               const Expanded(
                 child: _PrestigeInlineMetric(
-                  label: '환생 후',
-                  value: '각인 연구',
+                  label: '재개장 후',
+                  value: '브랜드 연구',
                 ),
               ),
             ],
@@ -301,7 +301,7 @@ class _PrestigeActionPanel extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: canPrestige ? onPrestige : null,
               icon: const Icon(Icons.auto_awesome, size: 18),
-              label: Text(canPrestige ? '환생하기' : '아직 보상이 부족합니다'),
+              label: Text(canPrestige ? '재개장하기' : '아직 보상이 부족합니다'),
               style: FilledButton.styleFrom(
                 backgroundColor:
                     canPrestige ? AppColors.coral : Colors.grey.shade300,
@@ -516,7 +516,7 @@ class _PrestigeChangePanel extends StatelessWidget {
               title: '유지됨',
               color: Color(0xFF00695C),
               icon: Icons.verified,
-              items: ['환생 코인', '각인 연구', '수집 보너스'],
+              items: ['브랜드 포인트', '브랜드 연구', '수집 보너스'],
             ),
           ),
         ],
@@ -620,8 +620,8 @@ class _PrestigeShop extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         _UpgradeSection(
-          title: '성장 각인',
-          subtitle: '터치, DPS, 전체 수익을 영구 강화',
+          title: '성장 연구',
+          subtitle: '터치, 초당 수익, 전체 수익을 영구 강화',
           children: [
             for (final def in growthUpgrades)
               _ShopTile(
@@ -634,8 +634,8 @@ class _PrestigeShop extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         _UpgradeSection(
-          title: '환생 효율',
-          subtitle: '다음 환생의 코인 획득량 증가',
+          title: '재개장 효율',
+          subtitle: '다음 재개장의 브랜드 포인트 획득량 증가',
           children: [
             for (final def in efficiencyUpgrades)
               _ShopTile(
@@ -673,7 +673,7 @@ class _CoinBalanceBar extends StatelessWidget {
           const SizedBox(width: 10),
           const Expanded(
             child: Text(
-              '환생 코인',
+              '브랜드 포인트',
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
             ),
           ),
@@ -824,7 +824,7 @@ class _AscensionCoreCard extends StatelessWidget {
               Text(
                 unlocked
                     ? 'Lv $level · 전체 수익 영구 +$pct%'
-                    : '해금 조건: 환생 5회 + 초월 유닛 중 하나 Lv 25',
+                    : '해금 조건: 재개장 5회 + 초월 유닛 중 하나 Lv 25',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -838,7 +838,7 @@ class _AscensionCoreCard extends StatelessWidget {
                   runSpacing: 6,
                   children: [
                     _UnlockRequirementChip(
-                      label: '환생',
+                      label: '재개장',
                       value: '$prestigeCount / 5',
                       done: prestigeRemaining == 0,
                     ),
@@ -861,7 +861,7 @@ class _AscensionCoreCard extends StatelessWidget {
                               if (!ok && context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('조건 미달 또는 코인이 부족합니다'),
+                                    content: Text('조건 미달 또는 브랜드 포인트가 부족합니다'),
                                     behavior: SnackBarBehavior.floating,
                                   ),
                                 );
@@ -870,7 +870,7 @@ class _AscensionCoreCard extends StatelessWidget {
                           : () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('환생 코인이 부족합니다'),
+                                  content: Text('브랜드 포인트가 부족합니다'),
                                   behavior: SnackBarBehavior.floating,
                                 ),
                               );
@@ -893,7 +893,7 @@ class _AscensionCoreCard extends StatelessWidget {
                   ),
                   child: Text(
                     unlocked
-                        ? '연구 업그레이드 (${NumberFormatter.format(nextCost.toDouble())} 코인)'
+                        ? '연구 업그레이드 (${NumberFormatter.format(nextCost.toDouble())} 브랜드 포인트)'
                         : '아직 잠겨 있음',
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
@@ -912,7 +912,7 @@ class _AscensionCoreCard extends StatelessWidget {
     required int transcendentRemaining,
   }) {
     final remain = <String>[];
-    if (prestigeRemaining > 0) remain.add('환생 $prestigeRemaining회');
+    if (prestigeRemaining > 0) remain.add('재개장 $prestigeRemaining회');
     if (transcendentRemaining > 0) remain.add('초월 $transcendentRemaining레벨');
     final remainText =
         remain.isEmpty ? '곧 해금됩니다.' : '남은 조건: ${remain.join(' · ')}';
@@ -921,8 +921,8 @@ class _AscensionCoreCard extends StatelessWidget {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            '초월 코어는 환생 5회 + 초월 유닛 Lv 25에서 해금됩니다.\n'
-            '현재 진행: 환생 $prestigeCount/5 · 초월 최고 Lv $maxTranscendentLevel/25\n'
+            '초월 코어는 재개장 5회 + 초월 유닛 Lv 25에서 해금됩니다.\n'
+            '현재 진행: 재개장 $prestigeCount/5 · 초월 최고 Lv $maxTranscendentLevel/25\n'
             '$remainText',
           ),
           behavior: SnackBarBehavior.floating,
@@ -1096,7 +1096,7 @@ class _ShopTile extends StatelessWidget {
                       if (!ok && context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('환생 코인이 부족합니다'),
+                            content: Text('브랜드 포인트가 부족합니다'),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
@@ -1115,7 +1115,7 @@ class _ShopTile extends StatelessWidget {
                 ),
               ),
               child: Text(
-                atMax ? '최대 레벨' : '구매 ($cost 코인)',
+                atMax ? '최대 레벨' : '구매 ($cost 브랜드 포인트)',
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
             ),
@@ -1138,12 +1138,12 @@ class _ShopTile extends StatelessWidget {
     }
     if (def.dpsBonusPerLevel > 0) {
       final pct = (def.dpsBonusPerLevel * clamped * 100).toStringAsFixed(0);
-      parts.add('DPS +$pct%');
+      parts.add('초당 수익 +$pct%');
     }
     if (def.coinGainBonusPerLevel > 0) {
       final pct =
           (def.coinGainBonusPerLevel * clamped * 100).toStringAsFixed(0);
-      parts.add('코인 획득 +$pct%');
+      parts.add('브랜드 포인트 획득 +$pct%');
     }
     if (parts.isEmpty) return '-';
     return parts.join(' / ');

@@ -92,7 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (ref.read(gameProvider).haptic) HapticFeedback.heavyImpact();
     setState(() {
       _slimes.removeWhere((s) => s.id == id);
-      // Pop a big floating number where the slime was so the reward feels
+      // Pop a big floating number where the VIP guest was so the reward feels
       // grounded in the actual kill, not a phantom number from elsewhere.
       _floats.add(FloatingNumberData(
         id: _nextId++,
@@ -184,8 +184,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // the freed space.
               _BottomHudToggle(
                 expanded: _bottomExpanded,
-                onTap: () =>
-                    setState(() => _bottomExpanded = !_bottomExpanded),
+                onTap: () => setState(() => _bottomExpanded = !_bottomExpanded),
               ),
               AnimatedSize(
                 duration: const Duration(milliseconds: 220),
@@ -198,8 +197,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           if (lockedFeatures.isNotEmpty &&
                               nextLocked != null) ...[
                             Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 14),
                               child: _LockedFeaturePeekCard(
                                 lockedCount: lockedFeatures.length,
                                 def: nextLocked,
@@ -210,8 +209,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             const SizedBox(height: 8),
                           ],
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 14),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
                             child: _CompactBattleStatusPanel(
                               combo: game.combo,
                               tapPower: game.tapPower,
@@ -225,8 +223,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           const SizedBox(height: 4),
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 14),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
                             child: _HomeActionBar(
                               boosterUnlocked: game.isFeatureUnlocked(
                                   FeatureUnlocks.boosterShop),
@@ -533,7 +530,7 @@ class _CompactBattleStatusPanel extends StatelessWidget {
                 Expanded(
                   child: _CompactBattleMetric(
                     icon: Icons.touch_app,
-                    label: '탭',
+                    label: '탭 수익',
                     value: '+${NumberFormatter.formatPrecise(tapPower)}',
                     color: const Color(0xFF8D6E00),
                   ),
@@ -714,8 +711,8 @@ class _CompactEffectChip extends StatelessWidget {
   }
 }
 
-/// Visible-from-anywhere progress bar for the next slime spawn. Replaces the
-/// old text-only "슬라임까지 N회 터치" hint. While a slime is on screen, the
+/// Visible-from-anywhere progress bar for the next VIP guest spawn. Replaces the
+/// old text-only "VIP 손님까지 N회 터치" hint. While a VIP guest is on screen, the
 /// bar switches to an "출현 중!" call-to-action so the player knows it's the
 /// active state, not a stuck progress meter.
 class _SlimeProgressBar extends StatelessWidget {
@@ -734,9 +731,9 @@ class _SlimeProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final ratio = active ? 1.0 : ((total - remaining) / total).clamp(0.0, 1.0);
     final accent = active ? const Color(0xFFE53935) : const Color(0xFFFFB300);
-    final title = active ? '슬라임 출현' : '다음 슬라임';
+    final title = active ? 'VIP 손님 출현' : '다음 VIP 손님';
     final label = active
-        ? '처치 보상 +${NumberFormatter.format(reward)}'
+        ? '응대 보상 +${NumberFormatter.format(reward)}'
         : '$remaining회 터치 후 출현 · 보상 +${NumberFormatter.format(reward)}';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),

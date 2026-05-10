@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
 import '../data/feature_unlocks.dart';
@@ -177,13 +177,13 @@ class _QuickStartPage extends StatelessWidget {
         ),
         const _StepRow(
           icon: Icons.upgrade,
-          title: '2) 강화에서 터치·동료를 균형 구매',
-          desc: '즉시 수익(터치)과 방치 수익(동료)을 같이 키우는 것이 안정적입니다.',
+          title: '2) 강화에서 터치·어트랙션을 균형 구매',
+          desc: '즉시 수익(터치)과 방치 수익(어트랙션)을 같이 키우는 것이 안정적입니다.',
         ),
         const _StepRow(
           icon: Icons.auto_awesome,
-          title: '3) 환생 루프로 영구 성장 누적',
-          desc: '각인 연구가 열리면 장기 성장 구간이 본격적으로 시작됩니다.',
+          title: '3) 재개장 루프로 영구 성장 누적',
+          desc: '브랜드 연구가 열리면 장기 성장 구간이 본격적으로 시작됩니다.',
         ),
         const SizedBox(height: 8),
         Container(

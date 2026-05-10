@@ -51,7 +51,7 @@ class OfflineRewardDialog extends ConsumerWidget {
               )
             else ...[
               Text(
-                '${_durationLabel(reward.duration)} 동안 동료들이 활약했어요',
+                '${_durationLabel(reward.duration)} 동안 어트랙션들이 활약했어요',
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.black.withValues(alpha: 0.6),
@@ -92,7 +92,7 @@ class OfflineRewardDialog extends ConsumerWidget {
                   const Icon(Icons.diamond, color: Color(0xFF26A69A), size: 24),
                   const SizedBox(width: 6),
                   Text(
-                    '복귀 지원 +${reward.ticketBonus} 티켓',
+                    '복귀 운영 +${reward.ticketBonus} 티켓',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,

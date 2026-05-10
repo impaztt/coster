@@ -1,17 +1,17 @@
-# coster
+﻿# coster
 
-코스터 키우기 — 캐주얼 idle 테마파크 운영 게임. Flutter + Flame.
+코스터 키우기: Flutter 기반 캐주얼 idle 테마파크 운영 게임.
 
-## Getting Started
+## Core Loop
+- 탭으로 즉시 골드를 벌고 콤보/대박 탑승 피드백을 받습니다.
+- 골드로 운영 업그레이드와 직원을 성장시킵니다.
+- 티켓으로 코스터를 도입하고 차고/세트/지역 인지도 보너스를 키웁니다.
+- VIP 손님, 부스터, 주식 배당, 재개장으로 중후반 성장 루프를 만듭니다.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Development
+```bash
+flutter pub get
+flutter analyze
+flutter test
+flutter run
+```

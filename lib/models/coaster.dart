@@ -43,7 +43,7 @@ extension CoasterTierInfo on CoasterTier {
       };
 
   /// Per-copy passive bonus a coaster of this tier contributes to BOTH tap
-  /// power and DPS just by being owned (Lv 1, before level scaling). The
+  /// power and auto revenue just by being owned (Lv 1, before level scaling).
   /// idea: collecting feels rewarding even before you equip, but equipping
   /// is still meaningfully better thanks to the big base multipliers.
   double get ownedBonusBase => switch (this) {
@@ -72,19 +72,19 @@ enum CoasterFormationRole { vanguard, striker, support, trader, anchor }
 
 extension CoasterFormationRoleInfo on CoasterFormationRole {
   String get label => switch (this) {
-        CoasterFormationRole.vanguard => '선봉',
-        CoasterFormationRole.striker => '강습',
-        CoasterFormationRole.support => '지원',
+        CoasterFormationRole.vanguard => '입구',
+        CoasterFormationRole.striker => '스릴',
+        CoasterFormationRole.support => '운영',
         CoasterFormationRole.trader => '상권',
-        CoasterFormationRole.anchor => '축',
+        CoasterFormationRole.anchor => '대표',
       };
 
   String get description => switch (this) {
-        CoasterFormationRole.vanguard => '터치 성장에 강한 착용 역할',
-        CoasterFormationRole.striker => '터치와 DPS를 함께 올리는 역할',
-        CoasterFormationRole.support => 'DPS 성장에 강한 착용 역할',
-        CoasterFormationRole.trader => '검세권과 배당 성장에 강한 역할',
-        CoasterFormationRole.anchor => '전체 보너스를 안정적으로 받쳐주는 역할',
+        CoasterFormationRole.vanguard => '탭 매출 성장에 강한 배치 역할',
+        CoasterFormationRole.striker => '탭 매출과 방치 수익을 함께 올리는 역할',
+        CoasterFormationRole.support => '방치 수익 성장에 강한 배치 역할',
+        CoasterFormationRole.trader => '지역 인지도와 배당 성장에 강한 역할',
+        CoasterFormationRole.anchor => '전체 보너스를 안정적으로 받쳐주는 대표 역할',
       };
 
   IconData get icon => switch (this) {
@@ -113,12 +113,12 @@ enum CoasterShape { dagger, longcoaster, claymore, katana, rapier, falchion }
 
 extension CoasterShapeInfo on CoasterShape {
   String get korLabel => switch (this) {
-        CoasterShape.dagger => '단검',
-        CoasterShape.longcoaster => '장검',
-        CoasterShape.claymore => '대검',
-        CoasterShape.katana => '도',
-        CoasterShape.rapier => '세검',
-        CoasterShape.falchion => '곡도',
+        CoasterShape.dagger => '소형 열차',
+        CoasterShape.longcoaster => '스틸 트랙',
+        CoasterShape.claymore => '하이퍼 트랙',
+        CoasterShape.katana => '커브 트랙',
+        CoasterShape.rapier => '런치 트랙',
+        CoasterShape.falchion => '트위스트 트랙',
       };
 }
 

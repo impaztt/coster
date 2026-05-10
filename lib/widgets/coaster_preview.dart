@@ -58,11 +58,11 @@ class _PreviewPainter extends CustomPainter {
 
     final colors = locked
         ? const CoasterShapeColors(
-            blade: Color(0xFF424242),
-            bladeAccent: Color(0xFF212121),
-            guard: Color(0xFF424242),
-            handle: Color(0xFF212121),
-            pommel: Color(0xFF424242),
+            rail: Color(0xFF424242),
+            railAccent: Color(0xFF212121),
+            trim: Color(0xFF424242),
+            wheel: Color(0xFF212121),
+            light: Color(0xFF424242),
           )
         : CoasterShapeColors.fromVisual(visual);
 

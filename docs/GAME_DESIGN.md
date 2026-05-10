@@ -1,193 +1,57 @@
-# 검 키우기 (Idle Sword Clicker) — 기획서 v2
+﻿# 코스터 키우기 — 게임 기획서
 
-## 1. 프로젝트 개요
-- **게임명**: 검 키우기 (Idle Sword Clicker)
-- **장르**: 클리커 + 방치형(Idle) RPG
-- **플랫폼**: iOS / Android
-- **개발**: Flutter (Material 3 + Riverpod)
-- **톤**: 캐주얼·아기자기·친근감 (파스텔 코랄/민트, 둥근 카드, 부드러운 애니메이션)
-
----
+## 1. 개요
+- 게임명: 코스터 키우기
+- 장르: 클리커 + 방치형 테마파크 운영
+- 플랫폼: iOS / Android
+- 개발: Flutter + Riverpod
+- 톤: 캐주얼, 아기자기한 파크, 즉시 보상이 잘 보이는 클리커
 
 ## 2. 핵심 컨셉
-검을 터치해 골드를 모은다. 골드로 검을 강화하거나 동료를 고용해 자동 수익(DPS)을 늘린다. 게임을 꺼도 오프라인 시간만큼 골드가 누적된다 (최대 12시간, 효율 100%). 일정 진척 후 환생으로 영구 배율을 얻어 다시 시작한다.
+플레이어는 테마파크 오너가 되어 탭으로 손님을 태우고 골드를 번다. 골드로 운영 업그레이드와 직원을 성장시키고, 티켓으로 코스터를 도입해 수집 보너스와 지역 인지도를 키운다. 진행이 막히면 재개장으로 브랜드 포인트를 얻어 다음 운영을 더 빠르게 시작한다.
 
----
+## 3. 핵심 루프
+1. 홈 화면 탭 → 탭당 골드 즉시 획득
+2. 골드로 운영 업그레이드 구매
+3. 직원과 코스터 수집으로 방치 수익 증가
+4. VIP 손님, 콤보, 대박 탑승으로 순간 보상 획득
+5. 재개장으로 영구 성장 후 반복
 
-## 3. 핵심 시스템
+## 4. 주요 시스템
+- 탭 수익: 탭당 골드, 콤보, 대박 탑승, 재개장 배율을 반영한다.
+- 방치 수익: 직원, 코스터 배치, 세트, 지역 지분 배당으로 초당 골드를 만든다.
+- 코스터 도입: 티켓으로 코스터를 들여와 수집 보너스와 세트 보너스를 얻는다.
+- 코스터 차고: 보유 코스터를 배치해 운영력과 지역 인지도를 강화한다.
+- 메인 코스터 강화: 50단계 강화, 10개 외형 티어, 단계별 마일스톤 보상을 가진다.
+- VIP 손님: 일정 탭마다 등장하는 보너스 이벤트이며, 제한 시간 안에 응대하면 큰 골드를 준다.
+- 주식 시장: 지역 지분을 매수해 장기 배당 수익을 얻는 후반 성장 루트다.
 
-### 3.1 기본 루프
-1. 검 터치 → 골드 획득
-2. 골드로 업그레이드 구매 (탭 강화 / 동료 고용)
-3. 자동 수익 증가
-4. 반복 → 환생으로 영구 배율 획득
+## 5. 메인 코스터 외형 티어
+1. 낡은 미니 코스터
+2. 클래식 우든 코스터
+3. 스틸 루프 코스터
+4. 파이어 런치 코스터
+5. 아이스 캐니언 코스터
+6. 라이트닝 레일
+7. 스카이 하이퍼 코스터
+8. 나이트 드래곤 코스터
+9. 스타라이트 익스프레스
+10. 갤럭시 오리진 코스터
 
-### 3.2 터치 시스템
-```
-획득 골드 = tapPower × prestigeMultiplier
-```
-- `tapPower` 초기값 1
-- Tap 강화 업그레이드로 누적 (`+N per level`)
-- `prestigeMultiplier = 1 + (souls × 0.02)`
+각 티어는 색상, 트랙 형태, 열차 분위기, 홈 파크의 트랙/열차 색감에 반영된다.
 
-### 3.3 자동 수익 (Idle)
-- **50ms 틱**으로 부드럽게 누적: `gold += dps × dt`
-- DPS = Σ(producer.baseDps × producer.level) × prestigeMultiplier
-- 이유: 1초 단위는 시각적으로 끊김 — 50ms = 20Hz로 자연스러운 카운터
+## 6. 경제 방향
+- 탭은 초반 주 수입원이며, 클릭할 때 항상 골드가 올라야 한다.
+- 운영 업그레이드는 탭당 골드를 올려 클리커 감각을 강화한다.
+- 직원과 코스터는 중반 이후 방치 수익과 전체 배율을 담당한다.
+- 티켓은 코스터 도입, 부스터, 일부 보장성 성장에 쓰이는 보조 재화다.
 
-### 3.4 오프라인 보상
-```
-elapsed = clamp(now - lastSavedAt, 0, 12h)
-reward  = dps × elapsed × 1.0      // 효율 100%
-```
-- 부재 30초 미만 시 팝업 생략 (UX 마찰 감소, 탭 전환 round-trip 무시)
-- 재접속 첫 프레임에서 `OfflineRewardDialog` 노출
-- 홈 화면에 상시 "방치 보상 최대 +X / 12h" 칩 노출 (DPS>0 시)
-- `lastSavedAt`은 모든 mutation에서 즉시 갱신 + 10s 오토세이브 + 라이프사이클 hidden 시 저장 — 재접속까지의 경과 시간 측정 정확도 ±10s 이내
+## 7. UI 구성
+- 홈: 파크 전경, 움직이는 코스터, 골드/초당 수익/탭 보상 피드백, VIP 손님 이벤트
+- 강화: 운영 업그레이드, 직원 성장
+- 상점: 코스터 도입, 코스터 차고, 세트, 투자, 미션, 업적
+- 재개장: 예상 보상, 영구 성장, 반복 플레이 동기
+- 설정: 광고/저장/계정/정책 링크
 
----
-
-## 4. 업그레이드
-
-### 4.1 Tap 강화 (5종)
-가격 공식: `baseCost × 1.10 ^ level`
-
-| ID | 이름 | 기본가 | tapPower/lv |
-|---|---|---|---|
-| sharper_blade | 날카로운 검날 | 25 | 1 |
-| magic_infusion | 마력 주입 | 250 | 5 |
-| sword_aura | 검기 각성 | 2,500 | 25 |
-| divine_strike | 신성한 일격 | 25,000 | 100 |
-| legendary_swing | 전설의 일섬 | 250,000 | 500 |
-
-### 4.2 자동 수익 — 동료 (12종)
-가격 공식: `baseCost × 1.15 ^ level`
-성장 패턴: 비용 ×10, DPS ×7
-
-| ID | 이름 | 기본가 | 기본 DPS |
-|---|---|---|---|
-| apprentice | 견습 검사 | 50 | 1 |
-| mercenary | 용병 | 500 | 8 |
-| knight | 기사 | 5,000 | 60 |
-| mage_swordsman | 마검사 | 50,000 | 400 |
-| sword_saint | 검성 | 500,000 | 3,000 |
-| dragon_slayer | 용살자 | 5,000,000 | 22,000 |
-| sword_god | 검신 | 50,000,000 | 150,000 |
-| legendary_hero | 전설의 영웅 | 500,000,000 | 1,000,000 |
-| ancient_warrior | 고대 전사 | 5e9 | 7,000,000 |
-| dimension_blade | 차원검 | 5e10 | 50,000,000 |
-| time_keeper | 시간의 수호자 | 5e11 | 350,000,000 |
-| cosmic_swordmaster | 우주 검성 | 5e12 | 2,500,000,000 |
-
-### 4.3 마일스톤 배율 (Phase 2 예정)
-각 producer Lv 25/50/100/200 도달 시 해당 producer DPS ×2 영구 누적
-
----
-
-## 5. 환생 시스템 (검의 혼)
-```
-soulsGained         = floor(sqrt(totalGoldEarned / 1e9))
-prestigeMultiplier  = 1 + (totalSouls × 0.02)   // 1 soul당 +2%
-```
-- 첫 환생 가능: 누적 골드 1B (≈ 1~2시간)
-- 환생 시 리셋: gold, totalGoldEarned, producerLevels, tapUpgradeLevels
-- 환생 시 유지: prestigeSouls, prestigeCount
-- "다음 환생 시 +N 소울" UI 상시 노출
-
----
-
-## 6. UI 구성
-
-### 6.1 메인 화면 (3개 탭)
-- **홈**: 검 + 골드/DPS + 터치 피드백 (FloatingNumber)
-- **강화**: Tap 강화 + 동료 리스트 (스크롤 카드)
-- **환생**: 누적 골드/예상 소울/실행 버튼 + 영구 배율 표시
-
-### 6.2 캐주얼 톤 가이드
-- **컬러**: 코랄 `#FF8A65` (primary) / 민트 `#80CBC4` (secondary) / 노랑 `#FFD54F` (accent) / 크림 `#FFF8E1` (배경)
-- **모서리**: 카드/버튼 radius 20+
-- **검**: CustomPainter로 둥글둥글한 픽셀풍 검
-- **애니메이션**: 검 0.92↔1.0 스케일 펄스(120ms) + 살짝 회전
-- **숫자 피드백**: 터치 위치에서 +N이 올라가며 페이드(800ms)
-
----
-
-## 7. 데이터 구조
-
-```dart
-class SaveData {
-  int version;              // 마이그레이션
-  double gold;
-  double totalGoldEarned;   // 환생 계산
-  Map<String, int> producerLevels;
-  Map<String, int> tapUpgradeLevels;
-  int prestigeSouls;
-  int prestigeCount;
-  DateTime lastSavedAt;
-  GameStats stats;          // totalTaps 등
-}
-```
-- **저장**: SharedPreferences + JSON (단순/충분)
-- **자동 저장**: 30초 + 백그라운드 진입
-- **버전 필드**로 마이그레이션 대비
-
----
-
-## 8. 폴더 구조
-```
-lib/
-  main.dart
-  app.dart
-  core/        # number_format, theme
-  models/      # save_data, producer, tap_upgrade, game_stats
-  data/        # producer_catalog, tap_upgrade_catalog
-  services/    # save_service
-  providers/   # game_provider (Riverpod)
-  screens/     # main, home, upgrade, prestige
-  widgets/     # sword, gold_display, dps_display, upgrade_tile,
-               # floating_number, offline_reward_dialog, prestige_dialog
-```
-
----
-
-## 9. 공식 정리
-
-| 항목 | 공식 |
-|---|---|
-| 터치 골드 | `tapPower × prestigeMultiplier` |
-| DPS | `Σ(producer.baseDps × level) × prestigeMultiplier` |
-| Producer 가격 | `baseCost × 1.15 ^ currentLevel` |
-| Tap 강화 가격 | `baseCost × 1.10 ^ currentLevel` |
-| 오프라인 보상 | `dps × min(elapsed, 12h) × 1.0` |
-| 환생 소울 | `floor(sqrt(totalGoldEarned / 1e9))` |
-| 환생 배율 | `1 + souls × 0.02` |
-
----
-
-## 10. 개발 우선순위
-
-**Phase 1 (MVP, 현재)**
-1. 검 터치 → 골드 + 애니메이션
-2. 숫자 포맷 (K/M/B/T → aa/ab...)
-3. Producer 12종 + Tap 강화 5종
-4. 50ms idle 틱 + 자동저장
-5. 오프라인 보상 (100% 효율)
-6. 환생 시스템
-
-**Phase 2**
-- 마일스톤 배율
-- 크리티컬 + 콤보
-- 글로벌 부스터
-
-**Phase 3**
-- 업적 시스템
-- 사운드
-- 광고 보상 후크 (2× 부스터, 오프라인 시간 연장)
-- 클라우드 저장
-
----
-
-## 11. 비고
-- 첫 실행 시 안내(튜토리얼)는 Phase 2에서 추가
-- 다국어는 한국어 단일 (Phase 3에서 i18n)
-- 광고는 후크만 준비 (실제 SDK 연결은 별도)
+## 8. 저장 호환
+일부 내부 ID와 저장 필드는 기존 세이브 호환을 위해 유지한다. 화면에 표시되는 이름, 설명, 외형, 게임 문맥은 코스터 키우기 기준으로 관리한다.

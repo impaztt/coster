@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme.dart';
@@ -50,7 +50,7 @@ class BoosterShopDialog extends ConsumerWidget {
                 adsRemoved: notifier.adsRemoved,
                 onBuyTicket: () {
                   final ok = notifier.buyBoosterWithTicket(offer);
-                  if (!ok) _toast(context, '티켓가 부족해요');
+                  if (!ok) _toast(context, '티켓이 부족해요');
                 },
                 onWatchAd: () async {
                   // 광고 제거 IAP 보유자는 즉시 지급 (광고 시청 단계 스킵).

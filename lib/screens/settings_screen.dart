@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/number_format.dart';
@@ -144,7 +144,7 @@ class SettingsScreen extends ConsumerWidget {
         ),
         title: const Text('정말 초기화할까요?'),
         content: const Text(
-          '모든 진행도, 골드, 강화 레벨, 환생 코인, 통계가 삭제됩니다.\n'
+          '모든 진행도, 골드, 강화 레벨, 브랜드 포인트, 통계가 삭제됩니다.\n'
           '이 작업은 되돌릴 수 없습니다.',
         ),
         actions: [
@@ -258,7 +258,7 @@ class _SettingsSummaryView extends StatelessWidget {
             _StatItem(
               icon: Icons.bolt,
               color: const Color(0xFF8D6E00),
-              label: '최고 DPS',
+              label: '최고 초당 수익',
               value: NumberFormatter.format(game.maxDpsEver),
             ),
             _StatItem(
@@ -270,7 +270,7 @@ class _SettingsSummaryView extends StatelessWidget {
             _StatItem(
               icon: Icons.auto_awesome,
               color: AppColors.mint,
-              label: '환생 횟수',
+              label: '재개장 횟수',
               value: '${game.prestigeCount}',
             ),
             _StatItem(
@@ -689,7 +689,7 @@ class _DangerZone extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '골드, 강화, 환생 코인, 통계가 삭제되며 복구할 수 없습니다.',
+                '골드, 강화, 브랜드 포인트, 통계가 삭제되며 복구할 수 없습니다.',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,

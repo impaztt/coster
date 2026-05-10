@@ -6,7 +6,7 @@ import '../core/theme.dart';
 import '../providers/game_provider.dart';
 
 /// "환금소" — spend ticket to instantly receive gold. Two product lines:
-/// DPS-time conversion (auto-scales) and fixed amounts (fades out late).
+/// 초당 수익-time conversion (auto-scales) and fixed amounts (fades out late).
 class GoldExchangeDialog extends ConsumerWidget {
   const GoldExchangeDialog({super.key});
 
@@ -53,8 +53,7 @@ class GoldExchangeDialog extends ConsumerWidget {
                     for (final offer in dpsOffers) ...[
                       _OfferTile(
                         offer: offer,
-                        previewGold:
-                            notifier.previewGoldExchangeYield(offer),
+                        previewGold: notifier.previewGoldExchangeYield(offer),
                         canAfford: game.ticket >= offer.ticketCost,
                         eightHourLocked: offer.id == 'dps_8h' &&
                             game.goldExchangeEightHourUsedToday,
@@ -76,8 +75,7 @@ class GoldExchangeDialog extends ConsumerWidget {
                       for (final offer in fixedOffers) ...[
                         _OfferTile(
                           offer: offer,
-                          previewGold:
-                              notifier.previewGoldExchangeYield(offer),
+                          previewGold: notifier.previewGoldExchangeYield(offer),
                           canAfford: game.ticket >= offer.ticketCost,
                           eightHourLocked: false,
                           atDailyCap: game.goldExchangeDailyUsed >=
@@ -91,7 +89,7 @@ class GoldExchangeDialog extends ConsumerWidget {
                     ],
                     const SizedBox(height: 4),
                     Text(
-                      '환금한 골드는 환생 코인 계산에서 제외돼요. 강화/주식에 쓰면 그때부터 정상 반영됩니다.',
+                      '환금한 골드는 브랜드 포인트 계산에서 제외돼요. 강화/주식에 쓰면 그때부터 정상 반영됩니다.',
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.black.withValues(alpha: 0.5),
@@ -142,8 +140,8 @@ class GoldExchangeDialog extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '환금 골드는 환생 코인에 즉시 반영되지 않으며, '
-              '강화/주식 등에 사용한 만큼만 코인 계산에 들어갑니다.',
+              '환금 골드는 브랜드 포인트에 즉시 반영되지 않으며, '
+              '강화/주식 등에 사용한 만큼만 브랜드 포인트 계산에 들어갑니다.',
               style: TextStyle(
                 fontSize: 11,
                 color: Colors.black.withValues(alpha: 0.55),
@@ -182,11 +180,10 @@ class GoldExchangeDialog extends ConsumerWidget {
   }
 
   String _failureText(GoldExchangeFailureReason r) => switch (r) {
-        GoldExchangeFailureReason.notEnoughTicket => '티켓가 부족해요',
-        GoldExchangeFailureReason.dailyCapReached =>
-          '오늘은 환전 횟수를 모두 사용했어요',
+        GoldExchangeFailureReason.notEnoughTicket => '티켓이 부족해요',
+        GoldExchangeFailureReason.dailyCapReached => '오늘은 환전 횟수를 모두 사용했어요',
         GoldExchangeFailureReason.prestigeCapReached =>
-          '이번 회차 환전 횟수를 모두 사용했어요. 환생하면 초기화됩니다',
+          '이번 회차 환전 횟수를 모두 사용했어요. 재개장하면 초기화됩니다',
         GoldExchangeFailureReason.perOfferCapReached =>
           '이 슬롯은 하루 1회만 가능합니다. 내일 다시 시도해 주세요',
         GoldExchangeFailureReason.none => '',
@@ -245,14 +242,16 @@ class _UsageBar extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           '오늘 $dailyUsed / $dailyLimit',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: base),
+          style:
+              TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: base),
         ),
         const SizedBox(width: 12),
         Icon(Icons.refresh, size: 12, color: base),
         const SizedBox(width: 4),
         Text(
           '회차 $runUsed / $runLimit',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: base),
+          style:
+              TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: base),
         ),
       ],
     );
@@ -298,8 +297,7 @@ class _OfferTile extends StatelessWidget {
     required this.onTap,
   });
 
-  bool get _disabled =>
-      !canAfford || eightHourLocked || atDailyCap || atRunCap;
+  bool get _disabled => !canAfford || eightHourLocked || atDailyCap || atRunCap;
 
   String? get _badge {
     if (eightHourLocked) return '내일 다시 가능';
@@ -381,12 +379,10 @@ class _OfferTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: _disabled
-                          ? Colors.grey.shade300
-                          : AppColors.coral,
+                      color: _disabled ? Colors.grey.shade300 : AppColors.coral,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -395,9 +391,8 @@ class _OfferTile extends StatelessWidget {
                         Icon(
                           Icons.diamond,
                           size: 12,
-                          color: _disabled
-                              ? Colors.grey.shade600
-                              : Colors.white,
+                          color:
+                              _disabled ? Colors.grey.shade600 : Colors.white,
                         ),
                         const SizedBox(width: 3),
                         Text(
@@ -405,9 +400,8 @@ class _OfferTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
-                            color: _disabled
-                                ? Colors.grey.shade600
-                                : Colors.white,
+                            color:
+                                _disabled ? Colors.grey.shade600 : Colors.white,
                           ),
                         ),
                       ],

@@ -2,7 +2,7 @@ import '../models/coaster.dart';
 import 'region_catalog.dart';
 import 'coaster_catalog.dart';
 
-/// Signature metadata for "검세권" and equipped formation.
+/// Signature metadata for regional awareness and equipped formation.
 ///
 /// The catalog already contains many fantasy coasters, so this layer gives every
 /// coaster a permanent regional base and a formation role without rewriting the
