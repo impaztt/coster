@@ -108,6 +108,12 @@ class SaveData {
   // Last day-key the 8-hour pack was used (it has its own once-per-day cap).
   int goldExchangeEightHourDayKey;
 
+  // §3.4 v3 — prestige specialization. Null = no specialization (vanilla
+  // costs). Values: "tap" / "idle" / "trader" — selected branch's themed
+  // upgrade costs 30% less, the other two themed upgrades cost 20% more.
+  // Neutral upgrades (legacy_overall, legacy_all) are unaffected.
+  String? prestigeSpecialization;
+
   SaveData({
     this.version = currentVersion,
     this.gold = 0,
@@ -152,6 +158,7 @@ class SaveData {
     this.goldExchangeDailyCount = 0,
     this.goldExchangePrestigeCount = 0,
     this.goldExchangeEightHourDayKey = 0,
+    this.prestigeSpecialization,
     this.mainCoasterStage = 0,
     this.mainCoasterName,
     this.mainCoasterHighestStage = 0,
@@ -233,6 +240,7 @@ class SaveData {
         'goldExchangeDailyCount': goldExchangeDailyCount,
         'goldExchangePrestigeCount': goldExchangePrestigeCount,
         'goldExchangeEightHourDayKey': goldExchangeEightHourDayKey,
+        'prestigeSpecialization': prestigeSpecialization,
         'mainCoasterStage': mainCoasterStage,
         'mainCoasterName': mainCoasterName,
         'mainCoasterHighestStage': mainCoasterHighestStage,
@@ -338,6 +346,7 @@ class SaveData {
             json['goldExchangePrestigeCount'] as int? ?? 0,
         goldExchangeEightHourDayKey:
             json['goldExchangeEightHourDayKey'] as int? ?? 0,
+        prestigeSpecialization: json['prestigeSpecialization'] as String?,
         mainCoasterStage: json['mainCoasterStage'] as int? ?? 0,
         mainCoasterName: json['mainCoasterName'] as String?,
         mainCoasterHighestStage: json['mainCoasterHighestStage'] as int? ?? 0,

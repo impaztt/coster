@@ -67,6 +67,17 @@ class StockMarketView extends ConsumerWidget {
               ? null
               : () => _confirmAndSellAll(context, notifier, totalHoldings),
         ),
+        if (game.dividendActivityFactor < 1.0) ...[
+          const SizedBox(height: 8),
+          _DividendActivityWarning(factor: game.dividendActivityFactor),
+        ],
+        if (market.activeEvents.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          for (final e in market.activeEvents) ...[
+            _MarketEventBanner(event: e),
+            const SizedBox(height: 6),
+          ],
+        ],
         const SizedBox(height: 12),
         if (owned.isNotEmpty) ...[
           const _SectionLabel(label: '보유 지역', accent: AppColors.coral),
@@ -338,6 +349,143 @@ class _SummaryStat extends StatelessWidget {
               color: valueColor ?? Colors.white,
               fontSize: 14,
               fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// §3.5 v2 — banner for an active market event (bubble or correction).
+class _MarketEventBanner extends StatelessWidget {
+  final MarketEvent event;
+  const _MarketEventBanner({required this.event});
+
+  String _regionLabel() {
+    if (event.regionId == null) return '전 지역';
+    try {
+      final def = regionDefById(event.regionId!);
+      return def.name;
+    } catch (_) {
+      return event.regionId ?? '';
+    }
+  }
+
+  String _fmtRemaining() {
+    final left = event.endsAt.difference(DateTime.now());
+    if (left.isNegative) return '종료';
+    final h = left.inHours;
+    final m = left.inMinutes % 60;
+    if (h > 0) return '${h}h ${m}m 남음';
+    return '${m}m 남음';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isBubble = event.type == MarketEventType.bubble;
+    final color = isBubble ? Colors.green.shade700 : Colors.red.shade700;
+    final bg = isBubble ? Colors.green.shade50 : Colors.red.shade50;
+    final icon = isBubble ? Icons.trending_up : Icons.trending_down;
+    final title = isBubble ? '거품 (Bubble)' : '조정 (Correction)';
+    final pct = ((event.priceMultiplier - 1.0) * 100).toStringAsFixed(0);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(AppRadii.card),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        color: color,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '${pct.startsWith('-') ? '' : '+'}$pct% 가격',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${_regionLabel()} · ${_fmtRemaining()}',
+                  style: const TextStyle(fontSize: 11, color: Colors.black87),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// §3.5 — surfaces the live dividend activity gate when active dividends are
+/// being paid at reduced rate. Tap or buy anything to dismiss it.
+class _DividendActivityWarning extends StatelessWidget {
+  final double factor;
+  const _DividendActivityWarning({required this.factor});
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = (factor * 100).toStringAsFixed(0);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3E0),
+        borderRadius: BorderRadius.circular(AppRadii.card),
+        border: Border.all(color: const Color(0xFFFFB74D)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded,
+              color: Color(0xFFE65100), size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '배당 $pct% 지급 중',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFFE65100),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  '최근 1시간 내 활동 없음 — 탭하거나 어트랙션을 구매하면 100% 지급 재개',
+                  style: TextStyle(fontSize: 11, color: Colors.black87),
+                ),
+              ],
             ),
           ),
         ],

@@ -19,6 +19,7 @@ import '../data/coaster_sets.dart';
 import '../data/tap_upgrade_catalog.dart';
 import '../models/achievement.dart';
 import '../models/booster.dart';
+import '../models/multiplier_breakdown.dart';
 import '../models/producer.dart';
 import '../models/run_stats.dart';
 import '../models/save_data.dart';
@@ -101,7 +102,9 @@ Map<CoasterTier, double> summonRatesForTotalSummons(int totalSummons) {
 }
 
 /// Idle earnings config.
-const offlineMaxHours = 12;
+/// Cap shortened from 12h → 8h per balance plan §3.9 to reduce the
+/// "active play feels worse than sleeping" pressure typical of long idle caps.
+const offlineMaxHours = 8;
 const offlineMaxSeconds = offlineMaxHours * 3600;
 const offlineClockSkewGraceMinutes = 5;
 const offlineHardElapsedHours = 72;
@@ -112,6 +115,13 @@ const offlineHardElapsedHours = 72;
 const offlineMinSeconds = 30;
 const comebackTicketStepSeconds = 15 * 60; // +1 ticket per 15m
 const comebackTicketCap = 120;
+
+/// Welcome Back booster threshold + duration. If the player was away for at
+/// least this long, claiming the offline reward also grants a 2× tap+dps
+/// booster for [welcomeBackBoosterDurationSec] to encourage a return session.
+const welcomeBackBoosterMinAwaySec = 3600; // 1h
+const welcomeBackBoosterDurationSec = 1800; // 30m
+const welcomeBackBoosterMultiplier = 2.0;
 
 /// Big-ride + combo config.
 const critChance = 0.05; // 5%
@@ -124,11 +134,87 @@ const comboBonusPerStack = 0.01; // +1% tap per combo stack, cap +50%
 /// A tap earns gold immediately, and also charges this gauge. While gauge > 0
 /// the simulation runs at [boostTimeMultiplier] (cycles complete faster,
 /// idle 초당 수익 accrues faster). Gauge drains over real time.
+///
+/// §3.2: When the gauge first reaches [boostGaugeMax], it is fully consumed
+/// and a "Ride Time" event fires — a fixed-duration window where DPS is
+/// multiplied by a combo-snapshot bonus. See [_tryStartRideTime].
 const boostGaugeMax = 100.0;
 const boostGaugeDecayPerSec = 10.0;
 const boostTimeMultiplier = 1.5;
 const boostChargePerTapPerPower = 5.0; // 1 tapPower also gives +5 gauge
 const boostChargeCritBonus = 30.0; // big ride adds an extra pulse
+
+/// Ride Time config (§3.2). When the boost gauge first fills, the gauge
+/// drains to 0 and a Ride Time burst begins: DPS is multiplied by
+/// `1 + comboAtActivation / [rideTimeComboDivisor]` for [rideTimeDurationSec]
+/// real seconds. Combo of 50 → ×6 DPS for 30 s.
+const rideTimeDurationSec = 30;
+const rideTimeComboDivisor = 10.0;
+const rideTimeBaseMult = 1.0; // floor when combo is 0
+
+/// Cycle Skip (§3.2). Each tap advances the cycle progress by this much,
+/// so 10 taps complete one cycle — i.e. tapping "drags" idle income
+/// forward. Independent of the time-based cycle floor in the tick.
+const cycleSkipPerTap = 0.1;
+
+/// Slime reward formula (§3.2). The old formula was `tap × 5000`, which
+/// becomes irrelevant late-game when DPS far outpaces tap power. New:
+/// `tap × 5000` (old floor preserved) + `dps × 30s` (DPS-scaling component).
+const slimeRewardDpsSeconds = 30.0;
+
+/// §3.8 — collection soft-cap by rank. Top contributors keep full credit;
+/// rank-tier and tail coasters get progressively less. Counters the
+/// quadratic runaway of veteran rosters (1000+ owned) without erasing
+/// the value of collecting.
+const collectionSoftCapTier1Count = 20;
+const collectionSoftCapTier1Efficiency = 1.00;
+const collectionSoftCapTier2Count = 100; // exclusive upper bound for tier 2
+const collectionSoftCapTier2Efficiency = 0.80;
+const collectionSoftCapTier3Efficiency = 0.50;
+
+/// §3.8 — Dex Lv bonus. Distinct-species count rewarded separately from
+/// per-coaster bonus, so completionists get a visible "collection ladder"
+/// even when individual rewards are soft-capped. 0.1% per species, cap 15%.
+const dexLvBonusPerSpecies = 0.001;
+const dexLvBonusCap = 0.15;
+
+/// §3.4 v3 — prestige specialization branch IDs and cost modifiers.
+/// One branch active at a time. The themed upgrade in that branch costs
+/// less; the other two themed upgrades cost more. Neutral upgrades
+/// (legacy_overall, legacy_all) ignore specialization.
+const prestigeSpecTap = 'tap';
+const prestigeSpecIdle = 'idle';
+const prestigeSpecTrader = 'trader';
+const prestigeSpecOptions = <String>[
+  prestigeSpecTap,
+  prestigeSpecIdle,
+  prestigeSpecTrader,
+];
+
+const prestigeSpecMatchedDiscount = 0.70; // -30%
+const prestigeSpecOtherMarkup = 1.20; // +20%
+const prestigeSpecSwitchCost = 50; // prestige coins to change branch
+
+/// Which themed upgrade belongs to which branch. Upgrades not listed are
+/// neutral (no modification regardless of branch).
+const Map<String, String> prestigeSpecUpgradeBranch = {
+  'legacy_tap': prestigeSpecTap,
+  'legacy_dps': prestigeSpecIdle,
+  'legacy_coin': prestigeSpecTrader,
+};
+
+/// §3.5 v2 — market event scheduler. After a cool-down window, every tick
+/// has an escalating probability of firing an event, capped so a new event
+/// always lands within [marketEventMaxIntervalHours]. Adds a "things happen
+/// in the market" rhythm that gives players a reason to check in.
+const marketEventMinIntervalHours = 4;
+const marketEventMaxIntervalHours = 12;
+const marketEventBubbleWeight = 0.55; // 55% bubble, 45% correction
+const marketEventBubblePriceMult = 1.50;
+const marketEventBubbleDurationMinSec = 3 * 3600;
+const marketEventBubbleDurationMaxSec = 6 * 3600;
+const marketEventCorrectionPriceMult = 0.80;
+const marketEventCorrectionDurationSec = 3600;
 
 /// Coaster operating cycle (ride loop) — fixed-revenue floor regardless
 /// of how many producers / passengers exist. A single cycle takes
@@ -169,18 +255,26 @@ int _calcPrestigeCoinsFromProgress({
   // purchased gold contributes nothing to the prestige coin payout.
   final effectiveCurrentGold =
       (currentGold - purchasedGoldUnconverted).clamp(0.0, double.infinity);
-  final wealthScore = sqrt(
-    ((totalGoldEarned + effectiveCurrentGold * 2).clamp(0.0, double.infinity)) /
-        1e7,
-  );
+  final wealthBase =
+      ((totalGoldEarned + effectiveCurrentGold * 2).clamp(0.0, double.infinity)) /
+          1e7;
+  // Exponent slides 0.55 → 0.50 over the first 5 prestiges. Early runs are
+  // more generous to ease the first meta entry; from prestige 5 onward the
+  // curve matches the original sqrt() shape.
+  final exponent = 0.55 - min(prestigeCount, 5) * 0.01;
+  final wealthScore = wealthBase > 0 ? pow(wealthBase, exponent).toDouble() : 0.0;
   final progressionScore = producerLevelSum / 30 + tapUpgradeSum / 20;
   final runDepthScore = min(10.0, prestigeCount * 0.1);
-  final raw = (wealthScore + progressionScore + runDepthScore).floor();
-  if (raw <= 0) return 0;
+  final rawScore = wealthScore + progressionScore + runDepthScore;
+  // Compounding bonus that rewards long-term meta progression and prevents
+  // the late-game plateau described in the balance design doc (§3.4).
+  final prestigeStackBonus = 1.0 + prestigeCount * 0.02;
+  final adjusted = (rawScore * prestigeStackBonus).floor();
+  if (adjusted <= 0) return 0;
 
   final bonusMultiplier =
       1.0 + prestigeCoinGainBonusFraction(prestigeUpgradeLevels);
-  return max(1, (raw * bonusMultiplier).floor());
+  return max(1, (adjusted * bonusMultiplier).floor());
 }
 
 /// Booster shop catalog. (`adOnly`=true means ticket cost is N/A; only
@@ -1030,6 +1124,22 @@ class GameState {
   // Current ride-cycle progress (0..1). The HUD can render a thin
   // progress sliver under the boost gauge for player feedback.
   final double cycleProgress;
+  // §3.2 Ride Time burst state. [rideTimeRemainingSec] is 0 when no burst
+  // is active; [rideTimeMult] is the active DPS multiplier (1.0 when idle).
+  final int rideTimeRemainingSec;
+  final double rideTimeMult;
+  // §3.5 — current dividend payout factor. 1.0 when active in the last hour,
+  // [_dividendInactiveFactor] (0.25) when idle. UI uses this to warn the
+  // player that their next dividend tick will be reduced.
+  final double dividendActivityFactor;
+  // §3.8 — distinct owned coaster species count (Dex Lv) and the additive
+  // bonus fraction it contributes (already folded into [collectionBonusFraction]).
+  // Surfaced separately so UI can render "도감 N/150 (+X.X%)".
+  final int dexLv;
+  final double dexLvBonus;
+  // §3.4 v3 — active prestige specialization branch ("tap" / "idle" /
+  // "trader") or null when none picked.
+  final String? prestigeSpecialization;
   final bool loaded;
 
   const GameState({
@@ -1097,6 +1207,12 @@ class GameState {
     this.firstPurchasePackageClaimed = false,
     this.boostGauge = 0,
     this.cycleProgress = 0,
+    this.rideTimeRemainingSec = 0,
+    this.rideTimeMult = 1.0,
+    this.dividendActivityFactor = 1.0,
+    this.dexLv = 0,
+    this.dexLvBonus = 0,
+    this.prestigeSpecialization,
     this.loaded = false,
   });
 
@@ -1361,6 +1477,19 @@ class GameNotifier extends Notifier<GameState> {
   // baseRevenue floor even with zero producers, so tap-as-speed-up still
   // produces income from frame 0.
   double _cycleProgress = 0;
+
+  // §3.2 Ride Time — ephemeral DPS burst triggered when [_boostGauge] first
+  // hits max. Holds the active multiplier snapshot and expiry time. While
+  // active, the boost gauge does NOT recharge (so Ride Time can't re-trigger
+  // before the window ends).
+  DateTime? _rideTimeUntil;
+  double _rideTimeMultActive = 1.0;
+
+  // §3.5 — last meaningful in-game activity (tap, producer/tap-upgrade
+  // purchase, prestige). Used by [_dividendActivityFactor] to gate live
+  // dividend payouts so passive holders can't farm divs without playing.
+  // Offline catch-up dividends are unaffected (already capped to 8h).
+  DateTime? _lastMeaningfulActivityAt;
 
   @override
   GameState build() {
@@ -1828,6 +1957,12 @@ class GameNotifier extends Notifier<GameState> {
       firstPurchasePackageClaimed: _save.firstPurchasePackageClaimed,
       boostGauge: _boostGauge,
       cycleProgress: _cycleProgress,
+      rideTimeRemainingSec: _rideTimeRemainingSec,
+      rideTimeMult: _rideTimeMult(),
+      dividendActivityFactor: _dividendActivityFactor(),
+      dexLv: _dexLv,
+      dexLvBonus: _dexLvBonusFraction(),
+      prestigeSpecialization: _save.prestigeSpecialization,
       loaded: loaded,
     );
     if (loaded) {
@@ -2188,19 +2323,50 @@ class GameNotifier extends Notifier<GameState> {
   /// Total fractional bonus contributed by every owned coaster (incl. the
   /// equipped one — its big equip multiplier is separate, so this stacks
   /// without "double-dipping" on the same source). Returns the raw sum,
-  /// e.g. 0.42 for "+42%" — see [_collectionMult] for the multiplier form.
-  double _collectionBonusTotal() {
-    double total = 0;
+  /// §3.8 — Soft-capped sum of per-coaster ownership bonuses + permanent
+  /// main coaster milestone bonus. Each owned coaster contributes
+  /// `ownedBonusAt(lv)`, but we sort contributions descending and apply
+  /// rank-tier efficiency (top 20 full, 21-100 ×0.8, rest ×0.5). Whales
+  /// with hundreds of coasters keep their headline % but the tail loses
+  /// quadratic weight.
+  double _perCoasterCollectionBonus() {
+    final contributions = <double>[];
     _save.ownedCoasters.forEach((id, lv) {
       if (lv <= 0) return;
       try {
-        total += coasterById(id).ownedBonusAt(lv);
+        contributions.add(coasterById(id).ownedBonusAt(lv));
       } catch (_) {}
     });
-    // Permanent collection-bonus boosts unlocked via main coaster milestones.
-    total += _save.mainCoasterCollectionBonusFraction;
-    return total;
+    contributions.sort((a, b) => b.compareTo(a));
+    double total = 0;
+    for (var i = 0; i < contributions.length; i++) {
+      final eff = i < collectionSoftCapTier1Count
+          ? collectionSoftCapTier1Efficiency
+          : i < collectionSoftCapTier2Count
+              ? collectionSoftCapTier2Efficiency
+              : collectionSoftCapTier3Efficiency;
+      total += contributions[i] * eff;
+    }
+    return total + _save.mainCoasterCollectionBonusFraction;
   }
+
+  /// §3.8 — distinct owned species count.
+  int get _dexLv {
+    int distinct = 0;
+    for (final lv in _save.ownedCoasters.values) {
+      if (lv > 0) distinct++;
+    }
+    return distinct;
+  }
+
+  /// §3.8 — fraction bonus from Dex Lv (capped).
+  double _dexLvBonusFraction() =>
+      (_dexLv * dexLvBonusPerSpecies).clamp(0.0, dexLvBonusCap);
+
+  /// e.g. 0.42 for "+42%" — see [_collectionMult] for the multiplier form.
+  /// Soft-capped per-coaster sum + main-coaster milestone bonus + Dex Lv.
+  double _collectionBonusTotal() =>
+      _perCoasterCollectionBonus() + _dexLvBonusFraction();
 
   double _collectionMult() => 1.0 + _collectionBonusTotal();
 
@@ -2321,16 +2487,7 @@ class GameNotifier extends Notifier<GameState> {
       final lv = _save.tapUpgradeLevels[def.id] ?? 0;
       base += def.tapPowerPerLevel * lv;
     }
-    return base *
-        _prestigeMult() *
-        _ascensionCoreMult() *
-        _prestigeShopTapMult() *
-        _equippedTapMult() *
-        _boosterTapMult() *
-        _setTapBonus() *
-        _collectionMult() *
-        _formationTapMult() *
-        _mainCoasterMult();
+    return base * _stackTapMult();
   }
 
   double _calcDps() {
@@ -2339,16 +2496,104 @@ class GameNotifier extends Notifier<GameState> {
       final lv = _save.producerLevels[def.id] ?? 0;
       sum += def.dpsAt(lv);
     }
-    return sum *
-        _prestigeMult() *
-        _ascensionCoreMult() *
-        _prestigeShopDpsMult() *
-        _equippedDpsMult() *
-        _boosterDpsMult() *
-        _setDpsBonus() *
-        _collectionMult() *
-        _formationDpsMult() *
-        _mainCoasterMult();
+    return sum * _stackDpsMult();
+  }
+
+  /// §3.1 v1 — additive bonus pool (collection + set, both tap-specific
+  /// where applicable). Veteran players with hundreds of coasters used to
+  /// snowball quadratically against every other layer; moving these to an
+  /// additive pool gives a soft brake (~20% softer for whales) without
+  /// killing collection value.
+  double _additiveTapBonusFraction() =>
+      (_collectionMult() - 1.0) + (_setTapBonus() - 1.0);
+
+  double _additiveDpsBonusFraction() =>
+      (_collectionMult() - 1.0) + (_setDpsBonus() - 1.0);
+
+  /// Multiplicative-only tap stack, excluding the main coaster term so that
+  /// the public [tapMultiplier] getter (used by upgrade-screen previews)
+  /// keeps its historical contract.
+  double _multStackTapNoMain() =>
+      _prestigeMult() *
+      _ascensionCoreMult() *
+      _prestigeShopTapMult() *
+      _equippedTapMult() *
+      _boosterTapMult() *
+      _formationTapMult();
+
+  double _multStackDpsNoMain() =>
+      _prestigeMult() *
+      _ascensionCoreMult() *
+      _prestigeShopDpsMult() *
+      _equippedDpsMult() *
+      _boosterDpsMult() *
+      _formationDpsMult();
+
+  /// Full tap multiplier applied to tap-power base (used by [_calcTapPower]).
+  double _stackTapMult() =>
+      _multStackTapNoMain() *
+      _mainCoasterMult() *
+      (1.0 + _additiveTapBonusFraction());
+
+  /// Full DPS multiplier applied to producer DPS sum (used by [_calcDps]).
+  double _stackDpsMult() =>
+      _multStackDpsNoMain() *
+      _mainCoasterMult() *
+      _rideTimeMult() *
+      (1.0 + _additiveDpsBonusFraction());
+
+  /// §3.2 Ride Time burst multiplier. Returns 1.0 when no burst is active
+  /// (or when the previously-active burst has expired — auto-clears state).
+  double _rideTimeMult() {
+    final until = _rideTimeUntil;
+    if (until == null) return 1.0;
+    if (DateTime.now().isAfter(until)) {
+      _rideTimeUntil = null;
+      _rideTimeMultActive = 1.0;
+      return 1.0;
+    }
+    return _rideTimeMultActive;
+  }
+
+  /// Read-only seconds remaining on the active Ride Time burst (0 if none).
+  int get _rideTimeRemainingSec {
+    final until = _rideTimeUntil;
+    if (until == null) return 0;
+    final remaining = until.difference(DateTime.now()).inSeconds;
+    return remaining > 0 ? remaining : 0;
+  }
+
+  /// §3.5 — live dividend activity gate. Returns 1.0 when the player has
+  /// touched the game in the last [_dividendActivityWindow] (tap or any
+  /// purchase), else [_dividendInactiveFactor]. Offline catch-up dividends
+  /// bypass this and always pay full.
+  static const Duration _dividendActivityWindow = Duration(hours: 1);
+  static const double _dividendInactiveFactor = 0.25;
+
+  double _dividendActivityFactor() {
+    final last = _lastMeaningfulActivityAt;
+    if (last == null) return _dividendInactiveFactor;
+    final elapsed = DateTime.now().difference(last);
+    return elapsed <= _dividendActivityWindow ? 1.0 : _dividendInactiveFactor;
+  }
+
+  void _markActivity() {
+    _lastMeaningfulActivityAt = DateTime.now();
+  }
+
+  /// Attempt to start a Ride Time burst — fires once when the boost gauge
+  /// would overflow [boostGaugeMax]. Drains the gauge to 0 and snapshots
+  /// the current combo as the DPS multiplier basis.
+  bool _tryStartRideTime() {
+    if (_rideTimeUntil != null &&
+        DateTime.now().isBefore(_rideTimeUntil!)) {
+      return false;
+    }
+    _rideTimeMultActive = rideTimeBaseMult + (_combo / rideTimeComboDivisor);
+    _rideTimeUntil =
+        DateTime.now().add(const Duration(seconds: rideTimeDurationSec));
+    _boostGauge = 0;
+    return true;
   }
 
   /// Multiplier from the home-tab main coaster's enhancement stage. Applies
@@ -2499,26 +2744,122 @@ class GameNotifier extends Notifier<GameState> {
   /// shown on the home screen. Upgrade tiles use this to display the gain
   /// the player will actually see (e.g. so the coaster-collection bonus
   /// visibly improves the "초당 수익 +N" preview on companion/transcendent buys).
+  ///
+  /// Excludes the main coaster bonus so that screens which already show the
+  /// main coaster contribution separately don't double-count it. Matches the
+  /// historical contract of this getter.
   double get dpsMultiplier =>
-      _prestigeMult() *
-      _ascensionCoreMult() *
-      _prestigeShopDpsMult() *
-      _equippedDpsMult() *
-      _boosterDpsMult() *
-      _setDpsBonus() *
-      _collectionMult() *
-      _formationDpsMult();
+      _multStackDpsNoMain() * (1.0 + _additiveDpsBonusFraction());
 
   /// Counterpart of [dpsMultiplier] for tap-power upgrades.
   double get tapMultiplier =>
-      _prestigeMult() *
-      _ascensionCoreMult() *
-      _prestigeShopTapMult() *
-      _equippedTapMult() *
-      _boosterTapMult() *
-      _setTapBonus() *
-      _collectionMult() *
-      _formationTapMult();
+      _multStackTapNoMain() * (1.0 + _additiveTapBonusFraction());
+
+  /// Diagnostic breakdown of every multiplier layer for the dev debug
+  /// sheet (balance plan Phase 1A). Order matches the stack inside
+  /// [_calcTapPower] / [_calcDps] so the sheet shows a faithful picture
+  /// before any refactor (§3.1).
+  MultiplierBreakdown get multiplierBreakdown {
+    double tapBase = 1.0;
+    for (final def in tapUpgradeCatalog) {
+      final lv = _save.tapUpgradeLevels[def.id] ?? 0;
+      tapBase += def.tapPowerPerLevel * lv;
+    }
+    double dpsBase = 0;
+    for (final def in producerCatalog) {
+      final lv = _save.producerLevels[def.id] ?? 0;
+      dpsBase += def.dpsAt(lv);
+    }
+    final layers = <MultiplierLayer>[
+      MultiplierLayer(
+        name: '브랜드 연구 (Prestige)',
+        tap: _prestigeMult(),
+        dps: _prestigeMult(),
+      ),
+      MultiplierLayer(
+        name: '초월 핵심 (Ascension)',
+        tap: _ascensionCoreMult(),
+        dps: _ascensionCoreMult(),
+      ),
+      MultiplierLayer(
+        name: '프레스티지 상점',
+        tap: _prestigeShopTapMult(),
+        dps: _prestigeShopDpsMult(),
+      ),
+      MultiplierLayer(
+        name: '장착 코스터',
+        tap: _equippedTapMult(),
+        dps: _equippedDpsMult(),
+      ),
+      MultiplierLayer(
+        name: '부스터',
+        tap: _boosterTapMult(),
+        dps: _boosterDpsMult(),
+      ),
+      MultiplierLayer(
+        name: '편성 (포메이션)',
+        tap: _formationTapMult(),
+        dps: _formationDpsMult(),
+      ),
+      MultiplierLayer(
+        name: '메인 코스터',
+        tap: _mainCoasterMult(),
+        dps: _mainCoasterMult(),
+      ),
+      MultiplierLayer(
+        name: 'Ride Time (§3.2)',
+        tap: 1.0,
+        dps: _rideTimeMult(),
+      ),
+      // §3.1 v1: collection + set moved to additive pool.
+      MultiplierLayer(
+        name: '세트 보너스 (가산)',
+        tap: _setTapBonus(),
+        dps: _setDpsBonus(),
+        additive: true,
+      ),
+      // §3.8: collection bonus split into soft-capped per-coaster sum +
+      // Dex Lv so the breakdown shows where the bonus actually comes from.
+      MultiplierLayer(
+        name: '수집 (소프트캡, 가산)',
+        tap: 1.0 + _perCoasterCollectionBonus(),
+        dps: 1.0 + _perCoasterCollectionBonus(),
+        additive: true,
+      ),
+      MultiplierLayer(
+        name: 'Dex Lv (도감, 가산)',
+        tap: 1.0 + _dexLvBonusFraction(),
+        dps: 1.0 + _dexLvBonusFraction(),
+        additive: true,
+      ),
+    ];
+    double multTap = 1.0;
+    double multDps = 1.0;
+    double addTap = 0.0;
+    double addDps = 0.0;
+    for (final l in layers) {
+      if (l.additive) {
+        addTap += l.tap - 1.0;
+        addDps += l.dps - 1.0;
+      } else {
+        multTap *= l.tap;
+        multDps *= l.dps;
+      }
+    }
+    final tapTotal = tapBase * multTap * (1.0 + addTap);
+    final dpsTotal = dpsBase * multDps * (1.0 + addDps);
+    return MultiplierBreakdown(
+      tapBase: tapBase,
+      dpsBase: dpsBase,
+      layers: layers,
+      tapTotal: tapTotal,
+      dpsTotal: dpsTotal,
+      multiplicativeTap: multTap,
+      multiplicativeDps: multDps,
+      additiveTapFraction: addTap,
+      additiveDpsFraction: addDps,
+    );
+  }
 
   /// Drop expired boosters from the save (called before any calculation that
   /// reads them, to avoid "ghost" multipliers after their timer ran out).
@@ -2555,6 +2896,7 @@ class GameNotifier extends Notifier<GameState> {
 
   TapResult tapWithFeedback() {
     final now = DateTime.now();
+    _markActivity();
     final withinWindow = _lastTapAt != null &&
         now.difference(_lastTapAt!).inMilliseconds <= comboWindowMs;
     final surge = _comboSurgeUntil != null && now.isBefore(_comboSurgeUntil!);
@@ -2578,9 +2920,30 @@ class GameNotifier extends Notifier<GameState> {
     _save.stats.lifetimeGold += amount;
     _save.run.goldEarned += amount;
 
-    var charge = base * boostChargePerTapPerPower * comboMult * surgeMult;
-    if (isCrit) charge += boostChargeCritBonus;
-    _boostGauge = (_boostGauge + charge).clamp(0.0, boostGaugeMax);
+    // Boost gauge charging — paused while a Ride Time burst is in flight so
+    // the burst can't re-trigger before its window ends (§3.2).
+    final rideTimeActive = _rideTimeUntil != null &&
+        DateTime.now().isBefore(_rideTimeUntil!);
+    if (!rideTimeActive) {
+      var charge = base * boostChargePerTapPerPower * comboMult * surgeMult;
+      if (isCrit) charge += boostChargeCritBonus;
+      _boostGauge = (_boostGauge + charge).clamp(0.0, boostGaugeMax);
+      if (_boostGauge >= boostGaugeMax) _tryStartRideTime();
+    }
+
+    // §3.2 Cycle Skip — each tap drags the ride cycle forward, so tapping
+    // accelerates idle income instead of replacing it.
+    _cycleProgress += cycleSkipPerTap;
+    if (_cycleProgress >= 1.0) {
+      final completed = _cycleProgress.floor();
+      _cycleProgress -= completed;
+      final cycleGain = completed * baseRevenuePerCycle * _prestigeMult();
+      _save.gold += cycleGain;
+      _save.totalGoldEarned += cycleGain;
+      _save.stats.lifetimeGold += cycleGain;
+      _save.run.goldEarned += cycleGain;
+      amount += cycleGain;
+    }
 
     _save.stats.totalTaps++;
     _save.run.taps++;
@@ -2642,6 +3005,7 @@ class GameNotifier extends Notifier<GameState> {
     if (n <= 0) return 0;
     final cost = def.costForNext(oldLv, n);
     if (_save.gold < cost) return 0;
+    _markActivity();
     final newLv = oldLv + n;
     _save.gold -= cost;
     _decayPurchasedGoldUnconverted(cost);
@@ -2666,6 +3030,7 @@ class GameNotifier extends Notifier<GameState> {
     if (n <= 0) return 0;
     final cost = def.costForNext(lv, n);
     if (_save.gold < cost) return 0;
+    _markActivity();
     _save.gold -= cost;
     _decayPurchasedGoldUnconverted(cost);
     _save.stats.totalGoldSpent += cost;
@@ -2681,11 +3046,51 @@ class GameNotifier extends Notifier<GameState> {
     return n;
   }
 
+  /// §3.4 v3 — cost multiplier applied to a prestige upgrade based on the
+  /// active specialization. Themed upgrades match -30%, other themed +20%,
+  /// neutral upgrades unchanged.
+  double prestigeSpecCostMultiplier(String upgradeId) {
+    final spec = _save.prestigeSpecialization;
+    if (spec == null) return 1.0;
+    final branch = prestigeSpecUpgradeBranch[upgradeId];
+    if (branch == null) return 1.0; // neutral upgrade
+    return branch == spec
+        ? prestigeSpecMatchedDiscount
+        : prestigeSpecOtherMarkup;
+  }
+
+  /// Public cost lookup that already includes the specialization modifier,
+  /// so UI / purchase paths share a single source of truth.
+  int prestigeUpgradeCostFor(String id, int level) {
+    final def = prestigeUpgradeById(id);
+    final base = def.costAt(level);
+    final adj = (base * prestigeSpecCostMultiplier(id)).round();
+    return adj < 1 ? 1 : adj;
+  }
+
+  /// §3.4 v3 — switch (or set) the active prestige specialization. First-time
+  /// selection is free; subsequent switches cost [prestigeSpecSwitchCost]
+  /// coins. Pass null to clear (no specialization, all base costs).
+  bool setPrestigeSpecialization(String? spec) {
+    if (spec != null && !prestigeSpecOptions.contains(spec)) return false;
+    final current = _save.prestigeSpecialization;
+    if (current == spec) return false;
+    if (current != null && spec != null) {
+      // Switching between branches charges the switch cost.
+      if (_save.prestigeCoins < prestigeSpecSwitchCost) return false;
+      _save.prestigeCoins -= prestigeSpecSwitchCost;
+    }
+    _save.prestigeSpecialization = spec;
+    _emit(loaded: true);
+    unawaited(_persist());
+    return true;
+  }
+
   bool buyPrestigeUpgrade(String id) {
     final def = prestigeUpgradeById(id);
     final lv = _save.prestigeUpgradeLevels[id] ?? 0;
     if (lv >= def.maxLevel) return false;
-    final cost = def.costAt(lv);
+    final cost = prestigeUpgradeCostFor(id, lv);
     if (_save.prestigeCoins < cost) return false;
     _save.prestigeCoins -= cost;
     _save.prestigeUpgradeLevels[id] = lv + 1;
@@ -3010,6 +3415,7 @@ class GameNotifier extends Notifier<GameState> {
   bool prestige() {
     final coins = state.prestigeCoinsAvailable;
     if (coins <= 0) return false;
+    _markActivity();
     _save.prestigeCoins += coins;
     _save.prestigeCount += 1;
     _incMission('weekly_prestige_5', 1, daily: false);
@@ -3022,6 +3428,9 @@ class GameNotifier extends Notifier<GameState> {
     _combo = 0;
     _lastTapAt = null;
     _burstFiredThisRun = false;
+    _boostGauge = 0;
+    _rideTimeUntil = null;
+    _rideTimeMultActive = 1.0;
     _resetStockMarketOnPrestige();
     _unlockNoXChallenges();
     _save.run.reset();
@@ -3080,6 +3489,19 @@ class GameNotifier extends Notifier<GameState> {
     _save.stats.lifetimeGold += r.gold;
     if (r.ticketBonus > 0) {
       _save.ticket += r.ticketBonus;
+    }
+    // §3.9: Welcome Back booster on return after a non-trivial absence.
+    if (r.duration.inSeconds >= welcomeBackBoosterMinAwaySec) {
+      _applyBooster(
+        BoosterType.dps,
+        welcomeBackBoosterMultiplier,
+        welcomeBackBoosterDurationSec,
+      );
+      _applyBooster(
+        BoosterType.tap,
+        welcomeBackBoosterMultiplier,
+        welcomeBackBoosterDurationSec,
+      );
     }
     _emit(loaded: true);
     unawaited(_persist());
@@ -3569,11 +3991,74 @@ class GameNotifier extends Notifier<GameState> {
     unawaited(_persist());
   }
 
+  /// §3.7 — booster mutex groups. Group A holds the three combat boosters
+  /// (DPS / Tap / Rush) so the player can never stack them at once; buying
+  /// one replaces any other in the group at a 50% time-proportional ticket
+  /// refund. Welcome-back / ad-grant boosters are also in the group but
+  /// refund 0 (no original ticket cost).
+  static const _combatBoosterTypes = <BoosterType>{
+    BoosterType.dps,
+    BoosterType.tap,
+    BoosterType.rush,
+  };
+
+  bool _isCombatBooster(BoosterType t) => _combatBoosterTypes.contains(t);
+
+  /// Returns ticket refund for an *active* booster, computed from the
+  /// matching catalog entry's original cost × remaining-fraction × 0.5.
+  /// Returns 0 if no matching offer (auto-grants like Welcome Back).
+  int _refundForActiveBooster(Booster active) {
+    final now = DateTime.now();
+    if (!active.expiresAt.isAfter(now)) return 0;
+    for (final offer in boosterOffers) {
+      if (offer.type == active.type && offer.multiplier == active.multiplier) {
+        if (offer.ticketCost <= 0) return 0;
+        final remaining = active.expiresAt.difference(now).inSeconds;
+        final fraction = remaining / offer.durationSec;
+        return (offer.ticketCost * fraction * 0.5).floor();
+      }
+    }
+    return 0;
+  }
+
+  /// Remove every active booster in the same Group A as [incomingType],
+  /// crediting the player with proportional ticket refunds. Returns the
+  /// total refund granted (already added to ticket).
+  int _evictCombatGroupAndRefund(BoosterType incomingType) {
+    if (!_isCombatBooster(incomingType)) return 0;
+    final now = DateTime.now();
+    int totalRefund = 0;
+    final survivors = <Booster>[];
+    for (final b in _save.activeBoosters) {
+      if (_isCombatBooster(b.type) && b.expiresAt.isAfter(now)) {
+        totalRefund += _refundForActiveBooster(b);
+        continue;
+      }
+      survivors.add(b);
+    }
+    _save.activeBoosters = survivors;
+    if (totalRefund > 0) _save.ticket += totalRefund;
+    return totalRefund;
+  }
+
+  /// Holds the most recent Group-A refund so the purchase UI can surface
+  /// the credit ("환급 +N 티켓"). Read-once via [consumeLastBoosterRefund].
+  int _lastBoosterRefund = 0;
+  int consumeLastBoosterRefund() {
+    final v = _lastBoosterRefund;
+    _lastBoosterRefund = 0;
+    return v;
+  }
+
   void _applyBooster(BoosterType type, double multiplier, int durationSec) {
     _reapBoosters();
     final now = DateTime.now();
+    // §3.7 v1 mutex — evict same-group rivals first, with refund.
+    _lastBoosterRefund = _evictCombatGroupAndRefund(type);
     // If the same type+multiplier is already active, extend its timer
-    // instead of stacking a second identical booster.
+    // instead of stacking a second identical booster. (For Group A this
+    // is moot — the eviction above already cleared it. For non-group
+    // boosters like autoTap, behaviour is unchanged.)
     final existing = _save.activeBoosters.indexWhere(
       (b) => b.type == type && b.multiplier == multiplier,
     );
@@ -3673,10 +4158,11 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   /// Called by the home screen when a golden VIP guest is handled. Grants
-  /// gold equal to [slimeRewardTaps] × current tap power and
-  /// returns the awarded amount so the UI can show a floating number.
+  /// gold equal to `tapPower × [slimeRewardTaps] + dps × [slimeRewardDpsSeconds]`
+  /// (§3.2). The DPS component keeps slimes meaningful late-game, when raw
+  /// tap power lags far behind idle income.
   double defeatGoldenSlime() {
-    final reward = _calcTapPower() * slimeRewardTaps;
+    final reward = _slimeRewardAmount();
     _save.gold += reward;
     _save.totalGoldEarned += reward;
     _save.stats.lifetimeGold += reward;
@@ -3689,9 +4175,12 @@ class GameNotifier extends Notifier<GameState> {
     return reward;
   }
 
+  double _slimeRewardAmount() =>
+      _calcTapPower() * slimeRewardTaps + _calcDps() * slimeRewardDpsSeconds;
+
   /// Estimated reward shown on the VIP response bar so the player can see what
   /// finishing it off is worth at the current moment.
-  double get slimePreviewReward => _calcTapPower() * slimeRewardTaps;
+  double get slimePreviewReward => _slimeRewardAmount();
 
   // ============ Coaster dismantle ============
 
@@ -4038,6 +4527,83 @@ class GameNotifier extends Notifier<GameState> {
     return mag * cos(2.0 * pi * u2);
   }
 
+  /// §3.5 v2 — multiplier from any active market event affecting [regionId].
+  /// Bubble and correction stack multiplicatively in the rare case both are
+  /// active simultaneously.
+  double _marketEventModifierFor(String regionId) {
+    final events = _save.market.activeEvents;
+    if (events.isEmpty) return 1.0;
+    final now = DateTime.now();
+    double mult = 1.0;
+    for (final ev in events) {
+      if (!ev.isActive(now)) continue;
+      if (ev.regionId == null || ev.regionId == regionId) {
+        mult *= ev.priceMultiplier;
+      }
+    }
+    return mult;
+  }
+
+  /// §3.5 v2 — expire dropped events and roll for a new event when the
+  /// cool-down window has elapsed. Probability rises linearly from 0 at
+  /// the min cool-down to ~1 at the max cool-down so an event is
+  /// guaranteed within the window.
+  void _checkMarketEventScheduler({required DateTime now}) {
+    final m = _save.market;
+    // Expire events that have ended.
+    m.activeEvents.removeWhere((e) => !e.isActive(now));
+
+    final last = m.lastEventRollAt;
+    if (last == null) {
+      m.lastEventRollAt = now;
+      return;
+    }
+    final elapsedSec = now.difference(last).inSeconds;
+    final minSec = marketEventMinIntervalHours * 3600;
+    final maxSec = marketEventMaxIntervalHours * 3600;
+    if (elapsedSec < minSec) return;
+    final spanSec = maxSec - minSec;
+    final pct = spanSec <= 0
+        ? 1.0
+        : ((elapsedSec - minSec) / spanSec).clamp(0.0, 1.0);
+    if (_random.nextDouble() >= pct) return;
+
+    // Fire an event.
+    final unlocked = m.regions.values
+        .where((s) => s.unlocked)
+        .map((s) => s.regionId)
+        .toList();
+    if (unlocked.isEmpty) return;
+    final isBubble = _random.nextDouble() < marketEventBubbleWeight;
+    final id = 'evt_${now.millisecondsSinceEpoch}';
+    if (isBubble) {
+      final regionId = unlocked[_random.nextInt(unlocked.length)];
+      final spanDur = marketEventBubbleDurationMaxSec -
+          marketEventBubbleDurationMinSec;
+      final duration = marketEventBubbleDurationMinSec +
+          _random.nextInt(spanDur > 0 ? spanDur : 1);
+      m.activeEvents.add(MarketEvent(
+        id: id,
+        type: MarketEventType.bubble,
+        regionId: regionId,
+        priceMultiplier: marketEventBubblePriceMult,
+        startedAt: now,
+        endsAt: now.add(Duration(seconds: duration)),
+      ));
+    } else {
+      m.activeEvents.add(MarketEvent(
+        id: id,
+        type: MarketEventType.correction,
+        regionId: null,
+        priceMultiplier: marketEventCorrectionPriceMult,
+        startedAt: now,
+        endsAt:
+            now.add(const Duration(seconds: marketEventCorrectionDurationSec)),
+      ));
+    }
+    m.lastEventRollAt = now;
+  }
+
   /// Step prices, candles, and dividends forward by [ticksElapsed] price
   /// ticks. Each tick represents [stockPriceTickSeconds] real seconds, so a
   /// candle (30s window) accumulates 30 / [stockPriceTickSeconds] ticks per
@@ -4059,11 +4625,15 @@ class GameNotifier extends Notifier<GameState> {
     const driftPerSec = 0.0003;
     const eventProbPerSec = 0.0015;
 
+    // §3.5 v2 — expire / fire market events before pricing this batch.
+    _checkMarketEventScheduler(now: now);
+
     for (final state in m.regions.values) {
       if (!state.unlocked) continue;
       final def = regionDefById(state.regionId);
       final districtBonus = regionCoasterDistrictBonusFraction(def.id);
-      state.intrinsicPrice = regionIntrinsicPrice(def.id);
+      state.intrinsicPrice =
+          regionIntrinsicPrice(def.id) * _marketEventModifierFor(def.id);
       final sigmaPerTick = def.volatilityPerMinute *
           volatilityBoost *
           (1.0 + districtBonus * 0.12) *
@@ -4127,7 +4697,8 @@ class GameNotifier extends Notifier<GameState> {
         forming.volume += 1.0 + pctMove * 5.0 + _random.nextDouble() * 0.4;
       }
 
-      // Hourly dividend accrual.
+      // Hourly dividend accrual — gated by §3.5 activity factor so passive
+      // holders can't farm divs while AFK in-game.
       if (state.shares > 0) {
         final last = state.lastAccrualAt ?? now;
         final elapsed = now.difference(last).inSeconds;
@@ -4136,7 +4707,8 @@ class GameNotifier extends Notifier<GameState> {
           final perHour = state.shares *
               state.currentPrice *
               regionEffectiveHourlyYield(def.id);
-          state.pendingDividend += perHour * hours;
+          state.pendingDividend +=
+              perHour * hours * _dividendActivityFactor();
           state.lastAccrualAt =
               last.add(Duration(seconds: hours * dividendIntervalSeconds));
         }

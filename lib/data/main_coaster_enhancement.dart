@@ -29,8 +29,9 @@ const mainCoasterEnhanceMaxStage = 50;
 MainCoasterEnhanceCost mainCoasterEnhanceCost(int targetStage) {
   final s = targetStage.clamp(1, mainCoasterEnhanceMaxStage);
   // Gold scales hard so the late-game requires real upgrade investment to
-  // afford an attempt at all.
-  final goldCost = 1e6 * math.pow(1.7, s - 1).toDouble();
+  // afford an attempt at all. Curve softened from 1.7 → 1.62 as part of
+  // balance plan §3.6 (intermediate step until essence system ships).
+  final goldCost = 1e6 * math.pow(1.62, s - 1).toDouble();
   // Ticket scales gentler — a single +50 ticket shot costs roughly 20K
   // ticket, which is the headline BM number.
   final ticketCost = (5 * math.pow(1.18, s - 1)).round();

@@ -25,15 +25,17 @@ double Function(int) _linear(int base, int step) =>
 /// Repeat-track reward global nerf (70% of previous payout).
 const _repeatRewardScale = 0.7;
 
-/// Reward curve: small base + slow growth (capped to keep economy sane).
+/// Reward curve: small base + slow growth, tiered cap so veteran players
+/// (§3.10) still see meaningful ticket gains past stage 10.
+/// Pre-nerf cap: 200 / 350 / 600 → after _repeatRewardScale: 140 / 245 / 420.
 int Function(int) _reward({
   required int base,
   double growth = 1.4,
-  int cap = 200,
 }) =>
     (s) {
       final raw = base * _powInt(growth, s - 1);
-      final clamped = raw > cap ? cap.toDouble() : raw;
+      final cap = s <= 10 ? 200.0 : (s <= 20 ? 350.0 : 600.0);
+      final clamped = raw > cap ? cap : raw;
       final scaled = (clamped * _repeatRewardScale).round();
       return scaled < 1 ? 1 : scaled;
     };

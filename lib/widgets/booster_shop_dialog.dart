@@ -50,13 +50,27 @@ class BoosterShopDialog extends ConsumerWidget {
                 adsRemoved: notifier.adsRemoved,
                 onBuyTicket: () {
                   final ok = notifier.buyBoosterWithTicket(offer);
-                  if (!ok) _toast(context, '티켓이 부족해요');
+                  if (!ok) {
+                    _toast(context, '티켓이 부족해요');
+                    return;
+                  }
+                  final refund = notifier.consumeLastBoosterRefund();
+                  if (refund > 0) {
+                    _toast(context,
+                        '이전 부스터 교체 — 티켓 +$refund 환급 (§3.7)');
+                  }
                 },
                 onWatchAd: () async {
                   // 광고 제거 IAP 보유자는 즉시 지급 (광고 시청 단계 스킵).
                   if (notifier.adsRemoved) {
                     notifier.grantAdBooster(offer);
-                    _toast(context, '광고 제거 혜택으로 즉시 지급됐어요');
+                    final refund = notifier.consumeLastBoosterRefund();
+                    if (refund > 0) {
+                      _toast(context,
+                          '광고 제거 혜택 적용 — 교체 환급 +$refund 티켓');
+                    } else {
+                      _toast(context, '광고 제거 혜택으로 즉시 지급됐어요');
+                    }
                     return;
                   }
                   final earned = await AdService.instance
@@ -64,7 +78,13 @@ class BoosterShopDialog extends ConsumerWidget {
                   if (!context.mounted) return;
                   if (earned) {
                     notifier.grantAdBooster(offer);
-                    _toast(context, '광고 시청 완료 — 부스터가 적용됐어요');
+                    final refund = notifier.consumeLastBoosterRefund();
+                    if (refund > 0) {
+                      _toast(context,
+                          '광고 시청 완료 — 교체 환급 +$refund 티켓');
+                    } else {
+                      _toast(context, '광고 시청 완료 — 부스터가 적용됐어요');
+                    }
                   } else {
                     _toast(context, '광고를 끝까지 시청해야 보상이 지급돼요');
                   }

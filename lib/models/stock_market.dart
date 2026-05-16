@@ -106,12 +106,72 @@ class RegionState {
       );
 }
 
+/// §3.5 v2 market events. Types & semantics:
+///   • bubble    — single-region intrinsic price boost (e.g. ×1.5) for 3-6h
+///   • correction — global intrinsic price drop (e.g. ×0.8) for ~1h
+/// Multiplier is applied multiplicatively on top of [regionIntrinsicPrice];
+/// price simulation's mean-reversion drift then pulls actual prices toward
+/// the new level over the event window.
+enum MarketEventType { bubble, correction }
+
+class MarketEvent {
+  final String id;
+  final MarketEventType type;
+  /// null when the event applies to all regions (e.g. correction).
+  final String? regionId;
+  final double priceMultiplier;
+  final DateTime startedAt;
+  final DateTime endsAt;
+
+  const MarketEvent({
+    required this.id,
+    required this.type,
+    required this.regionId,
+    required this.priceMultiplier,
+    required this.startedAt,
+    required this.endsAt,
+  });
+
+  bool isActive(DateTime now) =>
+      now.isAfter(startedAt) && now.isBefore(endsAt);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'type': type.name,
+        'regionId': regionId,
+        'priceMultiplier': priceMultiplier,
+        'startedAt': startedAt.toIso8601String(),
+        'endsAt': endsAt.toIso8601String(),
+      };
+
+  factory MarketEvent.fromJson(Map<String, dynamic> json) => MarketEvent(
+        id: json['id'] as String? ?? '',
+        type: MarketEventType.values.firstWhere(
+          (e) => e.name == (json['type'] as String?),
+          orElse: () => MarketEventType.correction,
+        ),
+        regionId: json['regionId'] as String?,
+        priceMultiplier:
+            (json['priceMultiplier'] as num?)?.toDouble() ?? 1.0,
+        startedAt: DateTime.tryParse(json['startedAt'] as String? ?? '') ??
+            DateTime.now(),
+        endsAt: DateTime.tryParse(json['endsAt'] as String? ?? '') ??
+            DateTime.now(),
+      );
+}
+
 class StockMarketState {
   Map<String, RegionState> regions;
   int totalTradesCount;
   double totalFeesPaid;
   double totalDividendsClaimed;
   double totalRealizedProfit;
+  /// §3.5 v2 — active bubble / correction events. Persisted so events
+  /// survive app restarts but expire normally on the wall clock.
+  List<MarketEvent> activeEvents;
+  /// §3.5 v2 — last attempt to roll for a new event. Used by the
+  /// scheduler to gate the dice across the configured cooldown window.
+  DateTime? lastEventRollAt;
 
   StockMarketState({
     Map<String, RegionState>? regions,
@@ -119,7 +179,10 @@ class StockMarketState {
     this.totalFeesPaid = 0,
     this.totalDividendsClaimed = 0,
     this.totalRealizedProfit = 0,
-  }) : regions = regions ?? <String, RegionState>{};
+    List<MarketEvent>? activeEvents,
+    this.lastEventRollAt,
+  })  : regions = regions ?? <String, RegionState>{},
+        activeEvents = activeEvents ?? <MarketEvent>[];
 
   Map<String, dynamic> toJson() => {
         'regions':
@@ -128,6 +191,8 @@ class StockMarketState {
         'totalFeesPaid': totalFeesPaid,
         'totalDividendsClaimed': totalDividendsClaimed,
         'totalRealizedProfit': totalRealizedProfit,
+        'activeEvents': activeEvents.map((e) => e.toJson()).toList(),
+        'lastEventRollAt': lastEventRollAt?.toIso8601String(),
       };
 
   factory StockMarketState.fromJson(Map<String, dynamic> json) =>
@@ -144,5 +209,12 @@ class StockMarketState {
             (json['totalDividendsClaimed'] as num?)?.toDouble() ?? 0,
         totalRealizedProfit:
             (json['totalRealizedProfit'] as num?)?.toDouble() ?? 0,
+        activeEvents: (json['activeEvents'] as List?)
+                ?.map((e) =>
+                    MarketEvent.fromJson(Map<String, dynamic>.from(e as Map)))
+                .toList() ??
+            <MarketEvent>[],
+        lastEventRollAt:
+            DateTime.tryParse(json['lastEventRollAt'] as String? ?? ''),
       );
 }

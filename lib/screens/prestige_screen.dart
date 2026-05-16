@@ -696,6 +696,12 @@ class _PrestigeShop extends ConsumerWidget {
       children: [
         _CoinBalanceBar(coins: game.prestigeCoins),
         const SizedBox(height: 16),
+        _SpecializationPicker(
+          active: game.prestigeSpecialization,
+          coins: game.prestigeCoins,
+          onSelect: (spec) => notifier.setPrestigeSpecialization(spec),
+        ),
+        const SizedBox(height: 16),
         _UpgradeSection(
           title: '핵심 연구',
           subtitle: '중후반 루프를 여는 영구 성장',
@@ -722,6 +728,9 @@ class _PrestigeShop extends ConsumerWidget {
                 def: def,
                 level: game.prestigeUpgradeLevel(def.id),
                 coins: game.prestigeCoins,
+                cost: notifier.prestigeUpgradeCostFor(
+                    def.id, game.prestigeUpgradeLevel(def.id)),
+                specMult: notifier.prestigeSpecCostMultiplier(def.id),
                 onBuy: () => notifier.buyPrestigeUpgrade(def.id),
               ),
           ],
@@ -736,11 +745,194 @@ class _PrestigeShop extends ConsumerWidget {
                 def: def,
                 level: game.prestigeUpgradeLevel(def.id),
                 coins: game.prestigeCoins,
+                cost: notifier.prestigeUpgradeCostFor(
+                    def.id, game.prestigeUpgradeLevel(def.id)),
+                specMult: notifier.prestigeSpecCostMultiplier(def.id),
                 onBuy: () => notifier.buyPrestigeUpgrade(def.id),
               ),
           ],
         ),
       ],
+    );
+  }
+}
+
+/// §3.4 v3 — pick a prestige specialization. The currently-active branch
+/// gets -30% on its themed upgrade; the other two themed upgrades cost +20%.
+/// First selection is free; switches cost 50 coins.
+class _SpecializationPicker extends StatelessWidget {
+  final String? active;
+  final int coins;
+  final bool Function(String?) onSelect;
+
+  const _SpecializationPicker({
+    required this.active,
+    required this.coins,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.fork_right,
+                  color: AppColors.deepCoral, size: 18),
+              const SizedBox(width: 6),
+              const Text(
+                '특화 분기',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.deepCoral,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                active == null
+                    ? '첫 선택 무료'
+                    : '전환 50 브랜드 포인트',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            '선택한 분기의 업그레이드 -30%, 다른 두 테마는 +20%',
+            style: TextStyle(fontSize: 11, color: Colors.black87),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _SpecBranchButton(
+                  label: '터치 특화',
+                  icon: Icons.touch_app,
+                  color: const Color(0xFFFF7043),
+                  selected: active == 'tap',
+                  affordable: active == null || coins >= 50 || active == 'tap',
+                  onTap: () => _switch(context, 'tap'),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _SpecBranchButton(
+                  label: '자동 특화',
+                  icon: Icons.bolt,
+                  color: const Color(0xFF26A69A),
+                  selected: active == 'idle',
+                  affordable:
+                      active == null || coins >= 50 || active == 'idle',
+                  onTap: () => _switch(context, 'idle'),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _SpecBranchButton(
+                  label: '재화 특화',
+                  icon: Icons.currency_exchange,
+                  color: const Color(0xFF7C4DFF),
+                  selected: active == 'trader',
+                  affordable:
+                      active == null || coins >= 50 || active == 'trader',
+                  onTap: () => _switch(context, 'trader'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _switch(BuildContext context, String spec) {
+    if (active == spec) {
+      // Tap-to-clear UX: tapping the active branch deselects it.
+      onSelect(null);
+      return;
+    }
+    final ok = onSelect(spec);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('전환 비용 50 브랜드 포인트가 부족합니다'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+}
+
+class _SpecBranchButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool selected;
+  final bool affordable;
+  final VoidCallback onTap;
+
+  const _SpecBranchButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.selected,
+    required this.affordable,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = selected ? color.withValues(alpha: 0.18) : Colors.white;
+    final border = selected ? color : Colors.black.withValues(alpha: 0.10);
+    return InkWell(
+      onTap: affordable ? onTap : null,
+      borderRadius: BorderRadius.circular(8),
+      child: Opacity(
+        opacity: affordable ? 1.0 : 0.45,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: border, width: selected ? 2 : 1),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 22),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  color: selected ? color : Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1070,19 +1262,26 @@ class _ShopTile extends StatelessWidget {
   final PrestigeUpgradeDef def;
   final int level;
   final int coins;
+  /// §3.4 v3 — cost already adjusted for specialization. The widget no
+  /// longer recomputes from [def.costAt] because spec modifiers live in
+  /// the notifier.
+  final int cost;
+  /// 1.0 = no spec modifier, 0.7 = -30% (matched), 1.2 = +20% (other branch).
+  final double specMult;
   final bool Function() onBuy;
 
   const _ShopTile({
     required this.def,
     required this.level,
     required this.coins,
+    required this.cost,
+    required this.specMult,
     required this.onBuy,
   });
 
   @override
   Widget build(BuildContext context) {
     final atMax = level >= def.maxLevel;
-    final cost = atMax ? 0 : def.costAt(level);
     final canBuy = !atMax && coins >= cost;
     final progress = (level / def.maxLevel).clamp(0.0, 1.0).toDouble();
 
@@ -1209,7 +1408,13 @@ class _ShopTile extends StatelessWidget {
                 ),
               ),
               child: Text(
-                atMax ? '최대 레벨' : '구매 ($cost 브랜드 포인트)',
+                atMax
+                    ? '최대 레벨'
+                    : specMult == 1.0
+                        ? '구매 ($cost 브랜드 포인트)'
+                        : specMult < 1.0
+                            ? '구매 ($cost · 특화 −30%)'
+                            : '구매 ($cost · 비특화 +20%)',
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
             ),

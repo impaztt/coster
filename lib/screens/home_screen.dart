@@ -11,6 +11,7 @@ import '../models/booster.dart';
 import '../providers/game_provider.dart';
 import '../services/audio_service.dart';
 import '../widgets/booster_shop_dialog.dart';
+import '../widgets/debug_multiplier_sheet.dart';
 import '../widgets/gold_exchange_dialog.dart';
 import '../widgets/main_coaster_enhance_dialog.dart';
 import '../widgets/park_scene_fullscreen.dart';
@@ -171,12 +172,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   children: [
-                    Expanded(child: GoldDisplay(amount: game.gold)),
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onLongPress: () =>
+                            DebugMultiplierSheet.show(context),
+                        child: GoldDisplay(amount: game.gold),
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     _RevenueDetailsButton(onTap: _openRevenueDetails),
                   ],
                 ),
               ),
+              if (game.rideTimeRemainingSec > 0) ...[
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _RideTimeBadge(
+                    remainingSec: game.rideTimeRemainingSec,
+                    mult: game.rideTimeMult,
+                  ),
+                ),
+              ],
               const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -382,6 +400,80 @@ class _HomeActionButton extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// §3.2 Ride Time visual badge — pulses softly so the player can see when
+/// the DPS burst is active. Pure presentation, reads state from parent.
+class _RideTimeBadge extends StatelessWidget {
+  final int remainingSec;
+  final double mult;
+
+  const _RideTimeBadge({required this.remainingSec, required this.mult});
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = (mult - 1.0) * 100;
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.deepCoral.withValues(alpha: 0.95),
+            AppColors.coral.withValues(alpha: 0.95),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(AppRadii.card),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.coral.withValues(alpha: 0.40),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.bolt, size: 18, color: Colors.white),
+          const SizedBox(width: 6),
+          const Text(
+            'RIDE TIME',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: 1.0,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.22),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              '+${pct.toStringAsFixed(0)}% DPS',
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const Spacer(),
+          Text(
+            '${remainingSec}s',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }
