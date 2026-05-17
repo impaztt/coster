@@ -589,34 +589,74 @@ class _ParkPainter extends CustomPainter {
   static const _xQueueFrontFrac = 0.22;
   static const _xQueueSlotSpacing = 0.032;
 
+  // Phase 4: PictureRecorder cache for the static background layers.
+  // Sky alone is cached as `_skyBg`, so the SunHaze (clouds + birds —
+  // ambient-animated) can still draw in its original z-order between
+  // sky and terrain. Everything from mountains through queue ribbon
+  // is rasterized once into `_terrainBg`. Both invalidate together
+  // on size or main-coaster-stage change (stage drives track colors).
+  //
+  // Static, so a new `_ParkPainter` instance per frame doesn't lose
+  // the cache. Hot reload of the painter file resets them, which is
+  // fine — they re-record on the next paint.
+  static ui.Picture? _skyBg;
+  static ui.Picture? _terrainBg;
+  static Size? _cachedBgSize;
+  static int? _cachedBgStage;
+
+  void _rebuildBackgroundCache(Size size) {
+    final skyRecorder = ui.PictureRecorder();
+    _paintSky(Canvas(skyRecorder), size);
+    _skyBg = skyRecorder.endRecording();
+
+    final terrainRecorder = ui.PictureRecorder();
+    final tc = Canvas(terrainRecorder);
+    _paintMountains(tc, size);
+    _paintCottage(tc, size);
+    _paintForestLine(tc, size);
+    _paintHills(tc, size);
+    _paintGrassBand(tc, size);
+    _paintGrassBlades(tc, size);
+    _paintMidTrees(tc, size);
+    _paintWalkPaths(tc, size);
+    _paintEntranceGate(tc, size);
+    _paintExitGate(tc, size);
+    _paintBoardingRamp(tc, size);
+    _paintPath(tc, size);
+    _paintMushroomsAndRocks(tc, size);
+    _paintTrack(tc, size);
+    _paintStation(tc, size);
+    _paintQueueRibbon(tc, size);
+    _paintExitSign(tc, size);
+    _paintForegroundFlowers(tc, size);
+    _terrainBg = terrainRecorder.endRecording();
+
+    _cachedBgSize = size;
+    _cachedBgStage = stage;
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
-    _paintSky(canvas, size);
+    if (_skyBg == null ||
+        _terrainBg == null ||
+        _cachedBgSize != size ||
+        _cachedBgStage != stage) {
+      _rebuildBackgroundCache(size);
+    }
+    // Static layer 1 — sky.
+    canvas.drawPicture(_skyBg!);
+    // Dynamic — clouds + birds drift on ambient, between sky and mountains.
     _paintSunHaze(canvas, size);
-    _paintMountains(canvas, size);
-    _paintCottage(canvas, size);
-    _paintForestLine(canvas, size);
-    _paintHills(canvas, size);
-    _paintGrassBand(canvas, size);
-    _paintGrassBlades(canvas, size);
-    _paintMidTrees(canvas, size);
-    _paintWalkPaths(canvas, size); // ← entry/queue/exit walkways
-    _paintEntranceGate(canvas, size);
-    _paintExitGate(canvas, size);
-    _paintBoardingRamp(canvas, size);
-    _paintPath(canvas, size);
-    _paintMushroomsAndRocks(canvas, size);
-    _paintTrack(canvas, size);
-    _paintStation(canvas, size);
+    // Static layer 2 — terrain, structures, track, foreground flowers.
+    canvas.drawPicture(_terrainBg!);
+    // Dynamic — lanterns pulse on ambient, cart on cycle, guests/petals/
+    // fireflies on their own state, capacity sign on waiting count.
     _paintLanterns(canvas, size);
     _paintCart(canvas, size);
     _paintQueueGuests(canvas, size);
     _paintBoardingGuests(canvas, size);
     _paintExitingGuests(canvas, size);
     _paintCapacitySign(canvas, size);
-    _paintQueueRibbon(canvas, size);
-    _paintExitSign(canvas, size);
-    _paintForegroundFlowers(canvas, size);
     _paintFireflies(canvas, size);
     _paintPetals(canvas, size);
     _paintVignette(canvas, size);
