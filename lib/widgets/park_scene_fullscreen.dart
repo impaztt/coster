@@ -2370,9 +2370,12 @@ class _ParkPainter extends CustomPainter {
     // that masks any per-frame jitter and reads as actual stepping
     // instead of sliding. Bound to ambient so it scales with the same
     // wall-clock the painter is repainting on.
+    // Bob amplitude: idle stays subtle. Walking gets a stronger
+    // vertical bounce locked to the same phase as the leg gait so the
+    // body rises with each forward step, the way a real walk does.
     final bob = idleBob
         ? math.sin((ambient + g.bobPhase) * math.pi * 2) * 0.7
-        : math.sin((ambient * 5 + g.bobPhase) * math.pi * 2) * 0.45;
+        : (math.sin((ambient * 9 + g.bobPhase) * math.pi * 2)).abs() * 1.1;
     final cx = feet.dx;
     final cy = feet.dy - bob;
 
@@ -2387,18 +2390,33 @@ class _ParkPainter extends CustomPainter {
       Paint()..color = Colors.black.withValues(alpha: 0.18),
     );
 
+    // Walking gait — when not idle-bobbing, swing the two legs out of
+    // phase on a fast sine so the figure reads as actually stepping
+    // rather than gliding. Phase offset per guest (bobPhase) keeps a
+    // queue full of walkers from marching in lockstep.
+    final walking = !idleBob;
+    final walkPhase = walking
+        ? (ambient * 9 + g.bobPhase) * math.pi * 2
+        : 0.0;
+    final legA = walking ? math.sin(walkPhase) * 1.8 : 0.0;
+    final legB = walking ? math.sin(walkPhase + math.pi) * 1.8 : 0.0;
+    // Foot lift — a stepping foot lifts a hair off the ground.
+    final liftA = walking ? math.max(0.0, math.sin(walkPhase)) * 1.4 : 0.0;
+    final liftB =
+        walking ? math.max(0.0, math.sin(walkPhase + math.pi)) * 1.4 : 0.0;
+
     // Legs.
     const legColor = Color(0xFF8E7A6A);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(cx - 5, cy - 13, 4, 11),
+        Rect.fromLTWH(cx - 5 + legA, cy - 13 - liftA, 4, 11),
         const Radius.circular(1.5),
       ),
       Paint()..color = legColor,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(cx + 1, cy - 13, 4, 11),
+        Rect.fromLTWH(cx + 1 + legB, cy - 13 - liftB, 4, 11),
         const Radius.circular(1.5),
       ),
       Paint()..color = legColor,
@@ -2426,17 +2444,20 @@ class _ParkPainter extends CustomPainter {
             .toColor(),
     );
 
-    // Arms.
+    // Arms — counter-swing the legs so the gait reads naturally. The
+    // outboard arm goes back as the same-side foot comes forward.
+    final armA = walking ? math.sin(walkPhase + math.pi) * 1.6 : 0.0;
+    final armB = walking ? math.sin(walkPhase) * 1.6 : 0.0;
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(cx - 11, cy - 25, 3.4, 11),
+        Rect.fromLTWH(cx - 11 + armA, cy - 25, 3.4, 11),
         const Radius.circular(1.5),
       ),
       Paint()..color = g.skin,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(cx + 7.6, cy - 25, 3.4, 11),
+        Rect.fromLTWH(cx + 7.6 + armB, cy - 25, 3.4, 11),
         const Radius.circular(1.5),
       ),
       Paint()..color = g.skin,
