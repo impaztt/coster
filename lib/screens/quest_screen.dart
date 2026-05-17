@@ -30,6 +30,8 @@ class QuestScreen extends ConsumerWidget {
           _Header(
             dailyClaimable: dailyClaimable,
             weeklyClaimable: weeklyClaimable,
+            dailyResetIn: notifier.nextDailyResetIn,
+            weeklyResetIn: notifier.nextWeeklyResetIn,
           ),
           const SizedBox(height: 14),
           _SectionTitle(title: '일일 퀘스트', count: dailies.length),
@@ -110,8 +112,14 @@ class QuestScreen extends ConsumerWidget {
 class _Header extends StatelessWidget {
   final int dailyClaimable;
   final int weeklyClaimable;
-  const _Header(
-      {required this.dailyClaimable, required this.weeklyClaimable});
+  final Duration dailyResetIn;
+  final Duration weeklyResetIn;
+  const _Header({
+    required this.dailyClaimable,
+    required this.weeklyClaimable,
+    required this.dailyResetIn,
+    required this.weeklyResetIn,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -126,34 +134,87 @@ class _Header extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.fact_check, color: Colors.white, size: 24),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '오늘의 퀘스트',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                  ),
+          Row(
+            children: [
+              const Icon(Icons.fact_check, color: Colors.white, size: 24),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '오늘의 퀘스트',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '일일 $dailyClaimable · 주간 $weeklyClaimable 수령 대기',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '일일 $dailyClaimable · 주간 $weeklyClaimable 수령 대기',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              _ResetChip(label: '일일 리셋', remaining: dailyResetIn),
+              _ResetChip(label: '주간 리셋', remaining: weeklyResetIn),
+            ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// UX-B: rotation timer chip — "Y일 N시간 후 리셋" so claimable
+/// missions feel time-bounded rather than mysterious.
+class _ResetChip extends StatelessWidget {
+  final String label;
+  final Duration remaining;
+  const _ResetChip({required this.label, required this.remaining});
+
+  String _fmt() {
+    if (remaining.inDays >= 1) {
+      final h = remaining.inHours % 24;
+      return '${remaining.inDays}일 ${h}시간 후';
+    }
+    if (remaining.inHours >= 1) {
+      final m = remaining.inMinutes % 60;
+      return '${remaining.inHours}시간 ${m}분 후';
+    }
+    return '${remaining.inMinutes}분 후';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        '$label ${_fmt()}',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10.5,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

@@ -310,6 +310,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: _SkillBar(
                               skillReadyAt: game.skillReadyAt,
                               skillTokens: game.skillTokens,
+                              tapsSinceSkillToken: game.tapsSinceSkillToken,
                               onTap: _handleSkillTap,
                             ),
                           ),
@@ -376,11 +377,16 @@ class _SlimeSpawn {
 class _SkillBar extends StatefulWidget {
   final Map<String, DateTime> skillReadyAt;
   final Map<String, int> skillTokens;
+  // §3.7 v2 / UX-B: how close the player is to the next +1 token grant.
+  // Drives a thin progress bar above the tiles so the 300-tap cadence
+  // is discoverable instead of feeling like tokens "just appear".
+  final int tapsSinceSkillToken;
   final void Function(SkillId) onTap;
 
   const _SkillBar({
     required this.skillReadyAt,
     required this.skillTokens,
+    required this.tapsSinceSkillToken,
     required this.onTap,
   });
 
@@ -408,20 +414,77 @@ class _SkillBarState extends State<_SkillBar> {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    return Row(
+    final tokenProgress =
+        (widget.tapsSinceSkillToken / tapsPerSkillToken).clamp(0.0, 1.0);
+    final tokenRemainingTaps =
+        (tapsPerSkillToken - widget.tapsSinceSkillToken).clamp(0, tapsPerSkillToken);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        for (var i = 0; i < skillCatalog.length; i++) ...[
-          if (i > 0) const SizedBox(width: 8),
-          Expanded(
-            child: _SkillTile(
-              def: skillCatalog[i],
-              now: now,
-              readyAt: widget.skillReadyAt[skillCatalog[i].id.id],
-              tokens: widget.skillTokens[skillCatalog[i].id.id] ?? 0,
-              onTap: () => widget.onTap(skillCatalog[i].id),
+        // Token accrual gauge — shows how many more taps until the next
+        // ⚡ token. Always visible so the rule is learned without a
+        // tutorial; renders thin so it doesn't compete with the tiles.
+        Row(
+          children: [
+            const Icon(Icons.flash_on, size: 11, color: Color(0xFFFFB300)),
+            const SizedBox(width: 3),
+            const Text(
+              '토큰',
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF8D6E00),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 6),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(99),
+                child: LinearProgressIndicator(
+                  value: tokenProgress,
+                  minHeight: 3,
+                  backgroundColor: Colors.black12,
+                  valueColor:
+                      const AlwaysStoppedAnimation(Color(0xFFFFB300)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '${widget.tapsSinceSkillToken}/$tapsPerSkillToken',
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                color: Colors.black.withValues(alpha: 0.55),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '($tokenRemainingTaps탭 후)',
+              style: TextStyle(
+                fontSize: 9,
+                color: Colors.black.withValues(alpha: 0.45),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 5),
+        Row(
+          children: [
+            for (var i = 0; i < skillCatalog.length; i++) ...[
+              if (i > 0) const SizedBox(width: 8),
+              Expanded(
+                child: _SkillTile(
+                  def: skillCatalog[i],
+                  now: now,
+                  readyAt: widget.skillReadyAt[skillCatalog[i].id.id],
+                  tokens: widget.skillTokens[skillCatalog[i].id.id] ?? 0,
+                  onTap: () => widget.onTap(skillCatalog[i].id),
+                ),
+              ),
+            ],
+          ],
+        ),
       ],
     );
   }
@@ -1099,6 +1162,7 @@ class _RevenueDetailSheet extends StatelessWidget {
     final comboPct = (game.combo * comboBonusPerStack).clamp(0.0, 0.5);
     final permanentPct = (game.prestigeMultiplier - 1).clamp(0.0, 9999999.0);
     final collectionPct = notifier.collectionBonusFraction;
+    final parkThemePct = notifier.parkThemeBonusFraction;
     final mainCoasterPct = notifier.mainCoasterRevenueBonusFraction;
     final pendingDividend = notifier.totalPendingDividend;
     final holdingsValue = notifier.totalHoldingsValue;
@@ -1188,6 +1252,14 @@ class _RevenueDetailSheet extends StatelessWidget {
                     value: _pct(collectionPct),
                     color: const Color(0xFF6A1B9A),
                   ),
+                  if (parkThemePct > 0)
+                    _RevenueMetric(
+                      icon: Icons.park,
+                      label: '파크 테마',
+                      value: _pct(parkThemePct),
+                      subLabel: '지역 컬렉션 마일스톤',
+                      color: const Color(0xFF388E3C),
+                    ),
                   _RevenueMetric(
                     icon: Icons.train,
                     label: '메인 코스터',
@@ -1229,6 +1301,22 @@ class _RevenueDetailSheet extends StatelessWidget {
                     color: AppColors.deepCoral,
                   ),
                 ],
+              ),
+              const SizedBox(height: 10),
+              // UX-B: surface the multiplier-breakdown debug sheet from a
+              // discoverable button. Long-press on the gold counter still
+              // works for the muscle-memory crowd; this is for everyone
+              // who never learned the gesture.
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  DebugMultiplierSheet.show(context);
+                },
+                icon: const Icon(Icons.analytics_outlined, size: 16),
+                label: const Text(
+                  '고급 분석 (배율 레이어별 breakdown)',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                ),
               ),
             ],
           ),

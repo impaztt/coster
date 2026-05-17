@@ -1173,6 +1173,9 @@ class GameState {
   final Map<String, DateTime> skillReadyAt;
   // §3.7 v2 — per-skill instant-token stockpile (0..[maxSkillTokensPerSkill]).
   final Map<String, int> skillTokens;
+  // §3.7 v2 — taps accumulated toward the next +1 token grant.
+  // 0..[tapsPerSkillToken). UI uses this to render an accrual gauge.
+  final int tapsSinceSkillToken;
   final Set<String> completedSetIds;
   final int slimesDefeated;
   final int skillsUsed;
@@ -1262,6 +1265,7 @@ class GameState {
     required this.tutorialSeen,
     required this.skillReadyAt,
     required this.skillTokens,
+    required this.tapsSinceSkillToken,
     required this.completedSetIds,
     required this.slimesDefeated,
     required this.skillsUsed,
@@ -1338,6 +1342,7 @@ class GameState {
         tutorialSeen: false,
         skillReadyAt: const {},
         skillTokens: const {},
+        tapsSinceSkillToken: 0,
         completedSetIds: const {},
         slimesDefeated: 0,
         skillsUsed: 0,
@@ -1903,6 +1908,29 @@ class GameNotifier extends Notifier<GameState> {
 
   int _dayKey(DateTime now) => now.year * 10000 + now.month * 100 + now.day;
 
+  /// Wall-clock duration until daily mission progress resets (local
+  /// midnight). UI uses this to surface a "다음 리셋까지 N시간" timer.
+  Duration get nextDailyResetIn {
+    final now = DateTime.now();
+    final tomorrowMidnight = DateTime(now.year, now.month, now.day + 1);
+    final delta = tomorrowMidnight.difference(now);
+    return delta.isNegative ? Duration.zero : delta;
+  }
+
+  /// Duration until weekly mission progress resets (next Monday 00:00
+  /// local). If today *is* Monday and it's after midnight, this returns
+  /// up to 7 days minus elapsed, matching the `_weekKey` rollover.
+  Duration get nextWeeklyResetIn {
+    final now = DateTime.now();
+    // weekday: Monday=1 … Sunday=7. Days until next Monday inclusive of
+    // the rollover boundary.
+    final daysAhead = (8 - now.weekday) % 7;
+    final addDays = daysAhead == 0 ? 7 : daysAhead;
+    final target = DateTime(now.year, now.month, now.day + addDays);
+    final delta = target.difference(now);
+    return delta.isNegative ? Duration.zero : delta;
+  }
+
   int _weekKey(DateTime now) {
     final monday = now.subtract(Duration(days: now.weekday - DateTime.monday));
     final thursday = monday.add(const Duration(days: 3));
@@ -2090,6 +2118,7 @@ class GameNotifier extends Notifier<GameState> {
       tutorialSeen: _save.settings.tutorialSeen,
       skillReadyAt: Map.unmodifiable(_save.skillReadyAt),
       skillTokens: Map.unmodifiable(_save.skillTokens),
+      tapsSinceSkillToken: _save.tapsSinceSkillToken,
       completedSetIds: Set.unmodifiable(_completedSetIds()),
       slimesDefeated: _save.stats.slimesDefeated,
       skillsUsed: _save.stats.skillsUsed,
@@ -2305,6 +2334,7 @@ class GameNotifier extends Notifier<GameState> {
         tutorialSeen: state.tutorialSeen,
         skillReadyAt: state.skillReadyAt,
         skillTokens: state.skillTokens,
+        tapsSinceSkillToken: state.tapsSinceSkillToken,
         completedSetIds: state.completedSetIds,
         slimesDefeated: state.slimesDefeated,
         skillsUsed: state.skillsUsed,
@@ -2389,6 +2419,7 @@ class GameNotifier extends Notifier<GameState> {
       tutorialSeen: state.tutorialSeen,
       skillReadyAt: state.skillReadyAt,
       skillTokens: state.skillTokens,
+      tapsSinceSkillToken: state.tapsSinceSkillToken,
       completedSetIds: state.completedSetIds,
       slimesDefeated: state.slimesDefeated,
       skillsUsed: state.skillsUsed,
@@ -2463,6 +2494,7 @@ class GameNotifier extends Notifier<GameState> {
       tutorialSeen: state.tutorialSeen,
       skillReadyAt: state.skillReadyAt,
       skillTokens: state.skillTokens,
+      tapsSinceSkillToken: state.tapsSinceSkillToken,
       completedSetIds: state.completedSetIds,
       slimesDefeated: state.slimesDefeated,
       skillsUsed: state.skillsUsed,
