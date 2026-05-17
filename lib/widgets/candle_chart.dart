@@ -23,15 +23,23 @@ class CandleChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      width: double.infinity,
-      child: CustomPaint(
-        painter: _CandleChartPainter(
-          candles: candles,
-          forming: forming,
-          avgCost: avgCost,
-          intrinsicPrice: intrinsicPrice,
+    // Phase 5: candle paint is non-trivial (per-candle wick + body +
+    // volume bars + reference lines). The stock market screen above
+    // rebuilds at the publish rate (10Hz via the throttled emit), but
+    // the chart's *content* only changes when a candle bucket closes
+    // (every 30s) or the forming candle ticks (1Hz). RepaintBoundary
+    // gives Skia a layer it can reuse between those updates.
+    return RepaintBoundary(
+      child: SizedBox(
+        height: height,
+        width: double.infinity,
+        child: CustomPaint(
+          painter: _CandleChartPainter(
+            candles: candles,
+            forming: forming,
+            avgCost: avgCost,
+            intrinsicPrice: intrinsicPrice,
+          ),
         ),
       ),
     );

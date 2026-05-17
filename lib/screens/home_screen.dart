@@ -251,8 +251,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // the top HUD and the bottom controls. Bounded so its
               // painter never overflows behind the locked-feature
               // card / status panel / action bar.
+              // Phase 5: isolate the park scene behind a RepaintBoundary so
+              // its 60Hz internal ticker can repaint its own layer without
+              // the home-screen tree above it (HUD chips, status panel,
+              // skill bar, action bar) joining the dirty list. Park scene
+              // is the most expensive painter; this is where the GPU
+              // layer cache earns its keep.
               Expanded(
-                child: ParkSceneFullscreen(onTap: _handleTap),
+                child: RepaintBoundary(
+                  child: ParkSceneFullscreen(onTap: _handleTap),
+                ),
               ),
               // Toggle bar — always visible. Tap to expand/collapse
               // the bottom HUD stack so the park scene can grow into
@@ -326,15 +334,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ],
           ),
-          FloatingNumberLayer(items: _floats, onDone: _removeFloat),
+          // Phase 5: floating numbers run their own per-item animation
+          // controllers; isolating the layer means a tap-spawned number
+          // animating up doesn't force the rest of the home-screen tree
+          // to repaint.
+          RepaintBoundary(
+            child: FloatingNumberLayer(items: _floats, onDone: _removeFloat),
+          ),
           for (final slime in _slimes)
             Positioned(
               left: slime.offset.dx,
               top: slime.offset.dy,
-              child: GoldenSlime(
-                previewReward: notifier.slimePreviewReward,
-                onDefeat: () => _defeatSlime(slime.id, slime.offset),
-                onTimeout: () => _slimeTimedOut(slime.id),
+              // Phase 5: each VIP-guest sprite also runs its own bob /
+              // pulse animation. Independent layer so they don't share
+              // a repaint zone with the park scene below or the HUD above.
+              child: RepaintBoundary(
+                child: GoldenSlime(
+                  previewReward: notifier.slimePreviewReward,
+                  onDefeat: () => _defeatSlime(slime.id, slime.offset),
+                  onTimeout: () => _slimeTimedOut(slime.id),
+                ),
               ),
             ),
         ],
