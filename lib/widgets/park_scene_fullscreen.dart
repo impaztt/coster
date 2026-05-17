@@ -343,13 +343,10 @@ class _Guest {
   // by leg length so each walk feels like a real step rather than a
   // snap.
   static const _enterWalkTime = 2.8; // entrance gate → queue back
-  // Boarding & exit are decoupled from the ride cycle — the cart leaves
-  // on its own schedule and doesn't wait for the queue to empty, so
-  // there's no game-mechanical reason to rush either motion. Both are
-  // lengthened so the figures read as "people taking their time,"
-  // matching the cozy pacing of the queue rather than feeling like
-  // they're sprinting on/off the ride.
-  static const _boardWalkTime = 2.5; // step onto cart, deliberate
+  // Boarding: one slot's worth of horizontal distance (≈35px) at 1.5s
+  // = ~23px/s, which reads as a single deliberate step — not a sprint,
+  // not a creep. Exit stays leisurely; the cart isn't waiting on it.
+  static const _boardWalkTime = 1.5; // queue head → cart, one step
   static const _exitWalkTime = 5.0; // strolling off, no hurry
   static const _slotShiftTime = 0.8; // queue one-step-forward shift
 
@@ -658,13 +655,14 @@ class _ParkPainter extends CustomPainter {
   // Queue front (slot 0) sits just LEFT of the station so guests
   // queue toward the boarding ramp, not away from it. Slots step
   // further left toward the entrance gate.
-  // Pacing fix: queue head sits **on top of** the boarding ramp base
-  // (both at X 0.30). When the guest's turn comes up there is no
-  // sideways walk at all — they step straight onto the ramp. The
-  // boarding _walkPath has 3 waypoints (queue, ramp base, ramp top),
-  // but distance-aware leg timing in _walkPath gives leg 1 zero time
-  // (zero distance) and devotes the whole walk budget to the ramp leg.
-  static const _xQueueFrontFrac = 0.30;
+  // Pacing fix: queue head sits one slot-width to the left of the
+  // boarding ramp. 0.30 (== ramp X) put the head literally on the
+  // ramp, so the boarding "walk" was just a 6px vertical step — at
+  // any reasonable walkTime that read as either "popping onto the
+  // cart" (short time) or "creeping up by inches" (long time). With
+  // one slot of horizontal distance (≈35px at typical widths), the
+  // boarding motion now has room to be a single, legible step.
+  static const _xQueueFrontFrac = 0.268;
   static const _xQueueSlotSpacing = 0.032;
 
   // Phase 4: PictureRecorder cache for the static background layers.
