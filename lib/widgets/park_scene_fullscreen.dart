@@ -36,15 +36,30 @@ class ParkSceneFullscreen extends ConsumerStatefulWidget {
       _ParkSceneFullscreenState();
 }
 
+/// Mutable animation state for the park scene. ChangeNotifier-driven so
+/// the painter can listen via `super(repaint: anim)` and the tick loop
+/// doesn't need to call `setState`. Removing setState means no widget
+/// rebuild fires at 60Hz — the painter just repaints in place, which
+/// reads as smoother pedestrian motion (no element-tree churn between
+/// frames).
+class _ParkAnimState extends ChangeNotifier {
+  double ambient = 0;
+  final List<_Guest> guests = [];
+  final List<_Petal> petals = [];
+  final List<_Firefly> fireflies = [];
+  int waitingCount = 0;
+
+  /// Single call site at the end of each frame's update. notifies
+  /// listeners (i.e. the painter) so a repaint is scheduled.
+  void tick() => notifyListeners();
+}
+
 class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
     with SingleTickerProviderStateMixin {
   Ticker? _ticker;
   Duration _last = Duration.zero;
-  double _ambient = 0;
+  final _ParkAnimState _anim = _ParkAnimState();
 
-  final List<_Guest> _guests = [];
-  final List<_Petal> _petals = [];
-  final List<_Firefly> _fireflies = [];
   double _spawnTimer = 0;
   double _previousCycle = 0;
   bool _boardedThisCycle = false;
@@ -66,7 +81,7 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
     super.initState();
     _ticker = createTicker(_onTick)..start();
     for (var i = 0; i < 4; i++) {
-      _guests.add(_Guest(
+      _anim.guests.add(_Guest(
         slot: i,
         state: _GuestState.waiting,
         shirt: _shirtPalette[i % _shirtPalette.length],
@@ -77,7 +92,7 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
       ));
     }
     for (var i = 0; i < _petalCount; i++) {
-      _petals.add(_Petal(
+      _anim.petals.add(_Petal(
         x: _random.nextDouble(),
         y: _random.nextDouble(),
         speed: 0.04 + _random.nextDouble() * 0.05,
@@ -87,7 +102,7 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
       ));
     }
     for (var i = 0; i < _fireflyCount; i++) {
-      _fireflies.add(_Firefly(
+      _anim.fireflies.add(_Firefly(
         baseX: 0.06 + _random.nextDouble() * 0.88,
         baseY: 0.40 + _random.nextDouble() * 0.30,
         amp: 0.015 + _random.nextDouble() * 0.025,
@@ -101,6 +116,7 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
   @override
   void dispose() {
     _ticker?.dispose();
+    _anim.dispose();
     super.dispose();
   }
 
@@ -117,9 +133,9 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
     final dt = dtReal;
     final cycle = game.cycleProgress;
 
-    _ambient = (_ambient + dtReal * 0.10) % 1.0;
+    _anim.ambient = (_anim.ambient + dtReal * 0.10) % 1.0;
 
-    for (final p in _petals) {
+    for (final p in _anim.petals) {
       p.y += p.speed * dtReal;
       p.sway += dtReal * 1.4;
       if (p.y > 1.05) {
@@ -127,7 +143,7 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
         p.x = _random.nextDouble();
       }
     }
-    for (final f in _fireflies) {
+    for (final f in _anim.fireflies) {
       f.phase += dtReal * f.speed;
       f.twinklePhase += dtReal * 2.0;
     }
@@ -154,17 +170,22 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
       _unloadedThisCycle = true;
     }
 
-    for (final g in List.of(_guests)) {
+    for (final g in List.of(_anim.guests)) {
       g.walkTick(dt);
       if (g.state == _GuestState.gone) {
-        _guests.remove(g);
+        _anim.guests.remove(g);
       }
     }
+    _anim.waitingCount = _queueLength();
 
-    if (mounted) setState(() {});
+    // Repaint via Listenable instead of setState — no widget tree
+    // rebuild fires; the painter's `super(repaint: anim)` wiring picks
+    // this up and schedules a paint directly. Removing setState was
+    // the dominant 60Hz cost for guest motion smoothness.
+    if (mounted) _anim.tick();
   }
 
-  int _queueLength() => _guests
+  int _queueLength() => _anim.guests
       .where((g) =>
           g.state == _GuestState.entering || g.state == _GuestState.waiting)
       .length;
@@ -173,7 +194,7 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
     final i = _random.nextInt(_shirtPalette.length);
     final j = _random.nextInt(_skinPalette.length);
     final k = _random.nextInt(_hairPalette.length);
-    _guests.add(_Guest(
+    _anim.guests.add(_Guest(
       slot: _queueLength(),
       state: _GuestState.entering,
       shirt: _shirtPalette[i],
@@ -185,7 +206,7 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
   }
 
   void _startBoarding() {
-    final inQueue = _guests
+    final inQueue = _anim.guests
         .where((g) =>
             g.state == _GuestState.entering || g.state == _GuestState.waiting)
         .toList()
@@ -215,7 +236,7 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
   }
 
   void _startUnloading() {
-    for (final g in _guests) {
+    for (final g in _anim.guests) {
       if (g.state != _GuestState.riding) continue;
       g.state = _GuestState.exiting;
       g.cartSeat = -1;
@@ -225,20 +246,24 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
 
   @override
   Widget build(BuildContext context) {
-    final game = ref.watch(gameProvider);
+    // Phase 5b: narrow watch — only rebuild when one of the three game-
+    // state values the painter renders changes. cycleProgress ticks at
+    // the 10Hz emit cadence; that's tolerable. ambient/guests/petals
+    // are driven by the painter's repaint listenable, not by build.
+    final cycle = ref.watch(gameProvider.select((s) => s.cycleProgress));
+    final boostGauge =
+        ref.watch(gameProvider.select((s) => s.boostGauge));
+    final stage =
+        ref.watch(gameProvider.select((s) => s.mainCoasterStage));
     return GestureDetector(
       onTapDown: (d) => widget.onTap(d.globalPosition),
       behavior: HitTestBehavior.opaque,
       child: CustomPaint(
         painter: _ParkPainter(
-          cycle: game.cycleProgress,
-          boosted: game.boostGauge > 0,
-          stage: game.mainCoasterStage,
-          ambient: _ambient,
-          guests: _guests,
-          petals: _petals,
-          fireflies: _fireflies,
-          waitingCount: _queueLength(),
+          anim: _anim,
+          cycle: cycle,
+          boosted: boostGauge > 0,
+          stage: stage,
           queueCapacity: _queueCapacity,
         ),
         size: Size.infinite,
@@ -474,27 +499,33 @@ const _petalPalette = [
 // ─── Painter ────────────────────────────────────────────────────────
 
 class _ParkPainter extends CustomPainter {
+  // §park-pacing: anim is a ChangeNotifier the painter subscribes to via
+  // `super(repaint: anim)`. Each `_anim.tick()` triggers a repaint
+  // without forcing a widget rebuild — pedestrian motion stays smooth
+  // because nothing above this paint pass churns at 60Hz anymore.
+  final _ParkAnimState anim;
   final double cycle;
   final bool boosted;
   final int stage;
-  final double ambient;
-  final List<_Guest> guests;
-  final List<_Petal> petals;
-  final List<_Firefly> fireflies;
-  final int waitingCount;
   final int queueCapacity;
 
   _ParkPainter({
+    required this.anim,
     required this.cycle,
     required this.boosted,
     required this.stage,
-    required this.ambient,
-    required this.guests,
-    required this.petals,
-    required this.fireflies,
-    required this.waitingCount,
     required this.queueCapacity,
-  });
+  }) : super(repaint: anim);
+
+  // Convenience read-through onto [anim]. Existing paint helpers use
+  // bare `ambient` / `guests` / `petals` / `fireflies` / `waitingCount`
+  // identifiers — keeping these as getters means none of those call
+  // sites had to change.
+  double get ambient => anim.ambient;
+  List<_Guest> get guests => anim.guests;
+  List<_Petal> get petals => anim.petals;
+  List<_Firefly> get fireflies => anim.fireflies;
+  int get waitingCount => anim.waitingCount;
 
   // Vertical bands.
   static const _yMountain = 0.30;
@@ -1872,8 +1903,14 @@ class _ParkPainter extends CustomPainter {
   /// the size hand-off to/from rider-on-cart drawings reads natural.
   void _paintCharacter(Canvas canvas, Offset feet, _Guest g,
       {bool idleBob = false, double scale = 1.0}) {
-    final bob =
-        idleBob ? math.sin((ambient + g.bobPhase) * math.pi * 2) * 0.7 : 0.0;
+    // Idle bob: gentle slow sway while waiting.
+    // Walk bob: faster, smaller — gives walking guests a footfall pulse
+    // that masks any per-frame jitter and reads as actual stepping
+    // instead of sliding. Bound to ambient so it scales with the same
+    // wall-clock the painter is repainting on.
+    final bob = idleBob
+        ? math.sin((ambient + g.bobPhase) * math.pi * 2) * 0.7
+        : math.sin((ambient * 5 + g.bobPhase) * math.pi * 2) * 0.45;
     final cx = feet.dx;
     final cy = feet.dy - bob;
 
@@ -2432,13 +2469,12 @@ class _ParkPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ParkPainter old) {
+    // anim is the same instance across rebuilds (its `notifyListeners`
+    // drives repaint directly via super(repaint:)). cycle/boosted/stage
+    // only flip when the game state actually changes (10Hz emit at
+    // most), so the per-rebuild comparison stays cheap.
     return old.cycle != cycle ||
         old.boosted != boosted ||
-        old.stage != stage ||
-        old.ambient != ambient ||
-        old.guests != guests ||
-        old.petals != petals ||
-        old.fireflies != fireflies ||
-        old.waitingCount != waitingCount;
+        old.stage != stage;
   }
 }
