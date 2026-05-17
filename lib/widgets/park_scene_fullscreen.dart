@@ -343,12 +343,14 @@ class _Guest {
   // by leg length so each walk feels like a real step rather than a
   // snap.
   static const _enterWalkTime = 2.8; // entrance gate → queue back
-  // Boarding is now a single-leg "step onto the cart" motion (queue
-  // head sits on the ramp); 1.2s is enough to read as a deliberate
-  // step without dragging. Exit keeps its 3-waypoint walkway path, so
-  // 3.0s still lands well there.
-  static const _boardWalkTime = 1.2; // queue front → cart, single step
-  static const _exitWalkTime = 3.0; // cart → ramp → exit gate
+  // Boarding & exit are decoupled from the ride cycle — the cart leaves
+  // on its own schedule and doesn't wait for the queue to empty, so
+  // there's no game-mechanical reason to rush either motion. Both are
+  // lengthened so the figures read as "people taking their time,"
+  // matching the cozy pacing of the queue rather than feeling like
+  // they're sprinting on/off the ride.
+  static const _boardWalkTime = 2.5; // step onto cart, deliberate
+  static const _exitWalkTime = 5.0; // strolling off, no hurry
   static const _slotShiftTime = 0.8; // queue one-step-forward shift
 
   double _walkTimeForState() {
