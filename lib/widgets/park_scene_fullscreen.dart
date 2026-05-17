@@ -343,10 +343,12 @@ class _Guest {
   // by leg length so each walk feels like a real step rather than a
   // snap.
   static const _enterWalkTime = 2.8; // entrance gate → queue back
-  // Boarding: one slot's worth of horizontal distance (≈35px) at 1.5s
-  // = ~23px/s, which reads as a single deliberate step — not a sprint,
-  // not a creep. Exit stays leisurely; the cart isn't waiting on it.
-  static const _boardWalkTime = 1.5; // queue head → cart, one step
+  // Boarding shortened to 1.0s — at one queue-slot of distance (~35px),
+  // 1.5s read as the guest "trudging" toward the cart. 1.0s lands the
+  // motion as a brisk single step: the player sees the turn change
+  // and the boarding is done before it can feel slow. Exit stays
+  // leisurely; the cart isn't waiting on it.
+  static const _boardWalkTime = 1.0; // queue head → cart, brisk step
   static const _exitWalkTime = 5.0; // strolling off, no hurry
   static const _slotShiftTime = 0.8; // queue one-step-forward shift
 
