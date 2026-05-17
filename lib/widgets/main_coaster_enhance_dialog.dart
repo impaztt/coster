@@ -20,6 +20,8 @@ class _MainCoasterEnhanceDialogState
     extends ConsumerState<MainCoasterEnhanceDialog> {
   MainCoasterEnhanceCurrency _currency = MainCoasterEnhanceCurrency.gold;
   MainCoasterBoostLevel _boost = MainCoasterBoostLevel.none;
+  MainCoasterEssenceBoostLevel _essenceBoost =
+      MainCoasterEssenceBoostLevel.none;
   bool _useProtection = false;
 
   @override
@@ -32,9 +34,11 @@ class _MainCoasterEnhanceDialogState
     final cost = mainCoasterEnhanceCost(targetStage);
     final tierCurrent = mainCoasterTierFor(stage);
     final tierNext = mainCoasterTierFor(targetStage);
-    final selected = _planFor(cost, _currency, _boost, _useProtection);
+    final selected =
+        _planFor(cost, _currency, _boost, _essenceBoost, _useProtection);
     final canAfford = game.gold >= selected.goldCost &&
         game.ticket >= selected.ticketCost &&
+        game.essence >= selected.essenceCost &&
         !atMax;
 
     return Dialog(
@@ -68,10 +72,24 @@ class _MainCoasterEnhanceDialogState
                     children: [
                       _OptionPanel(
                         boost: _boost,
+                        essenceBoost: _essenceBoost,
+                        essenceOwned: game.essence,
                         useProtection: _useProtection,
                         selectedCurrency: _currency,
-                        onBoostChanged: (value) =>
-                            setState(() => _boost = value),
+                        onBoostChanged: (value) => setState(() {
+                          _boost = value;
+                          // §3.6 v2 — boost source mutex: choosing a ticket
+                          // boost clears any selected essence boost.
+                          if (value != MainCoasterBoostLevel.none) {
+                            _essenceBoost = MainCoasterEssenceBoostLevel.none;
+                          }
+                        }),
+                        onEssenceBoostChanged: (value) => setState(() {
+                          _essenceBoost = value;
+                          if (value != MainCoasterEssenceBoostLevel.none) {
+                            _boost = MainCoasterBoostLevel.none;
+                          }
+                        }),
                         onProtectionChanged: (value) =>
                             setState(() => _useProtection = value),
                       ),
@@ -81,11 +99,12 @@ class _MainCoasterEnhanceDialogState
                         plans: {
                           for (final currency
                               in MainCoasterEnhanceCurrency.values)
-                            currency: _planFor(
-                                cost, currency, _boost, _useProtection),
+                            currency: _planFor(cost, currency, _boost,
+                                _essenceBoost, _useProtection),
                         },
                         gold: game.gold,
                         ticket: game.ticket,
+                        essence: game.essence,
                         onSelected: (value) =>
                             setState(() => _currency = value),
                       ),
@@ -118,10 +137,22 @@ class _MainCoasterEnhanceDialogState
     MainCoasterEnhanceCost cost,
     MainCoasterEnhanceCurrency currency,
     MainCoasterBoostLevel boost,
+    MainCoasterEssenceBoostLevel essenceBoost,
     bool useProtection,
   ) {
-    final boostCost = boost.ticketCost;
-    final boostBonus = boost.successBonus;
+    // §3.6 v2 — when an essence boost is picked, it overrides the ticket
+    // boost (mutex). The UI prevents this state but defensively re-derive
+    // here so any plan computed by _ModeGrid matches what game_provider
+    // actually does.
+    final effectiveTicketBoost =
+        essenceBoost != MainCoasterEssenceBoostLevel.none
+            ? MainCoasterBoostLevel.none
+            : boost;
+    final boostCost = effectiveTicketBoost.ticketCost;
+    final boostBonus =
+        effectiveTicketBoost.successBonus + essenceBoost.successBonus;
+    final essenceCost = essenceBoost.essenceCost;
+    final essenceBoosted = essenceBoost != MainCoasterEssenceBoostLevel.none;
     return switch (currency) {
       MainCoasterEnhanceCurrency.gold => _EnhancePlan(
           currency: currency,
@@ -132,10 +163,12 @@ class _MainCoasterEnhanceDialogState
           goldCost: cost.goldCost,
           ticketCost:
               boostCost + (useProtection ? mainCoasterProtectionTicketCost : 0),
+          essenceCost: essenceCost,
           successRate: (cost.goldSuccessBase + boostBonus).clamp(0.0, 1.0),
-          failureLabel:
-              useProtection ? '실패 시 단계 유지' : '실패 시 ${cost.penaltyOnFail}단계 하락',
-          protectedOnFail: useProtection,
+          failureLabel: (essenceBoosted || useProtection)
+              ? '실패 시 단계 유지'
+              : '실패 시 ${cost.penaltyOnFail}단계 하락',
+          protectedOnFail: essenceBoosted || useProtection,
         ),
       MainCoasterEnhanceCurrency.ticket => _EnhancePlan(
           currency: currency,
@@ -145,6 +178,7 @@ class _MainCoasterEnhanceDialogState
           color: const Color(0xFF7C4DFF),
           goldCost: 0,
           ticketCost: cost.ticketCost + boostCost,
+          essenceCost: essenceCost,
           successRate: (cost.ticketSuccessBase + boostBonus).clamp(0.0, 1.0),
           failureLabel: '실패 시 단계 유지',
           protectedOnFail: true,
@@ -159,6 +193,7 @@ class _MainCoasterEnhanceDialogState
           ticketCost:
               (cost.ticketCost * mainCoasterHybridTicketMultiplier).round() +
                   boostCost,
+          essenceCost: essenceCost,
           successRate: (cost.goldSuccessBase +
                   mainCoasterHybridSuccessBonus +
                   boostBonus)
@@ -173,6 +208,7 @@ class _MainCoasterEnhanceDialogState
     final result = notifier.attemptMainCoasterEnhance(
       currency: _currency,
       boostLevel: _boost,
+      essenceBoostLevel: _essenceBoost,
       useProtection: _useProtection,
     );
     if (!mounted) return;
@@ -183,10 +219,15 @@ class _MainCoasterEnhanceDialogState
     if (result.success) {
       setState(() {});
       return;
-    } else if (result.penaltyApplied > 0) {
-      _toast('실패: ${result.penaltyApplied}단계 하락 (${result.newStage}단계)');
+    }
+    // §3.6 v2 — surface essence refund on a failed gold/hybrid attempt.
+    final refundSuffix =
+        result.essenceEarned > 0 ? ' · 정수 +${result.essenceEarned}' : '';
+    if (result.penaltyApplied > 0) {
+      _toast(
+          '실패: ${result.penaltyApplied}단계 하락 (${result.newStage}단계)$refundSuffix');
     } else {
-      _toast('실패: 단계 유지');
+      _toast('실패: 단계 유지$refundSuffix');
     }
     setState(() {});
   }
@@ -204,6 +245,7 @@ class _MainCoasterEnhanceDialogState
   String _failureLabel(MainCoasterEnhanceFailure reason) => switch (reason) {
         MainCoasterEnhanceFailure.notEnoughGold => '골드가 부족해요',
         MainCoasterEnhanceFailure.notEnoughTicket => '티켓이 부족해요',
+        MainCoasterEnhanceFailure.notEnoughEssence => '정수가 부족해요',
         MainCoasterEnhanceFailure.alreadyMaxed => '이미 최대 단계입니다',
         MainCoasterEnhanceFailure.rolledFailure ||
         MainCoasterEnhanceFailure.none =>
@@ -219,6 +261,7 @@ class _EnhancePlan {
   final Color color;
   final double goldCost;
   final int ticketCost;
+  final int essenceCost;
   final double successRate;
   final String failureLabel;
   final bool protectedOnFail;
@@ -231,6 +274,7 @@ class _EnhancePlan {
     required this.color,
     required this.goldCost,
     required this.ticketCost,
+    required this.essenceCost,
     required this.successRate,
     required this.failureLabel,
     required this.protectedOnFail,
@@ -422,16 +466,22 @@ class _NextStageBar extends StatelessWidget {
 
 class _OptionPanel extends StatelessWidget {
   final MainCoasterBoostLevel boost;
+  final MainCoasterEssenceBoostLevel essenceBoost;
+  final int essenceOwned;
   final bool useProtection;
   final MainCoasterEnhanceCurrency selectedCurrency;
   final ValueChanged<MainCoasterBoostLevel> onBoostChanged;
+  final ValueChanged<MainCoasterEssenceBoostLevel> onEssenceBoostChanged;
   final ValueChanged<bool> onProtectionChanged;
 
   const _OptionPanel({
     required this.boost,
+    required this.essenceBoost,
+    required this.essenceOwned,
     required this.useProtection,
     required this.selectedCurrency,
     required this.onBoostChanged,
+    required this.onEssenceBoostChanged,
     required this.onProtectionChanged,
   });
 
@@ -444,6 +494,15 @@ class _OptionPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const Text(
+            '티켓 부스트',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 4),
           Wrap(
             spacing: 6,
             runSpacing: 6,
@@ -457,7 +516,64 @@ class _OptionPanel extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Text(
+                '정수 부스트',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black54,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00897B).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '보유 $essenceOwned',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF00695C),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Expanded(
+                child: Text(
+                  '실패해도 단계 유지',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black45,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final level in MainCoasterEssenceBoostLevel.values)
+                _ChoiceChipButton(
+                  label: _essenceBoostLabel(level),
+                  subLabel: _essenceBoostCostLabel(level),
+                  selected: essenceBoost == level,
+                  disabled: essenceOwned < level.essenceCost,
+                  onTap: () => onEssenceBoostChanged(level),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
           InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: () => onProtectionChanged(!useProtection),
@@ -527,6 +643,19 @@ class _OptionPanel extends StatelessWidget {
     if (level.ticketCost <= 0) return '무료';
     return '티켓 ${level.ticketCost}';
   }
+
+  String _essenceBoostLabel(MainCoasterEssenceBoostLevel level) =>
+      switch (level) {
+        MainCoasterEssenceBoostLevel.none => '정수 없음',
+        MainCoasterEssenceBoostLevel.small => '+10%',
+        MainCoasterEssenceBoostLevel.medium => '+25%',
+        MainCoasterEssenceBoostLevel.large => '+50%',
+      };
+
+  String _essenceBoostCostLabel(MainCoasterEssenceBoostLevel level) {
+    if (level.essenceCost <= 0) return '무료';
+    return '정수 ${level.essenceCost}';
+  }
 }
 
 class _ModeGrid extends StatelessWidget {
@@ -534,6 +663,7 @@ class _ModeGrid extends StatelessWidget {
   final Map<MainCoasterEnhanceCurrency, _EnhancePlan> plans;
   final double gold;
   final int ticket;
+  final int essence;
   final ValueChanged<MainCoasterEnhanceCurrency> onSelected;
 
   const _ModeGrid({
@@ -541,6 +671,7 @@ class _ModeGrid extends StatelessWidget {
     required this.plans,
     required this.gold,
     required this.ticket,
+    required this.essence,
     required this.onSelected,
   });
 
@@ -564,8 +695,9 @@ class _ModeGrid extends StatelessWidget {
                   child: _ModeCard(
                     plan: plan,
                     selected: selected == plan.currency,
-                    canAfford:
-                        gold >= plan.goldCost && ticket >= plan.ticketCost,
+                    canAfford: gold >= plan.goldCost &&
+                        ticket >= plan.ticketCost &&
+                        essence >= plan.essenceCost,
                     onTap: () => onSelected(plan.currency),
                   ),
                 ),
@@ -699,6 +831,16 @@ class _AttemptSummary extends StatelessWidget {
                   color: const Color(0xFF7C4DFF),
                 ),
               ),
+              if (plan.essenceCost > 0) ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _CostPill(
+                    icon: Icons.auto_awesome,
+                    label: '정수 ${plan.essenceCost}',
+                    color: const Color(0xFF00897B),
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 8),
@@ -813,6 +955,7 @@ class _ChoiceChipButton extends StatelessWidget {
   final String label;
   final String subLabel;
   final bool selected;
+  final bool disabled;
   final VoidCallback onTap;
 
   const _ChoiceChipButton({
@@ -820,13 +963,16 @@ class _ChoiceChipButton extends StatelessWidget {
     required this.subLabel,
     required this.selected,
     required this.onTap,
+    this.disabled = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.deepCoral : Colors.black54;
+    final color = disabled
+        ? Colors.black26
+        : (selected ? AppColors.deepCoral : Colors.black54);
     return InkWell(
-      onTap: onTap,
+      onTap: disabled ? null : onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),

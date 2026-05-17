@@ -57,6 +57,21 @@ class RegionState {
   DateTime? lastAccrualAt;
   List<Candle> recentCandles;
   Candle? formingCandle;
+  // §3.5 v3 — short position. [shortShares] is the absolute count of shares
+  // shorted; [avgShortPrice] is the average entry price across the open
+  // position. Closing the short pays out `(avgShortPrice - currentPrice) ×
+  // closedShares` (can be negative). No margin reservation in v3 — closing
+  // simply settles in cash, refused if the player can't cover the loss.
+  int shortShares;
+  double avgShortPrice;
+  // §3.5 v3 — IPO window. [ipoStartedAt] is the wall-clock moment the
+  // region's IPO subscription opened (i.e. first time it unlocked).
+  // While `now < ipoStartedAt + ipoWindow`, the player can buy up to
+  // [ipoSubscribedShares]+remaining at a discounted price; the simulated
+  // current price ramps from the discount up to intrinsicPrice across the
+  // window. After the window closes the region behaves identically to v2.
+  DateTime? ipoStartedAt;
+  int ipoSubscribedShares;
 
   RegionState({
     required this.regionId,
@@ -69,6 +84,10 @@ class RegionState {
     this.lastAccrualAt,
     List<Candle>? recentCandles,
     this.formingCandle,
+    this.shortShares = 0,
+    this.avgShortPrice = 0,
+    this.ipoStartedAt,
+    this.ipoSubscribedShares = 0,
   }) : recentCandles = recentCandles ?? <Candle>[];
 
   Map<String, dynamic> toJson() => {
@@ -82,6 +101,10 @@ class RegionState {
         'lastAccrualAt': lastAccrualAt?.toIso8601String(),
         'recentCandles': recentCandles.map((c) => c.toJson()).toList(),
         'formingCandle': formingCandle?.toJson(),
+        'shortShares': shortShares,
+        'avgShortPrice': avgShortPrice,
+        'ipoStartedAt': ipoStartedAt?.toIso8601String(),
+        'ipoSubscribedShares': ipoSubscribedShares,
       };
 
   factory RegionState.fromJson(Map<String, dynamic> json) => RegionState(
@@ -103,6 +126,13 @@ class RegionState {
             ? null
             : Candle.fromJson(
                 Map<String, dynamic>.from(json['formingCandle'] as Map)),
+        shortShares: (json['shortShares'] as num?)?.toInt() ?? 0,
+        avgShortPrice: (json['avgShortPrice'] as num?)?.toDouble() ?? 0,
+        ipoStartedAt: json['ipoStartedAt'] == null
+            ? null
+            : DateTime.tryParse(json['ipoStartedAt'] as String),
+        ipoSubscribedShares:
+            (json['ipoSubscribedShares'] as num?)?.toInt() ?? 0,
       );
 }
 

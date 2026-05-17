@@ -61,6 +61,23 @@ const candleHistoryMax = 60;
 /// Dividend accrual interval.
 const dividendIntervalSeconds = 3600; // 1 hour
 
+/// §3.5 v3 — IPO subscription window. When a region first unlocks, a
+/// 24-hour discounted-subscription window opens. Inside the window:
+///   • subscription price = initialPrice × (1 - [ipoDiscountFraction])
+///   • subscription is capped at totalShares × [ipoSubscriptionShareCapFraction]
+///   • the simulated current price ramps linearly from the discount up
+///     to intrinsicPrice over the full window; price simulation drift
+///     is paused so the ramp owns the price during this window.
+const ipoWindowSeconds = 24 * 3600;
+const ipoDiscountFraction = 0.15;
+const ipoSubscriptionShareCapFraction = 0.05;
+
+/// §3.5 v3 — short-selling. Same trade fee on entry & exit as the long
+/// path; no margin reservation, no forced liquidation, but the dialog
+/// rejects a close if the player can't cover the realized loss (this is
+/// the only way the "손실 무제한 / gold ≥ 0 invariant" both hold).
+const shortMaxFractionOfTotalShares = 0.10; // max 10% of totalShares short
+
 /// Lower / upper bounds applied to current price relative to the
 /// region's intrinsic (= initial) market cap. Values picked to satisfy
 /// the design rule "최초 시총에서 -90%에서 +1750% 사이".

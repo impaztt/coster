@@ -5,7 +5,7 @@ import 'stock_market.dart';
 import 'coaster.dart';
 
 class SaveData {
-  static const currentVersion = 19;
+  static const currentVersion = 22;
 
   int version;
   double gold;
@@ -44,6 +44,20 @@ class SaveData {
   // Skill cooldowns (v8): skill id → moment when the skill becomes usable
   // again. Skill is "ready" if missing or in the past.
   Map<String, DateTime> skillReadyAt;
+
+  // §3.7 v2 — per-skill stockpile of "instant" tokens. Each token, when
+  // spent, fires the skill ignoring its cooldown. Earned at a rate of
+  // 1 token per [tapsPerSkillToken] taps (granted simultaneously to every
+  // skill), capped at [maxSkillTokensPerSkill]. Designed so an active
+  // 15-minute play session fills the cap (matching Parade Fever's natural
+  // cooldown) — passive players still rely on the cooldown path.
+  Map<String, int> skillTokens;
+  int tapsSinceSkillToken;
+
+  // §3.6 v2 (v21) — 정수(essence). Stockpile awarded when a gold-path main
+  // coaster enhancement attempt fails. Spent on an essence-paid boost slot
+  // that adds +%p success and suppresses the gold-path stage penalty.
+  int essence;
 
   // Mission progress (v10)
   int dailyMissionDayKey;
@@ -139,6 +153,9 @@ class SaveData {
     List<Booster>? activeBoosters,
     this.tapsSinceSlime = 0,
     Map<String, DateTime>? skillReadyAt,
+    Map<String, int>? skillTokens,
+    this.tapsSinceSkillToken = 0,
+    this.essence = 0,
     this.dailyMissionDayKey = 0,
     this.weeklyMissionWeekKey = 0,
     Map<String, int>? dailyMissionProgress,
@@ -185,6 +202,7 @@ class SaveData {
         unlockedAchievements = unlockedAchievements ?? <String>{},
         activeBoosters = activeBoosters ?? <Booster>[],
         skillReadyAt = skillReadyAt ?? <String, DateTime>{},
+        skillTokens = skillTokens ?? <String, int>{},
         dailyMissionProgress = dailyMissionProgress ?? <String, int>{},
         dailyMissionClaimed = dailyMissionClaimed ?? <String>{},
         weeklyMissionProgress = weeklyMissionProgress ?? <String, int>{},
@@ -221,6 +239,9 @@ class SaveData {
         'tapsSinceSlime': tapsSinceSlime,
         'skillReadyAt':
             skillReadyAt.map((k, v) => MapEntry(k, v.toIso8601String())),
+        'skillTokens': skillTokens,
+        'tapsSinceSkillToken': tapsSinceSkillToken,
+        'essence': essence,
         'dailyMissionDayKey': dailyMissionDayKey,
         'weeklyMissionWeekKey': weeklyMissionWeekKey,
         'dailyMissionProgress': dailyMissionProgress,
@@ -304,6 +325,9 @@ class SaveData {
             DateTime.tryParse(v as String? ?? '') ?? DateTime.now(),
           ),
         ),
+        skillTokens: Map<String, int>.from(json['skillTokens'] as Map? ?? {}),
+        tapsSinceSkillToken: json['tapsSinceSkillToken'] as int? ?? 0,
+        essence: json['essence'] as int? ?? 0,
         dailyMissionDayKey: json['dailyMissionDayKey'] as int? ?? 0,
         weeklyMissionWeekKey: json['weeklyMissionWeekKey'] as int? ?? 0,
         dailyMissionProgress:

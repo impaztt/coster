@@ -29,9 +29,11 @@ const mainCoasterEnhanceMaxStage = 50;
 MainCoasterEnhanceCost mainCoasterEnhanceCost(int targetStage) {
   final s = targetStage.clamp(1, mainCoasterEnhanceMaxStage);
   // Gold scales hard so the late-game requires real upgrade investment to
-  // afford an attempt at all. Curve softened from 1.7 → 1.62 as part of
-  // balance plan §3.6 (intermediate step until essence system ships).
-  final goldCost = 1e6 * math.pow(1.62, s - 1).toDouble();
+  // afford an attempt at all. §3.6 v1 temporarily softened this 1.7 → 1.62
+  // while essence wasn't yet a thing; with §3.6 v2 essence boosts now
+  // recovering failed attempts, the curve returns to 1.7 — essence is
+  // the new safety net rather than a flatter cost wall.
+  final goldCost = 1e6 * math.pow(1.7, s - 1).toDouble();
   // Ticket scales gentler — a single +50 ticket shot costs roughly 20K
   // ticket, which is the headline BM number.
   final ticketCost = (5 * math.pow(1.18, s - 1)).round();
@@ -91,6 +93,52 @@ extension MainCoasterBoostInfo on MainCoasterBoostLevel {
         MainCoasterBoostLevel.medium => '중 +25%',
         MainCoasterBoostLevel.large => '대 +50%',
       };
+}
+
+/// §3.6 v2 — essence-paid boost. Alternative to the ticket boost: pays in
+/// 정수(essence) instead of ticket. Mutex with [MainCoasterBoostLevel] —
+/// the dialog enforces "at most one boost source active". An essence boost
+/// also suppresses the gold-path stage penalty on failure, so the player
+/// is never punished twice for a fragile stage attempt.
+enum MainCoasterEssenceBoostLevel {
+  none,
+  small, // +10%p, 5 essence
+  medium, // +25%p, 12 essence
+  large, // +50%p, 24 essence
+}
+
+extension MainCoasterEssenceBoostInfo on MainCoasterEssenceBoostLevel {
+  int get essenceCost => switch (this) {
+        MainCoasterEssenceBoostLevel.none => 0,
+        MainCoasterEssenceBoostLevel.small => 5,
+        MainCoasterEssenceBoostLevel.medium => 12,
+        MainCoasterEssenceBoostLevel.large => 24,
+      };
+
+  double get successBonus => switch (this) {
+        MainCoasterEssenceBoostLevel.none => 0,
+        MainCoasterEssenceBoostLevel.small => 0.10,
+        MainCoasterEssenceBoostLevel.medium => 0.25,
+        MainCoasterEssenceBoostLevel.large => 0.50,
+      };
+
+  String get label => switch (this) {
+        MainCoasterEssenceBoostLevel.none => '정수 사용 안함',
+        MainCoasterEssenceBoostLevel.small => '정수 소 +10%',
+        MainCoasterEssenceBoostLevel.medium => '정수 중 +25%',
+        MainCoasterEssenceBoostLevel.large => '정수 대 +50%',
+      };
+}
+
+/// §3.6 v2 — essence yielded by a failed gold-path attempt at [targetStage].
+///
+/// `1 + (targetStage ~/ 10)` → stage 1–9 = 1, 10–19 = 2, ..., 50 = 6.
+/// Scales gently with stage so late-game failures (which are far more
+/// painful) refund more, while early-game failures (when essence boosts
+/// aren't really needed yet) accrue a modest balance for later use.
+int mainCoasterFailureEssenceReward(int targetStage) {
+  if (targetStage <= 0) return 0;
+  return 1 + (targetStage ~/ 10);
 }
 
 /// Cost in ticket for the per-attempt 강 보호권 (failure preserves stage).

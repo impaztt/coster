@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -5,9 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/number_format.dart';
+import 'quest_screen.dart';
 import '../core/theme.dart';
 import '../data/feature_unlocks.dart';
+import '../data/skill_catalog.dart';
 import '../models/booster.dart';
+import '../models/skill.dart';
 import '../providers/game_provider.dart';
 import '../services/audio_service.dart';
 import '../widgets/booster_shop_dialog.dart';
@@ -145,6 +149,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  void _handleSkillTap(SkillId id) {
+    final notifier = ref.read(gameProvider.notifier);
+    final game = ref.read(gameProvider);
+    final tokens = game.skillTokens[id.id] ?? 0;
+    final onCooldown = notifier.skillCooldownEndsAt(id) != null;
+    final result = (tokens > 0 && onCooldown)
+        ? notifier.useSkillWithToken(id)
+        : notifier.useSkill(id);
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    messenger
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(
+        content: Text(result.message),
+        duration: const Duration(milliseconds: 1400),
+        behavior: SnackBarBehavior.floating,
+      ));
+  }
+
+  void _openQuests() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const QuestScreen()),
+    );
+  }
+
   void _openUnlockRoadmap() {
     final game = ref.read(gameProvider);
     showFeatureUnlockRoadmapSheet(
@@ -182,6 +212,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     const SizedBox(width: 8),
                     _RevenueDetailsButton(onTap: _openRevenueDetails),
+                    const SizedBox(width: 6),
+                    _QuestButton(
+                      claimable: game.dailyMissions
+                              .where((m) => m.done && !m.claimed)
+                              .length +
+                          game.weeklyMissions
+                              .where((m) => m.done && !m.claimed)
+                              .length,
+                      onTap: _openQuests,
+                    ),
                   ],
                 ),
               ),
@@ -259,6 +299,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           const SizedBox(height: 4),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 14),
+                            child: _SkillBar(
+                              skillReadyAt: game.skillReadyAt,
+                              skillTokens: game.skillTokens,
+                              onTap: _handleSkillTap,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
                             child: _HomeActionBar(
                               boosterUnlocked: game.isFeatureUnlocked(
                                   FeatureUnlocks.boosterShop),
@@ -298,6 +347,190 @@ class _SlimeSpawn {
   final int id;
   final Offset offset;
   const _SlimeSpawn({required this.id, required this.offset});
+}
+
+/// §3.7 v2 — three-skill home HUD row. Each tile shows the skill icon, a
+/// cooldown overlay (sweeping radial), and an instant-token badge (0..3).
+/// Tap fires the skill via token when available + on cooldown, otherwise
+/// via the natural cooldown path. Driven by a 1Hz timer so the cooldown
+/// sweep stays smooth between game-state emits.
+class _SkillBar extends StatefulWidget {
+  final Map<String, DateTime> skillReadyAt;
+  final Map<String, int> skillTokens;
+  final void Function(SkillId) onTap;
+
+  const _SkillBar({
+    required this.skillReadyAt,
+    required this.skillTokens,
+    required this.onTap,
+  });
+
+  @override
+  State<_SkillBar> createState() => _SkillBarState();
+}
+
+class _SkillBarState extends State<_SkillBar> {
+  Timer? _tick;
+
+  @override
+  void initState() {
+    super.initState();
+    _tick = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _tick?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    return Row(
+      children: [
+        for (var i = 0; i < skillCatalog.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(
+            child: _SkillTile(
+              def: skillCatalog[i],
+              now: now,
+              readyAt: widget.skillReadyAt[skillCatalog[i].id.id],
+              tokens: widget.skillTokens[skillCatalog[i].id.id] ?? 0,
+              onTap: () => widget.onTap(skillCatalog[i].id),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _SkillTile extends StatelessWidget {
+  final SkillDef def;
+  final DateTime now;
+  final DateTime? readyAt;
+  final int tokens;
+  final VoidCallback onTap;
+
+  const _SkillTile({
+    required this.def,
+    required this.now,
+    required this.readyAt,
+    required this.tokens,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cdRemaining = readyAt == null
+        ? Duration.zero
+        : readyAt!.isAfter(now) ? readyAt!.difference(now) : Duration.zero;
+    final onCooldown = cdRemaining > Duration.zero;
+    final ratio = onCooldown
+        ? (1.0 -
+            (cdRemaining.inMilliseconds / def.cooldown.inMilliseconds))
+            .clamp(0.0, 1.0)
+        : 1.0;
+    final canTokenBurst = onCooldown && tokens > 0;
+    final tappable = !onCooldown || canTokenBurst;
+
+    return Material(
+      color: tappable ? def.color : def.color.withValues(alpha: 0.35),
+      borderRadius: BorderRadius.circular(10),
+      elevation: tappable ? 2 : 0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: tappable ? onTap : null,
+        child: SizedBox(
+          height: 52,
+          child: Stack(
+            children: [
+              if (onCooldown)
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      value: ratio,
+                      backgroundColor: Colors.transparent,
+                      valueColor:
+                          AlwaysStoppedAnimation(Colors.white.withValues(alpha: 0.18)),
+                      minHeight: 52,
+                    ),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(def.icon, size: 20, color: Colors.white),
+                    const SizedBox(height: 2),
+                    Text(
+                      onCooldown
+                          ? _fmtCooldown(cdRemaining)
+                          : '준비',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Token badge — top-right corner. Always visible so players
+              // see "0/3" early, building awareness of the system.
+              Positioned(
+                top: 3,
+                right: 4,
+                child: _TokenBadge(
+                  tokens: tokens,
+                  active: canTokenBurst,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _fmtCooldown(Duration d) {
+    if (d.inMinutes >= 1) {
+      return '${d.inMinutes}분';
+    }
+    return '${d.inSeconds}초';
+  }
+}
+
+class _TokenBadge extends StatelessWidget {
+  final int tokens;
+  final bool active;
+  const _TokenBadge({required this.tokens, required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = active ? Colors.white : Colors.white.withValues(alpha: 0.30);
+    final fg = active ? Colors.black87 : Colors.white;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        '⚡$tokens',
+        style: TextStyle(
+          color: fg,
+          fontSize: 10,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
 }
 
 class _HomeActionBar extends StatelessWidget {
@@ -474,6 +707,77 @@ class _RideTimeBadge extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// §3.3 — Quest entry button on the top HUD. Shows a small dot when any
+/// daily/weekly mission is ready to claim, mirroring the redeem-all CTA
+/// inside QuestScreen.
+class _QuestButton extends StatelessWidget {
+  final int claimable;
+  final VoidCallback onTap;
+
+  const _QuestButton({required this.claimable, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: '퀘스트',
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        elevation: 1,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: onTap,
+          child: Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Colors.black.withValues(alpha: 0.08),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.fact_check,
+                    size: 18, color: Color(0xFF2E7D32)),
+                const SizedBox(width: 5),
+                const Text(
+                  '퀘스트',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF2E7D32),
+                  ),
+                ),
+                if (claimable > 0) ...[
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 5, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE53935),
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: Text(
+                      '$claimable',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

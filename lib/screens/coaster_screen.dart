@@ -44,6 +44,7 @@ class _CoasterScreenState extends ConsumerState<CoasterScreen> {
           tabs: [
             const _StoreHubTab(label: '수집', view: _CollectionView()),
             const _StoreHubTab(label: '착용', view: _FormationView()),
+            const _StoreHubTab(label: '합성', view: _FusionView()),
             if (game.isFeatureUnlocked(FeatureUnlocks.coasterSetsView))
               const _StoreHubTab(label: '세트', view: _CoasterSetsView()),
           ],
@@ -387,6 +388,345 @@ class _CollectionViewState extends ConsumerState<_CollectionView> {
       builder: (_) => _CoasterDetailSheet(def: def),
     );
   }
+}
+
+/// §3.3 Fusion — same-tier coaster fusion list. Surfaces every owned
+/// coaster whose level ≥ 5 (the duplicate-copy threshold) with its tier-
+/// scaled gold cost and the result rule for that tier. Tap → confirmation
+/// dialog → [GameNotifier.attemptFusion]. UR rolls into essence rather
+/// than a next-tier coaster.
+class _FusionView extends ConsumerWidget {
+  const _FusionView();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final game = ref.watch(gameProvider);
+    final notifier = ref.read(gameProvider.notifier);
+    // Tier desc → ascending: showcase rare-tier candidates first.
+    final candidates = <CoasterDef>[];
+    for (final tier in CoasterTier.values.reversed) {
+      for (final def in coasterCatalog.where((d) => d.tier == tier)) {
+        final lv = game.coasterLevel(def.id);
+        if (lv >= fusionLevelCost) candidates.add(def);
+      }
+    }
+
+    if (candidates.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.auto_awesome,
+                  size: 36, color: Colors.black26),
+              const SizedBox(height: 8),
+              Text(
+                '합성 가능한 코스터가 없습니다',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '같은 코스터를 $fusionLevelCost번 이상 보유하면 합성 가능',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.black.withValues(alpha: 0.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+      children: [
+        _FusionRulesCard(),
+        const SizedBox(height: 10),
+        for (final def in candidates) ...[
+          _FusionCandidateTile(
+            def: def,
+            level: game.coasterLevel(def.id),
+            cost: notifier.fusionGoldCost(def.id),
+            canAfford: notifier.canFuseCoaster(def.id),
+            equipped: game.equippedCoasterId == def.id,
+            onFuse: () => _confirmFusion(context, ref, def),
+          ),
+          const SizedBox(height: 6),
+        ],
+      ],
+    );
+  }
+
+  void _confirmFusion(BuildContext context, WidgetRef ref, CoasterDef def) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => _FusionConfirmDialog(coasterId: def.id),
+    );
+  }
+}
+
+class _FusionRulesCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF6A1B9A).withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: const Color(0xFF6A1B9A).withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.auto_awesome,
+                  size: 16, color: Color(0xFF6A1B9A)),
+              SizedBox(width: 6),
+              Text(
+                '합성 규칙',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF4A148C)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '같은 코스터 Lv $fusionLevelCost 이상 → 다음 등급 풀에서 랜덤 1개. 사용한 코스터는 Lv −$fusionLevelCost 차감 (Lv 0 시 컬렉션에서 제외).',
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.black.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'UR 합성은 정수 +$fusionUrEssenceReward로 변환됩니다.',
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.black.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FusionCandidateTile extends StatelessWidget {
+  final CoasterDef def;
+  final int level;
+  final int cost;
+  final bool canAfford;
+  final bool equipped;
+  final VoidCallback onFuse;
+
+  const _FusionCandidateTile({
+    required this.def,
+    required this.level,
+    required this.cost,
+    required this.canAfford,
+    required this.equipped,
+    required this.onFuse,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tierColor = def.tier.color;
+    final nextTier = fusionNextTier(def.tier);
+    final resultLabel = nextTier == null
+        ? '정수 +$fusionUrEssenceReward'
+        : '${nextTier.label} 등급 랜덤 1개';
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: tierColor.withValues(alpha: 0.32)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: tierColor.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    def.tier.label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: tierColor,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      def.name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w900, fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      'Lv $level · 골드 ${_fmt(cost)} → $resultLabel',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.black.withValues(alpha: 0.62),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton(
+                onPressed: (canAfford && !equipped) ? onFuse : null,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF6A1B9A),
+                  minimumSize: const Size(74, 36),
+                  disabledBackgroundColor: Colors.grey.shade300,
+                ),
+                child: Text(
+                  equipped
+                      ? '대표'
+                      : (canAfford ? '합성' : '골드 부족'),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _fmt(int n) {
+    if (n >= 1000000000) return '${(n / 1000000000).toStringAsFixed(1)}B';
+    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}K';
+    return '$n';
+  }
+}
+
+class _FusionConfirmDialog extends ConsumerWidget {
+  final String coasterId;
+  const _FusionConfirmDialog({required this.coasterId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final game = ref.watch(gameProvider);
+    final notifier = ref.read(gameProvider.notifier);
+    final def = coasterCatalog.firstWhere((d) => d.id == coasterId,
+        orElse: () => coasterCatalog.first);
+    final lv = game.coasterLevel(coasterId);
+    final cost = notifier.fusionGoldCost(coasterId);
+    final nextTier = fusionNextTier(def.tier);
+    final resultLabel = nextTier == null
+        ? '정수 +$fusionUrEssenceReward'
+        : '${nextTier.label} 등급 코스터 랜덤 1개';
+    final newLv = lv - fusionLevelCost;
+    final lvSuffix =
+        newLv <= 0 ? '컬렉션에서 제외됨' : 'Lv $newLv 로 차감';
+
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Text('합성 확인'),
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('${def.name} (Lv $lv)',
+              style:
+                  const TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+          const SizedBox(height: 8),
+          _row('비용', '골드 $cost'),
+          _row('재료 처리', '$lvSuffix'),
+          _row('결과', resultLabel),
+          const SizedBox(height: 8),
+          if (nextTier != null)
+            Text(
+              '※ 결과 코스터는 다음 등급 풀에서 랜덤 추출됩니다 (같은 등급 코스터 풀 안 선택).',
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.black.withValues(alpha: 0.55),
+              ),
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('취소'),
+        ),
+        FilledButton(
+          onPressed: () {
+            final result = notifier.attemptFusion(coasterId);
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result.message),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF6A1B9A),
+          ),
+          child: const Text('합성'),
+        ),
+      ],
+    );
+  }
+
+  Widget _row(String k, String v) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 64,
+              child: Text(
+                k,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black.withValues(alpha: 0.55),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                v,
+                style: const TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
 class _FormationView extends ConsumerWidget {

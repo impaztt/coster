@@ -53,7 +53,11 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
 
   static const _passengersPerCart = 2;
   static const _queueCapacity = 6;
-  static const _spawnIntervalSeconds = 1.6;
+  // Realistic-pace pass: 1.6s → 4.0s. Even on an aggressive tapper the
+  // cycle resets every ~1-2s; spawning at 1.6s flooded the queue and
+  // turned guests into a stream rather than a trickle. 4.0s lets the
+  // queue fill to its 6-cap in ~24s — visible, not frantic.
+  static const _spawnIntervalSeconds = 4.0;
   static const _petalCount = 14;
   static const _fireflyCount = 8;
 
@@ -106,8 +110,11 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
     if (dtReal <= 0) return;
 
     final game = ref.read(gameProvider);
-    final boosted = game.boostGauge > 0;
-    final dt = boosted ? dtReal * 1.5 : dtReal;
+    // Guest walk + spawn run on wall-clock dtReal. Boost speeds up the
+    // ride cycle (a game-mechanics signal) — it doesn't accelerate guest
+    // pedestrians, which would read as teleporting. Cart speed is owned
+    // by [game.cycleProgress] elsewhere and is unaffected by this dt.
+    final dt = dtReal;
     final cycle = game.cycleProgress;
 
     _ambient = (_ambient + dtReal * 0.10) % 1.0;
@@ -193,8 +200,17 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
     }
     for (var i = boardCount; i < inQueue.length; i++) {
       final g = inQueue[i];
-      g.slot = i - boardCount;
-      g.progress = 0;
+      // Smooth shift instead of an instant slot swap — `beginSlotShift`
+      // preserves the current visual position as the lerp source so the
+      // walk reads as a real step forward.
+      final newSlot = i - boardCount;
+      if (g.state == _GuestState.waiting) {
+        g.beginSlotShift(newSlot);
+      } else {
+        // entering guests already animate via [progress]; we just retarget
+        // their destination slot.
+        g.slot = newSlot;
+      }
     }
   }
 
@@ -238,6 +254,12 @@ enum _GuestState { entering, waiting, boarding, riding, exiting, gone }
 class _Guest {
   _GuestState state;
   int slot;
+  // Fractional slot used while a queue shift is in progress. While
+  // [slotShiftRemaining] > 0, paint should lerp displaySlot toward
+  // [slot] for the smooth one-step-forward walk that replaces the
+  // old instantaneous slot swap.
+  double displaySlot;
+  double slotShiftRemaining;
   int cartSeat = -1;
   Color shirt;
   Color skin;
@@ -253,16 +275,55 @@ class _Guest {
     required this.hair,
     required this.progress,
     required this.bobPhase,
-  });
+  })  : displaySlot = slot.toDouble(),
+        slotShiftRemaining = 0;
 
-  static const _walkTime = 1.0;
+  // Realistic-pace pass — was a single 1.0s for every transition, which
+  // read as teleporting at any meaningful pixel distance. Differentiated
+  // by leg length so each walk feels like a real step rather than a
+  // snap.
+  static const _enterWalkTime = 2.8; // entrance gate → queue back
+  static const _boardWalkTime = 1.8; // queue front → ramp → cart
+  static const _exitWalkTime = 2.4; // cart → ramp → exit gate
+  static const _slotShiftTime = 0.8; // queue one-step-forward shift
+
+  double _walkTimeForState() {
+    switch (state) {
+      case _GuestState.entering:
+        return _enterWalkTime;
+      case _GuestState.boarding:
+        return _boardWalkTime;
+      case _GuestState.exiting:
+        return _exitWalkTime;
+      default:
+        return _enterWalkTime;
+    }
+  }
 
   void walkTick(double dt) {
+    // Drain any in-progress slot shift on wall-clock regardless of
+    // state — a waiting guest in front of a shifting line should still
+    // step forward.
+    if (slotShiftRemaining > 0) {
+      slotShiftRemaining = (slotShiftRemaining - dt).clamp(0.0, _slotShiftTime);
+      if (slotShiftRemaining <= 0) {
+        displaySlot = slot.toDouble();
+      } else {
+        final t = 1.0 - (slotShiftRemaining / _slotShiftTime);
+        // Lerp from where we were to where we need to be; the source
+        // value is recovered each tick from displaySlot's lag (target -
+        // shift size). For the common +1 step this resolves cleanly.
+        displaySlot = displaySlot + (slot.toDouble() - displaySlot) * t;
+      }
+    } else {
+      displaySlot = slot.toDouble();
+    }
+
     if (state == _GuestState.waiting || state == _GuestState.riding) {
       progress = 1.0;
       return;
     }
-    progress = (progress + dt / _walkTime).clamp(0.0, 1.0);
+    progress = (progress + dt / _walkTimeForState()).clamp(0.0, 1.0);
     if (progress >= 1.0) {
       switch (state) {
         case _GuestState.entering:
@@ -275,6 +336,17 @@ class _Guest {
           break;
       }
     }
+  }
+
+  /// Begin a smooth one-step-forward shift toward the new [slot] value.
+  /// Captures the current visual position as the source so the lerp
+  /// stays continuous even if a shift is already in flight.
+  void beginSlotShift(int newSlot) {
+    if (newSlot == slot) return;
+    // displaySlot already reflects current visual position (whether
+    // mid-shift or settled), so we just keep it as the start point.
+    slot = newSlot;
+    slotShiftRemaining = _slotShiftTime;
   }
 }
 
@@ -1737,7 +1809,9 @@ class _ParkPainter extends CustomPainter {
   }
 
   Offset _queuePosition(Size size, _Guest g, {int? baseSlot}) {
-    final slot = baseSlot ?? g.slot;
+    // baseSlot lets _paintBoardingGuests anchor the path at slot 0
+    // regardless of where the guest currently visually sits.
+    final slot = baseSlot ?? g.displaySlot;
     final w = size.width;
     final h = size.height;
     final x = (_xQueueFrontFrac - slot * _xQueueSlotSpacing) * w;

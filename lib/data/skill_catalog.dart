@@ -9,9 +9,11 @@ const skillCatalog = <SkillDef>[
     description: '즉시 골드 = 현재 초당 수익 × 5분',
     icon: Icons.flash_on,
     color: Color(0xFFFFB300),
-    // §3.7: 30→15분으로 단축. 스킬 토큰 시스템(v2)이 들어올 때 쿨다운
-    // 단축 대신 토큰 즉발 통로가 활성화된다.
-    cooldown: Duration(minutes: 15),
+    // §3.7 v2 — restored to 30 minutes. v1 temporarily shortened this
+    // 30→15 while no instant-fire channel existed; with tokens shipping
+    // in v2, the cooldown returns to its original 30 and tokens carry
+    // the "I need this NOW" lane instead.
+    cooldown: Duration(minutes: 30),
   ),
   SkillDef(
     id: SkillId.comboSurge,

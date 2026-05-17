@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/number_format.dart';
 import '../core/theme.dart';
 import '../data/region_catalog.dart';
+import '../data/region_theme.dart';
 import '../data/coaster_affinities.dart';
 import '../models/stock_market.dart';
 import '../providers/game_provider.dart';
@@ -1013,7 +1014,26 @@ class RegionDetailScreen extends ConsumerWidget {
             unrealizedPct: unrealizedPct,
             hourlyEstimate: hourlyEst,
           ),
+          const SizedBox(height: 12),
+          _RegionThemeCard(
+            regionId: regionId,
+            ownedCoasters: game.ownedCoasters,
+          ),
           const SizedBox(height: 16),
+          if (notifier.regionIpoActive(regionId)) ...[
+            _IpoBanner(
+              regionId: regionId,
+              onSubscribe: () => _openIpoDialog(context, ref, def),
+            ),
+            const SizedBox(height: 10),
+          ],
+          if (st.shortShares > 0) ...[
+            _ShortPositionCard(
+              regionId: regionId,
+              onClose: () => _openShortCloseDialog(context, ref, def),
+            ),
+            const SizedBox(height: 10),
+          ],
           Row(
             children: [
               Expanded(
@@ -1054,6 +1074,22 @@ class RegionDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
+          const SizedBox(height: 8),
+          // §3.5 v3 — 공매도 진입. IPO 기간 동안에는 비활성화.
+          FilledButton.icon(
+            onPressed: notifier.regionIpoActive(regionId)
+                ? null
+                : () => _openShortOpenDialog(context, ref, def),
+            icon: const Icon(Icons.trending_down, size: 18),
+            label: const Text('공매도',
+                style:
+                    TextStyle(fontSize: 14, fontWeight: FontWeight.w900)),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF455A64),
+              minimumSize: const Size.fromHeight(44),
+              disabledBackgroundColor: Colors.grey.shade300,
+            ),
+          ),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
@@ -1085,6 +1121,29 @@ class RegionDetailScreen extends ConsumerWidget {
     showDialog<void>(
       context: context,
       builder: (_) => _SellDialog(regionId: def.id),
+    );
+  }
+
+  void _openIpoDialog(BuildContext context, WidgetRef ref, RegionDef def) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => _IpoSubscriptionDialog(regionId: def.id),
+    );
+  }
+
+  void _openShortOpenDialog(
+      BuildContext context, WidgetRef ref, RegionDef def) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => _ShortOpenDialog(regionId: def.id),
+    );
+  }
+
+  void _openShortCloseDialog(
+      BuildContext context, WidgetRef ref, RegionDef def) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => _ShortCloseDialog(regionId: def.id),
     );
   }
 }
@@ -1640,3 +1699,567 @@ class _QtyStepper extends StatelessWidget {
     );
   }
 }
+
+/// §3.5 v3 — IPO banner shown above the trade buttons while a region's
+/// IPO window is open. Surfaces the discounted price, the remaining
+/// subscription quota, and a CTA to open the subscription dialog.
+class _IpoBanner extends ConsumerWidget {
+  final String regionId;
+  final VoidCallback onSubscribe;
+  const _IpoBanner({required this.regionId, required this.onSubscribe});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(gameProvider.notifier);
+    ref.watch(gameProvider);
+    final price = notifier.regionIpoSubscriptionPrice(regionId);
+    final remaining = notifier.regionIpoRemainingSubscription(regionId);
+    final progress = notifier.regionIpoProgress(regionId);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFA000), Color(0xFFFF6F00)],
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.local_offer, color: Colors.white, size: 18),
+              const SizedBox(width: 6),
+              const Text(
+                'IPO 청약 진행 중',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${((1 - progress) * 24).toStringAsFixed(1)}h 남음',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '청약가 ${NumberFormatter.formatPrecise(price)} · 남은 한도 ${NumberFormatter.formatInt(remaining)}지분',
+            style: const TextStyle(color: Colors.white, fontSize: 11),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: remaining > 0 ? onSubscribe : null,
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFFE65100),
+                minimumSize: const Size.fromHeight(38),
+                disabledBackgroundColor: Colors.white24,
+              ),
+              child: const Text(
+                '청약 참여',
+                style: TextStyle(fontWeight: FontWeight.w900),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// §3.5 v3 — short position summary card. Shows the open short size,
+/// the average entry price, the unrealized PnL (positive when current
+/// price is below entry), and a CTA to close.
+class _ShortPositionCard extends ConsumerWidget {
+  final String regionId;
+  final VoidCallback onClose;
+  const _ShortPositionCard({required this.regionId, required this.onClose});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final game = ref.watch(gameProvider);
+    final st = game.market.regions[regionId]!;
+    final unrealized = (st.avgShortPrice - st.currentPrice) * st.shortShares;
+    final positive = unrealized >= 0;
+    final color = positive ? const Color(0xFF1976D2) : const Color(0xFFD32F2F);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF455A64).withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF455A64).withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.trending_down,
+                  color: Color(0xFF455A64), size: 18),
+              const SizedBox(width: 6),
+              const Text(
+                '공매도 포지션',
+                style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                    color: Color(0xFF263238)),
+              ),
+              const Spacer(),
+              Text(
+                '${NumberFormatter.formatInt(st.shortShares)}지분',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '평균 진입가 ${NumberFormatter.formatPrecise(st.avgShortPrice)} · 현재가 ${NumberFormatter.formatPrecise(st.currentPrice)}',
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.black.withValues(alpha: 0.6),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '평가손익 ${positive ? '+' : '-'}${NumberFormatter.format(unrealized.abs())}',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: onClose,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF263238),
+                minimumSize: const Size.fromHeight(36),
+              ),
+              child: const Text('청산',
+                  style: TextStyle(fontWeight: FontWeight.w900)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// §3.5 v3 — IPO subscription dialog. Modeled on [_BuyDialog] but uses
+/// the discounted IPO price and the per-region subscription cap.
+class _IpoSubscriptionDialog extends ConsumerStatefulWidget {
+  final String regionId;
+  const _IpoSubscriptionDialog({required this.regionId});
+
+  @override
+  ConsumerState<_IpoSubscriptionDialog> createState() =>
+      _IpoSubscriptionDialogState();
+}
+
+class _IpoSubscriptionDialogState
+    extends ConsumerState<_IpoSubscriptionDialog> {
+  int _qty = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    final game = ref.watch(gameProvider);
+    final notifier = ref.read(gameProvider.notifier);
+    final def = notifier.regionDef(widget.regionId);
+    final price = notifier.regionIpoSubscriptionPrice(widget.regionId);
+    final remaining = notifier.regionIpoRemainingSubscription(widget.regionId);
+    final unitTotal = price * (1 + stockTradeFee);
+    final byGold = unitTotal <= 0 ? 0 : (game.gold / unitTotal).floor();
+    final cap = remaining < byGold ? remaining : byGold;
+    if (_qty > cap) _qty = cap;
+    if (_qty < 1 && cap > 0) _qty = 1;
+
+    final gross = _qty * price;
+    final fee = gross * stockTradeFee;
+    final total = gross + fee;
+
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text('${def.name} IPO 청약'),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _kv('청약가', NumberFormatter.formatPrecise(price)),
+            _kv('남은 청약 한도', '${NumberFormatter.formatInt(remaining)}지분'),
+            _kv('보유 골드', NumberFormatter.format(game.gold)),
+            const SizedBox(height: 10),
+            _QtyStepper(
+              value: _qty,
+              max: cap,
+              onChanged: (v) => setState(() => _qty = v),
+            ),
+            const SizedBox(height: 12),
+            _kv('청약 금액', NumberFormatter.format(gross)),
+            _kv('수수료(2%)', NumberFormatter.format(fee)),
+            const Divider(height: 16),
+            _kv('총 차감', NumberFormatter.format(total), bold: true),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('취소'),
+        ),
+        FilledButton(
+          onPressed: (cap == 0 || _qty <= 0)
+              ? null
+              : () {
+                  final bought =
+                      notifier.subscribeIpo(widget.regionId, _qty);
+                  if (bought > 0) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            '${def.name} ${NumberFormatter.formatInt(bought)}지분 청약 완료'),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFFE65100),
+          ),
+          child: const Text('청약 확정'),
+        ),
+      ],
+    );
+  }
+}
+
+/// §3.5 v3 — open short. Charges only the trade fee on entry; the loss
+/// is unrealized until close.
+class _ShortOpenDialog extends ConsumerStatefulWidget {
+  final String regionId;
+  const _ShortOpenDialog({required this.regionId});
+
+  @override
+  ConsumerState<_ShortOpenDialog> createState() => _ShortOpenDialogState();
+}
+
+class _ShortOpenDialogState extends ConsumerState<_ShortOpenDialog> {
+  int _qty = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    final game = ref.watch(gameProvider);
+    final notifier = ref.read(gameProvider.notifier);
+    final def = notifier.regionDef(widget.regionId);
+    final st = game.market.regions[widget.regionId]!;
+    final price = st.currentPrice;
+    final maxByCap =
+        (def.totalShares * shortMaxFractionOfTotalShares).floor() -
+            st.shortShares;
+    final feePerShare = price * stockTradeFee;
+    final byGold = feePerShare <= 0 ? 0 : (game.gold / feePerShare).floor();
+    final cap = (maxByCap < byGold ? maxByCap : byGold).clamp(0, 1 << 31);
+    if (_qty > cap) _qty = cap;
+    if (_qty < 1 && cap > 0) _qty = 1;
+
+    final gross = _qty * price;
+    final fee = gross * stockTradeFee;
+
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text('${def.name} 공매도'),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _kv('현재 가치', NumberFormatter.formatPrecise(price)),
+            _kv('최대 공매도 한도',
+                '${NumberFormatter.formatInt(maxByCap)}지분 (총 ${(shortMaxFractionOfTotalShares * 100).toStringAsFixed(0)}%)'),
+            _kv('보유 골드', NumberFormatter.format(game.gold)),
+            const SizedBox(height: 10),
+            _QtyStepper(
+              value: _qty,
+              max: cap,
+              onChanged: (v) => setState(() => _qty = v),
+            ),
+            const SizedBox(height: 12),
+            _kv('진입가', NumberFormatter.formatPrecise(price)),
+            _kv('수수료(2%)', NumberFormatter.format(fee)),
+            const Divider(height: 16),
+            const Text(
+              '※ 진입 시점에 수수료만 차감되며, 가격 하락 시 차익을 청산에 받게 됩니다. 가격이 오르면 평가손실이 누적되어 청산 시 손실이 정산됩니다.',
+              style: TextStyle(fontSize: 10.5, color: Colors.black54),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('취소'),
+        ),
+        FilledButton(
+          onPressed: (cap == 0 || _qty <= 0)
+              ? null
+              : () {
+                  final opened =
+                      notifier.openShort(widget.regionId, _qty);
+                  if (opened > 0) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            '${def.name} ${NumberFormatter.formatInt(opened)}지분 공매도 진입'),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF455A64),
+          ),
+          child: const Text('공매도 진입'),
+        ),
+      ],
+    );
+  }
+}
+
+/// §3.5 v3 — close (partially or fully) an existing short position.
+/// Realized PnL is settled in cash. If the close would push gold
+/// negative, the dialog refuses (matches game_provider.closeShort).
+class _ShortCloseDialog extends ConsumerStatefulWidget {
+  final String regionId;
+  const _ShortCloseDialog({required this.regionId});
+
+  @override
+  ConsumerState<_ShortCloseDialog> createState() => _ShortCloseDialogState();
+}
+
+class _ShortCloseDialogState extends ConsumerState<_ShortCloseDialog> {
+  int _qty = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    final game = ref.watch(gameProvider);
+    final notifier = ref.read(gameProvider.notifier);
+    final def = notifier.regionDef(widget.regionId);
+    final st = game.market.regions[widget.regionId]!;
+    final price = st.currentPrice;
+    final cap = st.shortShares;
+    if (_qty > cap) _qty = cap;
+    if (_qty < 1 && cap > 0) _qty = 1;
+
+    final gross = _qty * price;
+    final fee = gross * stockTradeFee;
+    final realized = (st.avgShortPrice - price) * _qty - fee;
+    final realizedPositive = realized >= 0;
+    final canCover = realizedPositive || game.gold >= -realized;
+
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text('${def.name} 공매도 청산'),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _kv('진입가', NumberFormatter.formatPrecise(st.avgShortPrice)),
+            _kv('현재 가치', NumberFormatter.formatPrecise(price)),
+            _kv('보유 공매도', '${NumberFormatter.formatInt(cap)}지분'),
+            const SizedBox(height: 10),
+            _QtyStepper(
+              value: _qty,
+              max: cap,
+              onChanged: (v) => setState(() => _qty = v),
+            ),
+            const SizedBox(height: 12),
+            _kv('수수료(2%)', NumberFormatter.format(fee)),
+            const Divider(height: 16),
+            _kv(
+              realizedPositive ? '정산 수익' : '정산 손실',
+              '${realizedPositive ? '+' : '-'}${NumberFormatter.format(realized.abs())}',
+              bold: true,
+            ),
+            if (!realizedPositive && !canCover) ...[
+              const SizedBox(height: 6),
+              Text(
+                '※ 손실 정산을 위한 골드가 부족합니다 (필요 ${NumberFormatter.format(-realized)})',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFFD32F2F),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('취소'),
+        ),
+        FilledButton(
+          onPressed: (cap == 0 || _qty <= 0 || !canCover)
+              ? null
+              : () {
+                  final r = notifier.closeShort(widget.regionId, _qty);
+                  if (r.sharesClosed > 0) {
+                    Navigator.pop(context);
+                    final sign = r.realizedProfit >= 0 ? '+' : '-';
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            '${def.name} 공매도 청산 · 손익 $sign${NumberFormatter.format(r.realizedProfit.abs())}'),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF455A64),
+          ),
+          child: const Text('청산 확정'),
+        ),
+      ],
+    );
+  }
+}
+
+/// §3.3 Park Theme — collection milestone progress for the given region.
+/// Renders one row per milestone with a check / locked icon and surfaces
+/// the region's currently-active theme bonus fraction.
+class _RegionThemeCard extends StatelessWidget {
+  final String regionId;
+  final Map<String, int> ownedCoasters;
+  const _RegionThemeCard(
+      {required this.regionId, required this.ownedCoasters});
+
+  @override
+  Widget build(BuildContext context) {
+    final owned = ownedCoasterCountForRegion(regionId, ownedCoasters);
+    final total = totalCoasterCountForRegion(regionId);
+    final bonus = regionThemeBonusFraction(regionId, ownedCoasters);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF6A1B9A).withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF6A1B9A).withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.collections_bookmark,
+                  size: 16, color: Color(0xFF6A1B9A)),
+              const SizedBox(width: 6),
+              const Text(
+                '파크 테마 컬렉션',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 13,
+                  color: Color(0xFF4A148C),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '$owned / $total · +${(bonus * 100).toStringAsFixed(2)}%',
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF4A148C)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          for (final m in regionThemeMilestones) ...[
+            _MilestoneRow(
+              regionTotal: total,
+              owned: owned,
+              milestone: m,
+            ),
+            const SizedBox(height: 4),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MilestoneRow extends StatelessWidget {
+  final int regionTotal;
+  final int owned;
+  final RegionThemeMilestone milestone;
+  const _MilestoneRow({
+    required this.regionTotal,
+    required this.owned,
+    required this.milestone,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final threshold = milestone.requiredCoasters < 0
+        ? regionTotal
+        : milestone.requiredCoasters;
+    final cleared = regionTotal > 0 && owned >= threshold;
+    final label = milestone.requiredCoasters < 0
+        ? '전체 보유 ($regionTotal)'
+        : '$threshold개 보유';
+    return Row(
+      children: [
+        Icon(
+          cleared ? Icons.check_circle : Icons.radio_button_unchecked,
+          size: 14,
+          color: cleared ? const Color(0xFF2E7D32) : Colors.black26,
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: cleared
+                  ? const Color(0xFF1B5E20)
+                  : Colors.black.withValues(alpha: 0.55),
+            ),
+          ),
+        ),
+        Text(
+          '+${(milestone.bonusFraction * 100).toStringAsFixed(2)}%',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+            color: cleared
+                ? const Color(0xFF2E7D32)
+                : Colors.black.withValues(alpha: 0.4),
+          ),
+        ),
+      ],
+    );
+  }
+}
+

@@ -12,6 +12,7 @@ import '../data/prestige_upgrade_catalog.dart';
 import '../data/repeating_achievement_catalog.dart';
 import '../data/producer_catalog.dart';
 import '../data/region_catalog.dart';
+import '../data/region_theme.dart';
 import '../data/coaster_affinities.dart';
 import '../data/coaster_catalog.dart';
 import '../data/skill_catalog.dart';
@@ -161,6 +162,72 @@ const cycleSkipPerTap = 0.1;
 /// becomes irrelevant late-game when DPS far outpaces tap power. New:
 /// `tap × 5000` (old floor preserved) + `dps × 30s` (DPS-scaling component).
 const slimeRewardDpsSeconds = 30.0;
+
+/// §3.3 Fusion config. A coaster at level ≥ [fusionLevelCost] can be
+/// "fused" — its level drops by that amount and a same-pool roll on the
+/// next tier produces a new coaster (or, for UR, converts directly to
+/// essence). Why these numbers:
+///   • level 5 cost matches the user-facing pitch "동일 코스터 5개 → 다음
+///     티어 1개" (level here doubles as duplicate-copy count, since each
+///     same-id pull bumps the level by 1).
+///   • Gold curve 10× per tier turns mid/late-game fusion into a real
+///     sink: by SSR→LR a single attempt is 10M gold, comparable to a
+///     mid-tier main coaster enhance.
+///   • UR→essence converts to 50 essence ≈ ~2 large enhance boosts;
+///     enough to feel like a real reward for the 500+ pulls a player
+///     spent collecting 5 UR copies, without trivializing the §3.6
+///     essence economy.
+const fusionLevelCost = 5;
+
+const Map<CoasterTier, int> fusionGoldCostByTier = {
+  CoasterTier.n: 10000,
+  CoasterTier.r: 100000,
+  CoasterTier.sr: 1000000,
+  CoasterTier.ssr: 10000000,
+  CoasterTier.lr: 100000000,
+  CoasterTier.ur: 1000000, // UR converts to essence, not next-tier
+};
+
+const fusionUrEssenceReward = 50;
+
+CoasterTier? fusionNextTier(CoasterTier tier) => switch (tier) {
+      CoasterTier.n => CoasterTier.r,
+      CoasterTier.r => CoasterTier.sr,
+      CoasterTier.sr => CoasterTier.ssr,
+      CoasterTier.ssr => CoasterTier.lr,
+      CoasterTier.lr => CoasterTier.ur,
+      CoasterTier.ur => null, // UR is terminal — converts to essence instead
+    };
+
+class FusionResult {
+  final bool ok;
+  final String message;
+  final CoasterDef? sourceCoaster;
+  final CoasterDef? producedCoaster;
+  final int essenceEarned;
+  const FusionResult({
+    required this.ok,
+    required this.message,
+    this.sourceCoaster,
+    this.producedCoaster,
+    this.essenceEarned = 0,
+  });
+}
+
+/// §3.7 v2 — skill instant-token config.
+///
+/// Every [tapsPerSkillToken] taps grants +1 token simultaneously to every
+/// skill (capped at [maxSkillTokensPerSkill] per skill). Spending a token
+/// bypasses the cooldown entirely — the skill fires immediately and its
+/// cooldown timer is also reset to "ready" so the player can chain
+/// token-burst → wait-for-cooldown smoothly.
+///
+/// Why 300/3: at a sustained 60 taps/min, 5 active min = 1 token and
+/// 15 active min fills the cap. 15 min is also Parade Fever's natural
+/// cooldown — so active players get a parallel burst lane that mirrors
+/// the cooldown's pace rather than dwarfing it.
+const tapsPerSkillToken = 300;
+const maxSkillTokensPerSkill = 3;
 
 /// §3.8 — collection soft-cap by rank. Top contributors keep full credit;
 /// rank-tier and tail coasters get progressively less. Counters the
@@ -658,6 +725,7 @@ enum MainCoasterEnhanceFailure {
   none,
   notEnoughGold,
   notEnoughTicket,
+  notEnoughEssence,
   alreadyMaxed,
   rolledFailure,
 }
@@ -671,6 +739,9 @@ class MainCoasterEnhanceAttemptResult {
   final int penaltyApplied;
   final double goldSpent;
   final int ticketSpent;
+  // §3.6 v2 — essence flowed in/out of this attempt.
+  final int essenceSpent;
+  final int essenceEarned;
   final bool crossedTierUp;
   final MainCoasterMilestoneReward? milestoneReward;
   const MainCoasterEnhanceAttemptResult({
@@ -682,6 +753,8 @@ class MainCoasterEnhanceAttemptResult {
     this.penaltyApplied = 0,
     this.goldSpent = 0,
     this.ticketSpent = 0,
+    this.essenceSpent = 0,
+    this.essenceEarned = 0,
     this.crossedTierUp = false,
     this.milestoneReward,
   });
@@ -1080,6 +1153,8 @@ class GameState {
   final double textScale;
   final bool reduceTapHaptics;
   final int ticket;
+  // §3.6 v2 — 정수(essence) balance.
+  final int essence;
   final Map<String, int> ownedCoasters;
   final String? equippedCoasterId;
   final int summonsSinceHighRare;
@@ -1096,6 +1171,8 @@ class GameState {
   final bool autoTapping;
   final bool tutorialSeen;
   final Map<String, DateTime> skillReadyAt;
+  // §3.7 v2 — per-skill instant-token stockpile (0..[maxSkillTokensPerSkill]).
+  final Map<String, int> skillTokens;
   final Set<String> completedSetIds;
   final int slimesDefeated;
   final int skillsUsed;
@@ -1167,6 +1244,7 @@ class GameState {
     required this.textScale,
     required this.reduceTapHaptics,
     required this.ticket,
+    required this.essence,
     required this.ownedCoasters,
     required this.equippedCoasterId,
     required this.summonsSinceHighRare,
@@ -1183,6 +1261,7 @@ class GameState {
     required this.autoTapping,
     required this.tutorialSeen,
     required this.skillReadyAt,
+    required this.skillTokens,
     required this.completedSetIds,
     required this.slimesDefeated,
     required this.skillsUsed,
@@ -1241,6 +1320,7 @@ class GameState {
         textScale: 1.0,
         reduceTapHaptics: false,
         ticket: 90,
+        essence: 0,
         ownedCoasters: {},
         equippedCoasterId: null,
         summonsSinceHighRare: 0,
@@ -1257,6 +1337,7 @@ class GameState {
         autoTapping: false,
         tutorialSeen: false,
         skillReadyAt: const {},
+        skillTokens: const {},
         completedSetIds: const {},
         slimesDefeated: 0,
         skillsUsed: 0,
@@ -1713,6 +1794,7 @@ class GameNotifier extends Notifier<GameState> {
 
     final skillIds = skillCatalog.map((e) => e.id.id).toSet();
     _save.skillReadyAt.removeWhere((k, v) => !skillIds.contains(k));
+    _save.skillTokens.removeWhere((k, v) => !skillIds.contains(k) || v <= 0);
     _save.dailyMissionProgress
         .removeWhere((k, v) => !_dailyMissionById.containsKey(k) || v < 0);
     _save.weeklyMissionProgress
@@ -1913,6 +1995,7 @@ class GameNotifier extends Notifier<GameState> {
       textScale: _save.settings.textScale,
       reduceTapHaptics: _save.settings.reduceTapHaptics,
       ticket: _save.ticket,
+      essence: _save.essence,
       ownedCoasters: Map.unmodifiable(_save.ownedCoasters),
       equippedCoasterId: _save.equippedCoasterId,
       summonsSinceHighRare: _save.summonsSinceHighRare,
@@ -1931,6 +2014,7 @@ class GameNotifier extends Notifier<GameState> {
       autoTapping: _autoTapActive(),
       tutorialSeen: _save.settings.tutorialSeen,
       skillReadyAt: Map.unmodifiable(_save.skillReadyAt),
+      skillTokens: Map.unmodifiable(_save.skillTokens),
       completedSetIds: Set.unmodifiable(_completedSetIds()),
       slimesDefeated: _save.stats.slimesDefeated,
       skillsUsed: _save.stats.skillsUsed,
@@ -2099,6 +2183,7 @@ class GameNotifier extends Notifier<GameState> {
         textScale: state.textScale,
         reduceTapHaptics: state.reduceTapHaptics,
         ticket: _save.ticket,
+        essence: _save.essence,
         ownedCoasters: state.ownedCoasters,
         equippedCoasterId: state.equippedCoasterId,
         summonsSinceHighRare: state.summonsSinceHighRare,
@@ -2115,6 +2200,7 @@ class GameNotifier extends Notifier<GameState> {
         autoTapping: state.autoTapping,
         tutorialSeen: state.tutorialSeen,
         skillReadyAt: state.skillReadyAt,
+        skillTokens: state.skillTokens,
         completedSetIds: state.completedSetIds,
         slimesDefeated: state.slimesDefeated,
         skillsUsed: state.skillsUsed,
@@ -2181,6 +2267,7 @@ class GameNotifier extends Notifier<GameState> {
       textScale: state.textScale,
       reduceTapHaptics: state.reduceTapHaptics,
       ticket: _save.ticket,
+      essence: _save.essence,
       ownedCoasters: state.ownedCoasters,
       equippedCoasterId: state.equippedCoasterId,
       summonsSinceHighRare: state.summonsSinceHighRare,
@@ -2197,6 +2284,7 @@ class GameNotifier extends Notifier<GameState> {
       autoTapping: state.autoTapping,
       tutorialSeen: state.tutorialSeen,
       skillReadyAt: state.skillReadyAt,
+      skillTokens: state.skillTokens,
       completedSetIds: state.completedSetIds,
       slimesDefeated: state.slimesDefeated,
       skillsUsed: state.skillsUsed,
@@ -2253,6 +2341,7 @@ class GameNotifier extends Notifier<GameState> {
       textScale: state.textScale,
       reduceTapHaptics: state.reduceTapHaptics,
       ticket: state.ticket,
+      essence: state.essence,
       ownedCoasters: state.ownedCoasters,
       equippedCoasterId: state.equippedCoasterId,
       summonsSinceHighRare: state.summonsSinceHighRare,
@@ -2269,6 +2358,7 @@ class GameNotifier extends Notifier<GameState> {
       autoTapping: state.autoTapping,
       tutorialSeen: state.tutorialSeen,
       skillReadyAt: state.skillReadyAt,
+      skillTokens: state.skillTokens,
       completedSetIds: state.completedSetIds,
       slimesDefeated: state.slimesDefeated,
       skillsUsed: state.skillsUsed,
@@ -2504,11 +2594,22 @@ class GameNotifier extends Notifier<GameState> {
   /// snowball quadratically against every other layer; moving these to an
   /// additive pool gives a soft brake (~20% softer for whales) without
   /// killing collection value.
+  ///
+  /// §3.3 Park Theme — region-keyed collection-style bonus is folded into
+  /// the same pool. See data/region_theme.dart for the sizing rationale.
   double _additiveTapBonusFraction() =>
-      (_collectionMult() - 1.0) + (_setTapBonus() - 1.0);
+      (_collectionMult() - 1.0) +
+      (_setTapBonus() - 1.0) +
+      totalParkThemeBonusFraction(_save.ownedCoasters);
 
   double _additiveDpsBonusFraction() =>
-      (_collectionMult() - 1.0) + (_setDpsBonus() - 1.0);
+      (_collectionMult() - 1.0) +
+      (_setDpsBonus() - 1.0) +
+      totalParkThemeBonusFraction(_save.ownedCoasters);
+
+  /// §3.3 — public read for the UI so it can show "파크 테마 +X%".
+  double get parkThemeBonusFraction =>
+      totalParkThemeBonusFraction(_save.ownedCoasters);
 
   /// Multiplicative-only tap stack, excluding the main coaster term so that
   /// the public [tapMultiplier] getter (used by upgrade-screen previews)
@@ -2961,6 +3062,19 @@ class GameNotifier extends Notifier<GameState> {
     final slimeSpawned = _save.tapsSinceSlime >= slimeSpawnEvery;
     if (slimeSpawned) _save.tapsSinceSlime = 0;
 
+    // §3.7 v2 — accrue skill instant-tokens. Every [tapsPerSkillToken] taps
+    // grants +1 to each skill simultaneously, capped per skill.
+    _save.tapsSinceSkillToken++;
+    if (_save.tapsSinceSkillToken >= tapsPerSkillToken) {
+      _save.tapsSinceSkillToken -= tapsPerSkillToken;
+      for (final s in SkillId.values) {
+        final current = _save.skillTokens[s.id] ?? 0;
+        if (current < maxSkillTokensPerSkill) {
+          _save.skillTokens[s.id] = current + 1;
+        }
+      }
+    }
+
     // Combo burst — fires once when combo first hits the cap during a run.
     bool isBurst = false;
     double burstAmount = 0;
@@ -3259,6 +3373,8 @@ class GameNotifier extends Notifier<GameState> {
   MainCoasterEnhanceAttemptResult attemptMainCoasterEnhance({
     required MainCoasterEnhanceCurrency currency,
     MainCoasterBoostLevel boostLevel = MainCoasterBoostLevel.none,
+    MainCoasterEssenceBoostLevel essenceBoostLevel =
+        MainCoasterEssenceBoostLevel.none,
     bool useProtection = false,
   }) {
     final currentStage = _save.mainCoasterStage;
@@ -3274,12 +3390,22 @@ class GameNotifier extends Notifier<GameState> {
     final targetStage = currentStage + 1;
     final cost = mainCoasterEnhanceCost(targetStage);
 
+    // §3.6 v2 — boost source is mutex. UI prevents picking both, but if a
+    // caller somehow passes both, the essence boost wins (it's the more
+    // intentional/expensive choice).
+    final effectiveTicketBoost =
+        essenceBoostLevel != MainCoasterEssenceBoostLevel.none
+            ? MainCoasterBoostLevel.none
+            : boostLevel;
+    final boostSuccessBonus = effectiveTicketBoost.successBonus +
+        essenceBoostLevel.successBonus;
+
     // Compute final cost based on currency choice.
     double goldCost = 0;
     int ticketCost = 0;
+    final essenceCost = essenceBoostLevel.essenceCost;
     double successRate;
-    final boost = boostLevel;
-    final boostTicketCost = boost.ticketCost;
+    final boostTicketCost = effectiveTicketBoost.ticketCost;
     final protection =
         currency == MainCoasterEnhanceCurrency.gold && useProtection;
 
@@ -3289,11 +3415,11 @@ class GameNotifier extends Notifier<GameState> {
         ticketCost = boostTicketCost +
             (protection ? mainCoasterProtectionTicketCost : 0);
         successRate =
-            (cost.goldSuccessBase + boost.successBonus).clamp(0.0, 1.0);
+            (cost.goldSuccessBase + boostSuccessBonus).clamp(0.0, 1.0);
       case MainCoasterEnhanceCurrency.ticket:
         ticketCost = cost.ticketCost + boostTicketCost;
         successRate =
-            (cost.ticketSuccessBase + boost.successBonus).clamp(0.0, 1.0);
+            (cost.ticketSuccessBase + boostSuccessBonus).clamp(0.0, 1.0);
       case MainCoasterEnhanceCurrency.hybrid:
         goldCost = cost.goldCost * mainCoasterHybridGoldMultiplier;
         ticketCost =
@@ -3301,7 +3427,7 @@ class GameNotifier extends Notifier<GameState> {
                 boostTicketCost;
         successRate = (cost.goldSuccessBase +
                 mainCoasterHybridSuccessBonus +
-                boost.successBonus)
+                boostSuccessBonus)
             .clamp(0.0, 1.0);
     }
 
@@ -3323,6 +3449,15 @@ class GameNotifier extends Notifier<GameState> {
         reason: MainCoasterEnhanceFailure.notEnoughTicket,
       );
     }
+    if (_save.essence < essenceCost) {
+      return MainCoasterEnhanceAttemptResult(
+        ok: false,
+        success: false,
+        previousStage: currentStage,
+        newStage: currentStage,
+        reason: MainCoasterEnhanceFailure.notEnoughEssence,
+      );
+    }
 
     if (goldCost > 0) {
       _save.gold -= goldCost;
@@ -3333,6 +3468,9 @@ class GameNotifier extends Notifier<GameState> {
     if (ticketCost > 0) {
       _save.ticket -= ticketCost;
     }
+    if (essenceCost > 0) {
+      _save.essence -= essenceCost;
+    }
 
     final roll = _random.nextDouble();
     final success = roll < successRate;
@@ -3341,15 +3479,32 @@ class GameNotifier extends Notifier<GameState> {
         currentStage == 0 && _save.mainCoasterHighestStage == 0;
     int newStage = currentStage;
     int penaltyApplied = 0;
+    int essenceEarned = 0;
+    // §3.6 v2 — using essence boost also suppresses gold-path stage penalty:
+    // the player already spent essence on this attempt, so a stage loss on
+    // top is double-punishment for what is meant to be a recovery move.
+    final essenceBoosted =
+        essenceBoostLevel != MainCoasterEssenceBoostLevel.none;
     if (success) {
       newStage = currentStage + 1;
     } else if (currency == MainCoasterEnhanceCurrency.ticket) {
       // Ticket-track failures never lose a stage.
     } else if (currency == MainCoasterEnhanceCurrency.hybrid) {
       // Hybrid paid the full price, treat as protected.
+    } else if (essenceBoosted) {
+      // Essence-boosted gold attempt: no stage loss on failure.
     } else if (!protection) {
       penaltyApplied = cost.penaltyOnFail.clamp(0, currentStage);
       newStage = currentStage - penaltyApplied;
+    }
+    // Essence accrual on a failed gold-path attempt (any subtype). Hybrid
+    // is treated like gold here because it spends gold; ticket-only path
+    // already has its own protection and doesn't need a refund channel.
+    if (!success &&
+        (currency == MainCoasterEnhanceCurrency.gold ||
+            currency == MainCoasterEnhanceCurrency.hybrid)) {
+      essenceEarned = mainCoasterFailureEssenceReward(targetStage);
+      _save.essence += essenceEarned;
     }
     _save.mainCoasterStage = newStage.clamp(0, mainCoasterEnhanceMaxStage);
     _save.mainCoasterEnhanceAttempts++;
@@ -3407,6 +3562,8 @@ class GameNotifier extends Notifier<GameState> {
       penaltyApplied: penaltyApplied,
       goldSpent: goldCost,
       ticketSpent: ticketCost,
+      essenceSpent: essenceCost,
+      essenceEarned: essenceEarned,
       crossedTierUp: crossedTierUp,
       milestoneReward: milestone,
     );
@@ -4107,7 +4264,6 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   SkillResult useSkill(SkillId id) {
-    final def = skillDefFor(id);
     final cooldownEnd = skillCooldownEndsAt(id);
     if (cooldownEnd != null) {
       return SkillResult(
@@ -4116,6 +4272,27 @@ class GameNotifier extends Notifier<GameState> {
         message: '아직 쿨타임이에요',
       );
     }
+    return _fireSkill(id, viaToken: false);
+  }
+
+  /// §3.7 v2 — spend one instant-token to fire [id] regardless of its
+  /// cooldown. The cooldown is then started normally, so a token-burst
+  /// doesn't permanently free the skill — it just skips the current wait.
+  SkillResult useSkillWithToken(SkillId id) {
+    final tokens = _save.skillTokens[id.id] ?? 0;
+    if (tokens <= 0) {
+      return SkillResult(
+        id: id,
+        ok: false,
+        message: '토큰이 부족해요',
+      );
+    }
+    _save.skillTokens[id.id] = tokens - 1;
+    return _fireSkill(id, viaToken: true);
+  }
+
+  SkillResult _fireSkill(SkillId id, {required bool viaToken}) {
+    final def = skillDefFor(id);
     final now = DateTime.now();
     SkillResult result;
     switch (id) {
@@ -4127,22 +4304,24 @@ class GameNotifier extends Notifier<GameState> {
         result = SkillResult(
           id: id,
           ok: true,
-          message: '퍼레이드 피버!',
+          message: viaToken ? '퍼레이드 피버! (토큰)' : '퍼레이드 피버!',
           payload: reward,
         );
       case SkillId.comboSurge:
         _comboSurgeUntil = now.add(const Duration(seconds: 10));
-        result = const SkillResult(
+        result = SkillResult(
           id: SkillId.comboSurge,
           ok: true,
-          message: '10초간 콤보 폭주!',
+          message: viaToken ? '콤보 폭주! (토큰)' : '10초간 콤보 폭주!',
         );
       case SkillId.ticketGather:
         _save.ticket += ticketGatherAmount;
         result = SkillResult(
           id: SkillId.ticketGather,
           ok: true,
-          message: '티켓 +$ticketGatherAmount',
+          message: viaToken
+              ? '티켓 +$ticketGatherAmount (토큰)'
+              : '티켓 +$ticketGatherAmount',
           payload: ticketGatherAmount.toDouble(),
         );
     }
@@ -4226,6 +4405,117 @@ class GameNotifier extends Notifier<GameState> {
     _emit(loaded: true);
     unawaited(_persist());
     return refund;
+  }
+
+  /// §3.3 Fusion — gold cost for fusing the given coaster (gated by tier).
+  /// Returns 0 if the coaster id is unknown.
+  int fusionGoldCost(String coasterId) {
+    try {
+      final def = coasterById(coasterId);
+      return fusionGoldCostByTier[def.tier] ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// §3.3 Fusion — is this coaster currently fusable? Requires level ≥
+  /// [fusionLevelCost], the player to be off-equipped on this coaster
+  /// (so the equipped pick stays stable), and enough gold for the tier's
+  /// fusion cost.
+  bool canFuseCoaster(String coasterId) {
+    final lv = _save.ownedCoasters[coasterId] ?? 0;
+    if (lv < fusionLevelCost) return false;
+    if (_save.equippedCoasterId == coasterId) return false;
+    final cost = fusionGoldCost(coasterId);
+    if (cost <= 0) return false;
+    if (_save.gold < cost) return false;
+    return true;
+  }
+
+  /// §3.3 Fusion — attempt to fuse [coasterId]. Pays gold cost, drops the
+  /// source level by [fusionLevelCost], and either rolls a same-pool result
+  /// on the next tier (N..LR) or converts to essence (UR).
+  FusionResult attemptFusion(String coasterId) {
+    final lv = _save.ownedCoasters[coasterId] ?? 0;
+    if (lv < fusionLevelCost) {
+      return const FusionResult(ok: false, message: '레벨이 부족해요 (5 이상 필요)');
+    }
+    if (_save.equippedCoasterId == coasterId) {
+      return const FusionResult(ok: false, message: '대표 코스터는 합성 불가');
+    }
+    final CoasterDef sourceDef;
+    try {
+      sourceDef = coasterById(coasterId);
+    } catch (_) {
+      return const FusionResult(ok: false, message: '알 수 없는 코스터');
+    }
+    final cost = fusionGoldCostByTier[sourceDef.tier] ?? 0;
+    if (cost <= 0) {
+      return const FusionResult(ok: false, message: '합성 비용 미정');
+    }
+    if (_save.gold < cost) {
+      return const FusionResult(ok: false, message: '골드가 부족해요');
+    }
+
+    // Pay gold cost.
+    _save.gold -= cost;
+    _decayPurchasedGoldUnconverted(cost.toDouble());
+    _save.stats.totalGoldSpent += cost.toDouble();
+    _save.run.goldSpent += cost.toDouble();
+
+    // Drop source level by 5; remove entirely if it hits 0.
+    final newSourceLv = lv - fusionLevelCost;
+    if (newSourceLv <= 0) {
+      _save.ownedCoasters.remove(coasterId);
+      for (var i = 0; i < _save.formationCoasterIds.length; i++) {
+        if (_save.formationCoasterIds[i] == coasterId) {
+          _save.formationCoasterIds[i] = null;
+        }
+      }
+    } else {
+      _save.ownedCoasters[coasterId] = newSourceLv;
+    }
+
+    // UR is terminal — convert to essence.
+    if (sourceDef.tier == CoasterTier.ur) {
+      _save.essence += fusionUrEssenceReward;
+      _emit(loaded: true);
+      unawaited(_persist());
+      return FusionResult(
+        ok: true,
+        message: '${sourceDef.name} → 정수 +$fusionUrEssenceReward',
+        sourceCoaster: sourceDef,
+        essenceEarned: fusionUrEssenceReward,
+      );
+    }
+
+    // N..LR — pick a random coaster of the next tier and bump it.
+    final nextTier = fusionNextTier(sourceDef.tier);
+    if (nextTier == null) {
+      return const FusionResult(ok: false, message: '다음 등급 없음');
+    }
+    final producedDef = _pickRandomOfTier(nextTier);
+    final oldProducedLv = _save.ownedCoasters[producedDef.id] ?? 0;
+    final newProducedLv = oldProducedLv >= CoasterDef.maxLevel
+        ? CoasterDef.maxLevel
+        : (oldProducedLv > 0 ? oldProducedLv + 1 : 1);
+    _save.ownedCoasters[producedDef.id] = newProducedLv;
+    // First-ever pickup of this coaster also fills an empty formation slot
+    // — mirrors gacha behavior so collection progress feels consistent.
+    if (oldProducedLv == 0 &&
+        !_save.formationCoasterIds.contains(producedDef.id)) {
+      final emptySlot =
+          _save.formationCoasterIds.indexWhere((id) => id == null);
+      if (emptySlot >= 0) _save.formationCoasterIds[emptySlot] = producedDef.id;
+    }
+    _emit(loaded: true);
+    unawaited(_persist());
+    return FusionResult(
+      ok: true,
+      message: '${sourceDef.name} → ${producedDef.name}',
+      sourceCoaster: sourceDef,
+      producedCoaster: producedDef,
+    );
   }
 
   Future<void> resetAll() async {
@@ -4639,6 +4929,17 @@ class GameNotifier extends Notifier<GameState> {
           (1.0 + districtBonus * 0.12) *
           tickFactor;
 
+      // §3.5 v3 — during the IPO window the price is fully owned by a
+      // deterministic ramp from the discounted subscription price to the
+      // intrinsic price. Pause volatility/drift to give the ramp room.
+      if (regionIpoActive(def.id)) {
+        final progress = regionIpoProgress(def.id);
+        final discount = def.initialPrice * (1.0 - ipoDiscountFraction);
+        state.currentPrice =
+            discount + (state.intrinsicPrice - discount) * progress;
+        continue;
+      }
+
       for (var i = 0; i < ticksElapsed; i++) {
         // Mean-reverting drift toward intrinsic price (scaled to tick).
         final drift = (state.intrinsicPrice - state.currentPrice) *
@@ -4738,6 +5039,8 @@ class GameNotifier extends Notifier<GameState> {
         !first.unlocked &&
         _save.totalGoldEarned >= stockMarketLifetimeGoldTrigger) {
       first.unlocked = true;
+      // §3.5 v3 — first-region IPO opens together with the unlock.
+      first.ipoStartedAt ??= DateTime.now();
     }
     for (final def in regionCatalog) {
       final state = m.regions[def.id];
@@ -4749,8 +5052,162 @@ class GameNotifier extends Notifier<GameState> {
       final ownership = state.shares / def.totalShares;
       if (ownership >= regionUnlockOwnershipThreshold) {
         nextState.unlocked = true;
+        // §3.5 v3 — every chain-unlocked region also starts an IPO window.
+        nextState.ipoStartedAt ??= DateTime.now();
       }
     }
+  }
+
+  /// §3.5 v3 — IPO helpers. The window is open for [ipoWindowSeconds]
+  /// after [ipoStartedAt]. While open, the *effective* price (used for
+  /// both display and trades) is a linear ramp from the discounted price
+  /// up to the region's intrinsic price.
+  bool regionIpoActive(String regionId) {
+    final st = _save.market.regions[regionId];
+    if (st?.ipoStartedAt == null) return false;
+    final elapsed = DateTime.now().difference(st!.ipoStartedAt!).inSeconds;
+    return elapsed >= 0 && elapsed < ipoWindowSeconds;
+  }
+
+  /// Fraction of the IPO window elapsed (0..1). Returns 1.0 when window
+  /// has ended or never opened.
+  double regionIpoProgress(String regionId) {
+    final st = _save.market.regions[regionId];
+    if (st?.ipoStartedAt == null) return 1.0;
+    final elapsed = DateTime.now().difference(st!.ipoStartedAt!).inSeconds;
+    return (elapsed / ipoWindowSeconds).clamp(0.0, 1.0);
+  }
+
+  /// IPO subscription price for [regionId]. Static across the window —
+  /// the *current* price ramps from this up to intrinsic, but subscription
+  /// orders always pay this discounted price.
+  double regionIpoSubscriptionPrice(String regionId) {
+    final def = regionDefById(regionId);
+    return def.initialPrice * (1.0 - ipoDiscountFraction);
+  }
+
+  /// Remaining shares the player can subscribe to before hitting the
+  /// per-region IPO subscription cap.
+  int regionIpoRemainingSubscription(String regionId) {
+    final def = regionDefById(regionId);
+    final st = _save.market.regions[regionId];
+    if (st == null) return 0;
+    final cap = (def.totalShares * ipoSubscriptionShareCapFraction).floor();
+    final taken = st.ipoSubscribedShares;
+    final remaining = cap - taken;
+    return remaining > 0 ? remaining : 0;
+  }
+
+  /// §3.5 v3 — buy IPO-priced shares during the subscription window. Pays
+  /// the discounted subscription price (still 2% fee) and bumps the
+  /// per-region subscription counter. Bypasses the ownership-fraction cap
+  /// because subscriptions are capped by their own (smaller) ceiling.
+  int subscribeIpo(String regionId, int shares) {
+    if (shares <= 0) return 0;
+    if (!regionIpoActive(regionId)) return 0;
+    final st = _save.market.regions[regionId];
+    if (st == null || !st.unlocked) return 0;
+    final remaining = regionIpoRemainingSubscription(regionId);
+    final actualShares = shares > remaining ? remaining : shares;
+    if (actualShares <= 0) return 0;
+    final price = regionIpoSubscriptionPrice(regionId);
+    final gross = actualShares * price;
+    final fee = gross * stockTradeFee;
+    final total = gross + fee;
+    if (_save.gold < total) return 0;
+
+    _save.gold -= total;
+    _decayPurchasedGoldUnconverted(total);
+    _save.stats.totalGoldSpent += total;
+    _save.run.goldSpent += total;
+    _save.run.stockTrades++;
+    _save.run.stockBuys++;
+
+    final priorBasis = st.avgCost * st.shares;
+    final newShares = st.shares + actualShares;
+    st.avgCost = (priorBasis + gross) / newShares;
+    st.shares = newShares;
+    st.ipoSubscribedShares += actualShares;
+    st.lastAccrualAt ??= DateTime.now();
+    _save.market.totalTradesCount++;
+    _save.market.totalFeesPaid += fee;
+    _checkRegionUnlocks();
+    _emit(loaded: true);
+    unawaited(_persist());
+    return actualShares;
+  }
+
+  /// §3.5 v3 — open or extend a short position. Charges only the trade
+  /// fee on entry; no margin reservation. Hard cap is
+  /// [shortMaxFractionOfTotalShares] × totalShares to keep the
+  /// unrealized-loss surface bounded for casual play.
+  int openShort(String regionId, int shares) {
+    if (shares <= 0) return 0;
+    final st = _save.market.regions[regionId];
+    if (st == null || !st.unlocked) return 0;
+    // §3.5 v3 — IPO window blocks shorting so the ramp can't be gamed.
+    if (regionIpoActive(regionId)) return 0;
+    final def = regionDefById(regionId);
+    final price = st.currentPrice;
+    final maxShort =
+        (def.totalShares * shortMaxFractionOfTotalShares).floor();
+    final remaining = maxShort - st.shortShares;
+    if (remaining <= 0) return 0;
+    final actualShares = shares > remaining ? remaining : shares;
+    final fee = actualShares * price * stockTradeFee;
+    if (_save.gold < fee) return 0;
+    _save.gold -= fee;
+    _decayPurchasedGoldUnconverted(fee);
+    _save.stats.totalGoldSpent += fee;
+    _save.run.goldSpent += fee;
+    _save.market.totalFeesPaid += fee;
+    _save.market.totalTradesCount++;
+    _save.run.stockTrades++;
+    // Weighted-average the short entry price across reopened positions.
+    final priorBasis = st.avgShortPrice * st.shortShares;
+    final newShortShares = st.shortShares + actualShares;
+    st.avgShortPrice =
+        (priorBasis + actualShares * price) / newShortShares;
+    st.shortShares = newShortShares;
+    _emit(loaded: true);
+    unawaited(_persist());
+    return actualShares;
+  }
+
+  /// §3.5 v3 — close (buy back) [shares] of an existing short. Refuses
+  /// when the player can't cover the realized loss, so the "손실 무제한
+  /// + gold ≥ 0" invariants both hold (the unrealized loss persists in
+  /// the open position instead).
+  ({int sharesClosed, double realizedProfit}) closeShort(
+      String regionId, int shares) {
+    if (shares <= 0) return (sharesClosed: 0, realizedProfit: 0);
+    final st = _save.market.regions[regionId];
+    if (st == null || st.shortShares <= 0) {
+      return (sharesClosed: 0, realizedProfit: 0);
+    }
+    final actual = shares > st.shortShares ? st.shortShares : shares;
+    final price = st.currentPrice;
+    final cover = actual * price;
+    final fee = cover * stockTradeFee;
+    final realized = (st.avgShortPrice - price) * actual - fee;
+    // realized < 0 means we owe gold. Refuse if we can't cover it.
+    if (realized < 0 && _save.gold < -realized) {
+      return (sharesClosed: 0, realizedProfit: 0);
+    }
+    _save.gold += realized;
+    if (_save.gold < 0) _save.gold = 0; // defensive — should be unreachable
+    st.shortShares -= actual;
+    if (st.shortShares == 0) st.avgShortPrice = 0;
+    _save.market.totalTradesCount++;
+    _save.market.totalFeesPaid += fee;
+    _save.market.totalRealizedProfit += realized;
+    _save.run.stockTrades++;
+    _save.run.stockSells++;
+    _save.run.stockProfitRealized += realized;
+    if (realized > 0) _save.run.goldEarned += realized;
+    _emit(loaded: true);
+    unawaited(_persist());
+    return (sharesClosed: actual, realizedProfit: realized);
   }
 
   // Read helpers used by the UI.
