@@ -308,8 +308,13 @@ class _Guest {
   // by leg length so each walk feels like a real step rather than a
   // snap.
   static const _enterWalkTime = 2.8; // entrance gate → queue back
-  static const _boardWalkTime = 1.8; // queue front → ramp → cart
-  static const _exitWalkTime = 2.4; // cart → ramp → exit gate
+  // Boarding/exit slowed down from 1.8s / 2.4s. Even with the queue
+  // head moved onto the ramp, boarding still felt rushed against the
+  // queue's leisurely pace — the player perception was "wait wait wait
+  // … sprint." Lengthening these two paths so boarding/exit reads at
+  // roughly the same cadence as queue idle bob, not faster.
+  static const _boardWalkTime = 2.4; // queue front → ramp → cart
+  static const _exitWalkTime = 3.0; // cart → ramp → exit gate
   static const _slotShiftTime = 0.8; // queue one-step-forward shift
 
   double _walkTimeForState() {
@@ -617,13 +622,13 @@ class _ParkPainter extends CustomPainter {
   // Queue front (slot 0) sits just LEFT of the station so guests
   // queue toward the boarding ramp, not away from it. Slots step
   // further left toward the entrance gate.
-  // Pacing fix: queue-front sits 1 percentage point left of the boarding
-  // ramp (0.30). 0.22 → 0.26 was a half-measure — the head was still
-  // ~43px away at typical widths and boarding still read as a sprint to
-  // the ramp. 0.29 puts the head literally next to the ramp; when a
-  // guest's turn comes up they take one step sideways and the ramp leg
-  // (6px vertical) carries them onto the cart at a matching pace.
-  static const _xQueueFrontFrac = 0.29;
+  // Pacing fix: queue head sits **on top of** the boarding ramp base
+  // (both at X 0.30). When the guest's turn comes up there is no
+  // sideways walk at all — they step straight onto the ramp. The
+  // boarding _walkPath has 3 waypoints (queue, ramp base, ramp top),
+  // but distance-aware leg timing in _walkPath gives leg 1 zero time
+  // (zero distance) and devotes the whole walk budget to the ramp leg.
+  static const _xQueueFrontFrac = 0.30;
   static const _xQueueSlotSpacing = 0.032;
 
   // Phase 4: PictureRecorder cache for the static background layers.
@@ -1831,20 +1836,50 @@ class _ParkPainter extends CustomPainter {
     }
   }
 
-  /// Walk along a series of waypoints with even time per leg.
+  /// Walk along a series of waypoints with **distance-weighted** time
+  /// per leg. A zero-length leg consumes zero time (so positioning the
+  /// queue head right next to the boarding ramp doesn't waste half the
+  /// walk budget on a stationary leg), and a long leg takes proportion-
+  /// ally longer than a short one so apparent speed stays constant
+  /// across leg boundaries.
+  ///
   /// Returns position + which leg the character is currently on
   /// (used for scale / character orientation).
   ({Offset pos, int leg, double legT}) _walkPath(
       List<Offset> wp, double progress) {
     final legs = wp.length - 1;
-    final lp = (progress * legs).clamp(0.0, legs.toDouble());
-    final i = lp.floor().clamp(0, legs - 1);
-    final t = (lp - i).clamp(0.0, 1.0);
-    return (
-      pos: Offset.lerp(wp[i], wp[i + 1], t)!,
-      leg: i,
-      legT: t,
-    );
+    if (legs <= 0) {
+      return (pos: wp.first, leg: 0, legT: 0);
+    }
+    // Compute per-leg distances and total path length.
+    final dists = <double>[];
+    double total = 0;
+    for (var i = 0; i < legs; i++) {
+      final d = (wp[i + 1] - wp[i]).distance;
+      dists.add(d);
+      total += d;
+    }
+    if (total <= 0) {
+      // Degenerate — every waypoint coincides. Pin to the end.
+      return (pos: wp.last, leg: legs - 1, legT: 1.0);
+    }
+    final p = progress.clamp(0.0, 1.0);
+    double cum = 0;
+    for (var i = 0; i < legs; i++) {
+      final frac = dists[i] / total;
+      // Use < (not ≤) so a zero-length leg falls through to the next.
+      if (frac > 0 && p < cum + frac) {
+        final t = ((p - cum) / frac).clamp(0.0, 1.0);
+        return (
+          pos: Offset.lerp(wp[i], wp[i + 1], t)!,
+          leg: i,
+          legT: t,
+        );
+      }
+      cum += frac;
+    }
+    // p == 1.0 lands on the last waypoint.
+    return (pos: wp.last, leg: legs - 1, legT: 1.0);
   }
 
   void _paintBoardingGuests(Canvas canvas, Size size) {
