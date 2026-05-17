@@ -297,14 +297,25 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
   }
 
   void _startBoarding() {
+    // Pull only fully-arrived (waiting) guests into the boarding pool.
+    // entering guests are still mid-lerp from the entrance gate to their
+    // slot; flipping them into `boarding` (or retargeting their slot
+    // destination) mid-flight makes the lerp endpoint jump and reads as
+    // the "훅 이동" stutter. They re-enter the boarding pool on the
+    // *next* cycle once their walk-in is done.
     final inQueue = _anim.guests
-        .where((g) =>
-            g.state == _GuestState.entering || g.state == _GuestState.waiting)
+        .where((g) => g.state == _GuestState.waiting)
         .toList()
       ..sort((a, b) => a.slot.compareTo(b.slot));
     final boardCount = math.min(_passengersPerCart, inQueue.length);
     for (var i = 0; i < boardCount; i++) {
       final g = inQueue[i];
+      // Anchor the visual at the queue front *before* state flips, so
+      // _paintBoardingGuests' waypoints[0] (queue slot 0) coincides
+      // with where the guest was actually rendered last frame even if
+      // a slot-shift lerp was still in flight.
+      g.displaySlot = 0;
+      g.slotShiftRemaining = 0;
       g.state = _GuestState.boarding;
       g.cartSeat = i;
       g.slot = -1;
@@ -316,13 +327,7 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
       // preserves the current visual position as the lerp source so the
       // walk reads as a real step forward.
       final newSlot = i - boardCount;
-      if (g.state == _GuestState.waiting) {
-        g.beginSlotShift(newSlot);
-      } else {
-        // entering guests already animate via [progress]; we just retarget
-        // their destination slot.
-        g.slot = newSlot;
-      }
+      g.beginSlotShift(newSlot);
     }
   }
 
