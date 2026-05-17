@@ -1532,6 +1532,17 @@ class GameNotifier extends Notifier<GameState> {
   final _featureUnlocks = StreamController<FeatureUnlockDef>.broadcast();
   Timer? _tickTimer;
   Timer? _saveTimer;
+  // Perf: _calcTapPower / _calcDps each walk every catalog (producers,
+  // tap upgrades, prestige upgrades, owned coasters with an O(n log n)
+  // sort inside _perCoasterCollectionBonus, formation, sets, …). With
+  // the 20Hz tick + every _emit re-computing them, the same numbers
+  // were re-derived hundreds of times per second despite changing only
+  // on specific mutates (a buy, a prestige, a gacha pull, …). The dirty
+  // flag below tracks those mutates explicitly so we recompute exactly
+  // once per change and serve cache hits the rest of the time.
+  bool _powerDirty = true;
+  double _cachedTapPower = 1.0;
+  double _cachedDps = 0.0;
   // Perf: every mutate used to call unawaited(_persist()), which hits
   // SharedPreferences on the main isolate. With taps/ticks/missions all
   // doing this, the disk IO was the dominant per-tap stall. Debounce
@@ -1618,7 +1629,7 @@ class GameNotifier extends Notifier<GameState> {
       final elapsed = _safeOfflineElapsed(now, loaded.lastSavedAt);
       final cappedSeconds =
           elapsed.inSeconds.clamp(0, offlineMaxSeconds).toInt();
-      final dpsNow = _calcDps();
+      final dpsNow = _dps();
       if (_timeGuardTriggered) {
         _pendingOffline = const OfflineReward(
           duration: Duration.zero,
@@ -1941,7 +1952,7 @@ class GameNotifier extends Notifier<GameState> {
       final boosted = _boostGauge > 0;
       final simDt = boosted ? dt * boostTimeMultiplier : dt;
 
-      final dps = _calcDps();
+      final dps = _dps();
       if (dps > _save.stats.maxDpsEver) _save.stats.maxDpsEver = dps;
       if (dps > _save.run.dpsPeak) _save.run.dpsPeak = dps;
       if (dps > 0) {
@@ -2011,8 +2022,8 @@ class GameNotifier extends Notifier<GameState> {
     state = GameState(
       gold: _save.gold,
       totalGoldEarned: _save.totalGoldEarned,
-      tapPower: _calcTapPower(),
-      dps: _calcDps(),
+      tapPower: _tapPower(),
+      dps: _dps(),
       prestigeCoins: _save.prestigeCoins,
       prestigeCount: _save.prestigeCount,
       ascensionCoreLevel: _save.ascensionCoreLevel,
@@ -2638,6 +2649,35 @@ class GameNotifier extends Notifier<GameState> {
     return sum * _stackDpsMult();
   }
 
+  /// Cached read of tap power. Hits `_calcTapPower` only when something
+  /// power-affecting changed (`_markPowerDirty`). Use this everywhere
+  /// outside the initial computation path; the raw `_calcTapPower` is
+  /// kept for the dirty refresh.
+  double _tapPower() {
+    if (_powerDirty) _refreshPowerCache();
+    return _cachedTapPower;
+  }
+
+  /// Cached read of DPS — see [_tapPower].
+  double _dps() {
+    if (_powerDirty) _refreshPowerCache();
+    return _cachedDps;
+  }
+
+  void _refreshPowerCache() {
+    _cachedTapPower = _calcTapPower();
+    _cachedDps = _calcDps();
+    _powerDirty = false;
+  }
+
+  /// Mark the cached tap-power/DPS as stale. Called by every mutate path
+  /// that changes a level / equipment / formation / booster / coaster /
+  /// prestige spec / main coaster stage. Cheap (one bool assignment) —
+  /// the recompute happens lazily on next read.
+  void _markPowerDirty() {
+    _powerDirty = true;
+  }
+
   /// §3.1 v1 — additive bonus pool (collection + set, both tap-specific
   /// where applicable). Veteran players with hundreds of coasters used to
   /// snowball quadratically against every other layer; moving these to an
@@ -2783,6 +2823,7 @@ class GameNotifier extends Notifier<GameState> {
       }
     }
     _save.formationCoasterIds[slot] = coasterId;
+    _markPowerDirty();
     _emit(loaded: true);
     _schedulePersist();
     return true;
@@ -2791,6 +2832,7 @@ class GameNotifier extends Notifier<GameState> {
   void clearFormation() {
     _save.formationCoasterIds =
         List<String?>.filled(coasterFormationSlotCount, null);
+    _markPowerDirty();
     _emit(loaded: true);
     _schedulePersist();
   }
@@ -2832,6 +2874,7 @@ class GameNotifier extends Notifier<GameState> {
     for (var i = 0; i < picked.length; i++) {
       _save.formationCoasterIds[i] = picked[i].id;
     }
+    _markPowerDirty();
     _emit(loaded: true);
     _schedulePersist();
   }
@@ -3015,7 +3058,12 @@ class GameNotifier extends Notifier<GameState> {
   /// reads them, to avoid "ghost" multipliers after their timer ran out).
   void _reapBoosters() {
     final now = DateTime.now();
+    final before = _save.activeBoosters.length;
     _save.activeBoosters.removeWhere((b) => !b.isActive(now));
+    // If any booster expired, the cached power numbers are stale.
+    // Mark dirty so the next read recomputes. (Idempotent — safe even
+    // when called from inside the refresh path itself.)
+    if (_save.activeBoosters.length != before) _markPowerDirty();
   }
 
   double _boosterDpsMult() {
@@ -3059,7 +3107,7 @@ class GameNotifier extends Notifier<GameState> {
 
     // Tap = immediate clicker gold. The boost gauge is now a supporting
     // tempo bonus, not the primary tap reward.
-    final base = _calcTapPower();
+    final base = _tapPower();
     final comboMult = 1.0 + (_combo * comboBonusPerStack).clamp(0.0, 0.5);
     final surgeMult = surge ? comboSurgeBonus : 1.0;
     final isCrit = _random.nextDouble() < critChance;
@@ -3130,7 +3178,7 @@ class GameNotifier extends Notifier<GameState> {
     if (_combo >= comboMax && !_burstFiredThisRun) {
       _burstFiredThisRun = true;
       isBurst = true;
-      burstAmount = _calcDps() * comboBurstWorthSeconds;
+      burstAmount = _dps() * comboBurstWorthSeconds;
       _save.gold += burstAmount;
       _save.totalGoldEarned += burstAmount;
       _save.stats.lifetimeGold += burstAmount;
@@ -3176,6 +3224,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.run.goldSpent += cost;
     _save.run.producerLevelsBought += n;
     _save.producerLevels[id] = newLv;
+    _markPowerDirty();
     _incMission('daily_upgrade_30', n, daily: true);
     _incMission('weekly_upgrade_200', n, daily: false);
     final ticketGain =
@@ -3201,6 +3250,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.run.tapUpgradesBought += n;
     _save.run.boughtAnyTapUpgrade = true;
     _save.tapUpgradeLevels[id] = lv + n;
+    _markPowerDirty();
     _save.stats.totalTapUpgradesBought += n;
     _incMission('daily_upgrade_30', n, daily: true);
     _incMission('weekly_upgrade_200', n, daily: false);
@@ -3244,6 +3294,7 @@ class GameNotifier extends Notifier<GameState> {
       _save.prestigeCoins -= prestigeSpecSwitchCost;
     }
     _save.prestigeSpecialization = spec;
+    _markPowerDirty();
     _emit(loaded: true);
     _schedulePersist();
     return true;
@@ -3257,6 +3308,7 @@ class GameNotifier extends Notifier<GameState> {
     if (_save.prestigeCoins < cost) return false;
     _save.prestigeCoins -= cost;
     _save.prestigeUpgradeLevels[id] = lv + 1;
+    _markPowerDirty();
     _emit(loaded: true);
     _schedulePersist();
     return true;
@@ -3277,6 +3329,7 @@ class GameNotifier extends Notifier<GameState> {
     if (_save.prestigeCoins < cost) return false;
     _save.prestigeCoins -= cost;
     _save.ascensionCoreLevel += 1;
+    _markPowerDirty();
     _emit(loaded: true);
     _schedulePersist();
     return true;
@@ -3313,7 +3366,7 @@ class GameNotifier extends Notifier<GameState> {
   double previewGoldExchangeYield(GoldExchangeOffer offer) {
     switch (offer.kind) {
       case GoldExchangeKind.dpsTime:
-        final raw = _calcDps() * offer.dpsSeconds * dpsTimeYieldFactor;
+        final raw = _dps() * offer.dpsSeconds * dpsTimeYieldFactor;
         final floor = dpsTimeFloorPerTicket * offer.ticketCost;
         return raw < floor ? floor : raw;
       case GoldExchangeKind.fixed:
@@ -3556,6 +3609,7 @@ class GameNotifier extends Notifier<GameState> {
       _save.essence += essenceEarned;
     }
     _save.mainCoasterStage = newStage.clamp(0, mainCoasterEnhanceMaxStage);
+    _markPowerDirty();
     _save.mainCoasterEnhanceAttempts++;
 
     // Milestone + tier-up detection on the *new* stage.
@@ -3631,6 +3685,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.goldExchangePrestigeCount = 0;
     _save.producerLevels.clear();
     _save.tapUpgradeLevels.clear();
+    _markPowerDirty();
     _combo = 0;
     _lastTapAt = null;
     _burstFiredThisRun = false;
@@ -4283,6 +4338,7 @@ class GameNotifier extends Notifier<GameState> {
         expiresAt: now.add(Duration(seconds: durationSec)),
       ));
     }
+    _markPowerDirty();
     if (type == BoosterType.autoTap) _ensureAutoTapTimer();
   }
 
@@ -4346,7 +4402,7 @@ class GameNotifier extends Notifier<GameState> {
     SkillResult result;
     switch (id) {
       case SkillId.slashBurst:
-        final reward = _calcDps() * slashBurstWorthSeconds;
+        final reward = _dps() * slashBurstWorthSeconds;
         _save.gold += reward;
         _save.totalGoldEarned += reward;
         _save.stats.lifetimeGold += reward;
@@ -4404,7 +4460,7 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   double _slimeRewardAmount() =>
-      _calcTapPower() * slimeRewardTaps + _calcDps() * slimeRewardDpsSeconds;
+      _tapPower() * slimeRewardTaps + _dps() * slimeRewardDpsSeconds;
 
   /// Estimated reward shown on the VIP response bar so the player can see what
   /// finishing it off is worth at the current moment.
@@ -4451,6 +4507,7 @@ class GameNotifier extends Notifier<GameState> {
     }
     _save.ticket += refund;
     _save.run.coasterDismantles++;
+    _markPowerDirty();
     _emit(loaded: true);
     _schedulePersist();
     return refund;
@@ -4525,6 +4582,8 @@ class GameNotifier extends Notifier<GameState> {
       _save.ownedCoasters[coasterId] = newSourceLv;
     }
 
+    _markPowerDirty();
+
     // UR is terminal — convert to essence.
     if (sourceDef.tier == CoasterTier.ur) {
       _save.essence += fusionUrEssenceReward;
@@ -4575,6 +4634,7 @@ class GameNotifier extends Notifier<GameState> {
     _timeGuardTriggered = false;
     _combo = 0;
     _lastTapAt = null;
+    _markPowerDirty();
     _emit(loaded: true);
     // Push the fresh state up immediately so other devices see the reset
     // without waiting for the next auto-save tick.
@@ -4636,6 +4696,7 @@ class GameNotifier extends Notifier<GameState> {
           _save.formationCoasterIds.indexWhere((id) => id == null);
       if (emptySlot >= 0) _save.formationCoasterIds[emptySlot] = def.id;
     }
+    _markPowerDirty();
     _save.stats.totalSummons++;
     if (tier.index >= CoasterTier.sr.index) {
       _save.summonsSinceHighRare = 0;
@@ -4698,6 +4759,7 @@ class GameNotifier extends Notifier<GameState> {
     if ((_save.ownedCoasters[id] ?? 0) <= 0) return;
     _save.equippedCoasterId = id;
     _save.run.changedEquippedCoaster = true;
+    _markPowerDirty();
     _emit(loaded: true);
     _schedulePersist();
   }
