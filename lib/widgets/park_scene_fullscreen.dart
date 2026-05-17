@@ -2299,22 +2299,33 @@ class _ParkPainter extends CustomPainter {
       if (g.state != _GuestState.boarding) continue;
       // 2-leg path: queue front → boarding ramp base → cart top.
       // Leg 1 = walking east along the walkway to the ramp.
-      // Single leg: queue head sits right next to the ramp now, so the
-      // 3-waypoint path collapsed to a zero-length walkway leg + a
-      // 6px ramp leg, and distance-weighted timing pinned the whole
-      // walk budget onto the tiny vertical step. Direct queue → cart
-      // path with the size hand-off tracked against the overall
-      // progress reads as a single "step onto the cart" motion.
-      final waypoints = [
-        _queuePosition(size, g, baseSlot: 0),
-        _boardRampTop(size),
-      ];
+      // Two explicit phases so the boarding motion reads as
+      // "walk along the walkway, then step up onto the cart"
+      // instead of one diagonal slide that looks like flying.
+      //
+      // 0 ─ 0.75 (or until close to the ramp): horizontal walk at
+      //   ground level, full pedestrian size — the gait animation
+      //   sells the steps.
+      // 0.75 ─ 1.0: vertical step up onto the cart, with the size
+      //   hand-off (1.0 → 0.45) so they fit the rider-on-cart sprite
+      //   by the time progress reaches 1.0.
+      final queueFront = _queuePosition(size, g, baseSlot: 0);
+      final rampBase = _boardRampBase(size);
+      final rampTop = _boardRampTop(size);
       final p = _easeInOut(g.progress);
-      final res = _walkPath(waypoints, p);
-      // Shrink across the whole step from full-size pedestrian to
-      // rider-on-cart size.
-      final scale = 1.0 - p * 0.55;
-      _paintCharacter(canvas, res.pos, g, scale: scale);
+      const stepUpFrom = 0.75;
+      Offset pos;
+      double scale;
+      if (p < stepUpFrom) {
+        final t = p / stepUpFrom;
+        pos = Offset.lerp(queueFront, rampBase, t)!;
+        scale = 1.0;
+      } else {
+        final t = ((p - stepUpFrom) / (1.0 - stepUpFrom)).clamp(0.0, 1.0);
+        pos = Offset.lerp(rampBase, rampTop, t)!;
+        scale = 1.0 - t * 0.55;
+      }
+      _paintCharacter(canvas, pos, g, scale: scale);
     }
   }
 
