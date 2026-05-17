@@ -1532,6 +1532,21 @@ class GameNotifier extends Notifier<GameState> {
   final _featureUnlocks = StreamController<FeatureUnlockDef>.broadcast();
   Timer? _tickTimer;
   Timer? _saveTimer;
+  // Perf: every mutate used to call unawaited(_persist()), which hits
+  // SharedPreferences on the main isolate. With taps/ticks/missions all
+  // doing this, the disk IO was the dominant per-tap stall. Debounce
+  // coalesces a burst into a single write; the periodic _saveTimer is
+  // the safety net, and lifecycle pause/dispose triggers an immediate
+  // flush so nothing is lost.
+  Timer? _persistDebounce;
+  static const _persistDebounceMs = 1500;
+  // Perf: _emit used to re-run achievement/repeating-achievement/feature-
+  // unlock evaluations every time it fired (i.e. every tap, every stock
+  // tick). Each pass walks a multi-hundred-entry catalog. Throttle to
+  // ~2 Hz — completions are deferred by at most ~500ms but the per-tap
+  // CPU bill drops sharply.
+  DateTime? _lastEvalAt;
+  static const _evalThrottleMs = 500;
   Timer? _comboDecayTimer;
   Timer? _autoTapTimer;
   DateTime _lastTick = DateTime.now();
@@ -1969,6 +1984,29 @@ class GameNotifier extends Notifier<GameState> {
     await _syncService.persist(_save);
   }
 
+  /// Coalesced persist — replaces `unawaited(_persist())` at mutate sites.
+  /// Resets a 1.5s timer; bursts (many taps in a row) flush once at the
+  /// end rather than IOing every tap. The 10s autosave + a [flushPersist]
+  /// call on lifecycle pause are the safety nets.
+  void _schedulePersist() {
+    _persistDebounce?.cancel();
+    _persistDebounce = Timer(
+      const Duration(milliseconds: _persistDebounceMs),
+      () {
+        _persistDebounce = null;
+        _schedulePersist();
+      },
+    );
+  }
+
+  /// Cancel any pending debounced persist and flush immediately. Call
+  /// from app-paused / dispose / explicit "save now" paths.
+  Future<void> flushPersist() async {
+    _persistDebounce?.cancel();
+    _persistDebounce = null;
+    await _persist();
+  }
+
   void _emit({required bool loaded}) {
     state = GameState(
       gold: _save.gold,
@@ -2050,9 +2088,20 @@ class GameNotifier extends Notifier<GameState> {
       loaded: loaded,
     );
     if (loaded) {
-      _checkAchievements();
-      _advanceRepeatingAchievements();
-      if (_featureUnlocksReady) _evaluateFeatureUnlocks();
+      // Perf: throttle the catalog walks. _emit fires from taps, ticks,
+      // stock sim — every event ran these three passes which scan
+      // hundreds of definitions. Deferring up to ~500ms is invisible to
+      // the player (the achievement toast lands a frame or two later)
+      // but removes the per-tap CPU cliff.
+      final now = DateTime.now();
+      final last = _lastEvalAt;
+      if (last == null ||
+          now.difference(last).inMilliseconds >= _evalThrottleMs) {
+        _lastEvalAt = now;
+        _checkAchievements();
+        _advanceRepeatingAchievements();
+        if (_featureUnlocksReady) _evaluateFeatureUnlocks();
+      }
     }
   }
 
@@ -2735,7 +2784,7 @@ class GameNotifier extends Notifier<GameState> {
     }
     _save.formationCoasterIds[slot] = coasterId;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return true;
   }
 
@@ -2743,7 +2792,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.formationCoasterIds =
         List<String?>.filled(coasterFormationSlotCount, null);
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   void autoFillFormation() {
@@ -2784,7 +2833,7 @@ class GameNotifier extends Notifier<GameState> {
       _save.formationCoasterIds[i] = picked[i].id;
     }
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   double regionCoasterDistrictBonusFraction(String regionId) {
@@ -3133,7 +3182,7 @@ class GameNotifier extends Notifier<GameState> {
         _milestoneTicketUpTo(newLv) - _milestoneTicketUpTo(oldLv);
     if (ticketGain > 0) _save.ticket += ticketGain;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return n;
   }
 
@@ -3156,7 +3205,7 @@ class GameNotifier extends Notifier<GameState> {
     _incMission('daily_upgrade_30', n, daily: true);
     _incMission('weekly_upgrade_200', n, daily: false);
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return n;
   }
 
@@ -3196,7 +3245,7 @@ class GameNotifier extends Notifier<GameState> {
     }
     _save.prestigeSpecialization = spec;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return true;
   }
 
@@ -3209,7 +3258,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.prestigeCoins -= cost;
     _save.prestigeUpgradeLevels[id] = lv + 1;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return true;
   }
 
@@ -3229,7 +3278,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.prestigeCoins -= cost;
     _save.ascensionCoreLevel += 1;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return true;
   }
 
@@ -3332,7 +3381,7 @@ class GameNotifier extends Notifier<GameState> {
       _save.goldExchangeEightHourDayKey = _dayKey(now);
     }
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return GoldExchangeResult(
       ok: true,
       goldGranted: goldGranted,
@@ -3357,7 +3406,7 @@ class GameNotifier extends Notifier<GameState> {
     if (trimmed.isEmpty) return false;
     _save.mainCoasterName = trimmed;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return true;
   }
 
@@ -3549,7 +3598,7 @@ class GameNotifier extends Notifier<GameState> {
     }
 
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
 
     return MainCoasterEnhanceAttemptResult(
       ok: true,
@@ -3592,7 +3641,7 @@ class GameNotifier extends Notifier<GameState> {
     _unlockNoXChallenges();
     _save.run.reset();
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return true;
   }
 
@@ -3661,7 +3710,7 @@ class GameNotifier extends Notifier<GameState> {
       );
     }
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   OfflineReward? consumeOfflineReward() {
@@ -3673,43 +3722,43 @@ class GameNotifier extends Notifier<GameState> {
   void setHaptic(bool value) {
     _save.settings.haptic = value;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   void setSound(bool value) {
     _save.settings.sound = value;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   void setDarkMode(bool value) {
     _save.settings.darkMode = value;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   void setHighContrast(bool value) {
     _save.settings.highContrast = value;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   void setTextScale(double value) {
     _save.settings.textScale = value.clamp(0.9, 1.3).toDouble();
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   void setReduceTapHaptics(bool value) {
     _save.settings.reduceTapHaptics = value;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   void setTutorialSeen(bool value) {
     _save.settings.tutorialSeen = value;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   /// Returns (and clears) the pending daily bonus computed at load time.
@@ -3727,7 +3776,7 @@ class GameNotifier extends Notifier<GameState> {
     }
     _save.lastDailyClaimAt = DateTime.now();
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   bool claimMission(String id, {required bool daily}) {
@@ -3745,7 +3794,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.ticket += def.rewardTicket;
     _save.prestigeCoins += def.rewardPrestigeCoins;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return true;
   }
 
@@ -3780,7 +3829,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.ticket += ticket;
     _save.prestigeCoins += coins;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return (count: count, ticket: ticket, coins: coins);
   }
 
@@ -3837,7 +3886,7 @@ class GameNotifier extends Notifier<GameState> {
         }
         _save.adsRemoved = true;
         _emit(loaded: true);
-        unawaited(_persist());
+        _schedulePersist();
         return const PremiumPurchaseResult(
           ok: true,
           message: '광고 제거가 적용됐어요',
@@ -3855,7 +3904,7 @@ class GameNotifier extends Notifier<GameState> {
         if (!wasActive) _save.monthlyPassLastClaimAt = now;
         _save.ticket += monthlyTicketPassImmediateTicket;
         _emit(loaded: true);
-        unawaited(_persist());
+        _schedulePersist();
         return const PremiumPurchaseResult(
           ok: true,
           message: '월간 티켓 보급권이 적용됐어요',
@@ -3887,7 +3936,7 @@ class GameNotifier extends Notifier<GameState> {
         _save.run.boostersUsed++;
         _save.run.usedAnyBooster = true;
         _emit(loaded: true);
-        unawaited(_persist());
+        _schedulePersist();
         return PremiumPurchaseResult(
           ok: true,
           message: '초보자 패키지가 지급됐어요',
@@ -3912,7 +3961,7 @@ class GameNotifier extends Notifier<GameState> {
         _incMission('daily_summon_15', 1, daily: true);
         _incMission('weekly_summon_120', 1, daily: false);
         _emit(loaded: true);
-        unawaited(_persist());
+        _schedulePersist();
         return PremiumPurchaseResult(
           ok: true,
           message: '첫 결제 패키지가 지급됐어요',
@@ -3943,7 +3992,7 @@ class GameNotifier extends Notifier<GameState> {
           _save.seasonPassLastWeeklyClaimAt = null;
         }
         _emit(loaded: true);
-        unawaited(_persist());
+        _schedulePersist();
         return const PremiumPurchaseResult(
           ok: true,
           message: '시즌 패스가 적용됐어요',
@@ -3979,7 +4028,7 @@ class GameNotifier extends Notifier<GameState> {
         _save.run.boostersUsed += 2;
         _save.run.usedAnyBooster = true;
         _emit(loaded: true);
-        unawaited(_persist());
+        _schedulePersist();
         return PremiumPurchaseResult(
           ok: true,
           message: '마스터 패키지가 지급됐어요',
@@ -3998,7 +4047,7 @@ class GameNotifier extends Notifier<GameState> {
   PremiumPurchaseResult _grantTicketPack(int amount, String label) {
     _save.ticket += amount;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return PremiumPurchaseResult(
       ok: true,
       message: '$label 지급 완료',
@@ -4054,7 +4103,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.ticket += amount;
     _save.seasonPassLastClaimAt = DateTime.now();
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return amount;
   }
 
@@ -4063,7 +4112,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.ticket += seasonPassWeeklyTicket;
     _save.seasonPassLastWeeklyClaimAt = DateTime.now();
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return seasonPassWeeklyTicket;
   }
 
@@ -4080,7 +4129,7 @@ class GameNotifier extends Notifier<GameState> {
   void markFirstPurchasePopupShown() {
     _save.firstPurchasePopupShown = true;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   // Bulk grant for milestones / rewarded ads / external testing.
@@ -4088,7 +4137,7 @@ class GameNotifier extends Notifier<GameState> {
     if (amount <= 0) return;
     _save.ticket += amount;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   /// Bonus gold grant from rewarded ads (offline-reward x2 etc.). Counts
@@ -4100,7 +4149,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.totalGoldEarned += amount;
     _save.stats.lifetimeGold += amount;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   int claimMonthlyPassTicket() {
@@ -4110,7 +4159,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.ticket += amount;
     _save.monthlyPassLastClaimAt = DateTime.now();
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return amount;
   }
 
@@ -4130,7 +4179,7 @@ class GameNotifier extends Notifier<GameState> {
     _incMission('daily_booster_1', 1, daily: true);
     _incMission('weekly_booster_5', 1, daily: false);
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return true;
   }
 
@@ -4145,7 +4194,7 @@ class GameNotifier extends Notifier<GameState> {
     _incMission('daily_booster_1', 1, daily: true);
     _incMission('weekly_booster_5', 1, daily: false);
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
   /// §3.7 — booster mutex groups. Group A holds the three combat boosters
@@ -4332,7 +4381,7 @@ class GameNotifier extends Notifier<GameState> {
     _incMission('daily_skill_5', 1, daily: true);
     _incMission('weekly_skill_50', 1, daily: false);
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return result;
   }
 
@@ -4350,7 +4399,7 @@ class GameNotifier extends Notifier<GameState> {
     _incMission('daily_slime_5', 1, daily: true);
     _incMission('weekly_slime_40', 1, daily: false);
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return reward;
   }
 
@@ -4403,7 +4452,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.ticket += refund;
     _save.run.coasterDismantles++;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return refund;
   }
 
@@ -4480,7 +4529,7 @@ class GameNotifier extends Notifier<GameState> {
     if (sourceDef.tier == CoasterTier.ur) {
       _save.essence += fusionUrEssenceReward;
       _emit(loaded: true);
-      unawaited(_persist());
+      _schedulePersist();
       return FusionResult(
         ok: true,
         message: '${sourceDef.name} → 정수 +$fusionUrEssenceReward',
@@ -4509,7 +4558,7 @@ class GameNotifier extends Notifier<GameState> {
       if (emptySlot >= 0) _save.formationCoasterIds[emptySlot] = producedDef.id;
     }
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return FusionResult(
       ok: true,
       message: '${sourceDef.name} → ${producedDef.name}',
@@ -4609,7 +4658,7 @@ class GameNotifier extends Notifier<GameState> {
     _incMission('daily_summon_15', 1, daily: true);
     _incMission('weekly_summon_120', 1, daily: false);
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return r;
   }
 
@@ -4625,7 +4674,7 @@ class GameNotifier extends Notifier<GameState> {
     _incMission('daily_summon_15', results.length, daily: true);
     _incMission('weekly_summon_120', results.length, daily: false);
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return results;
   }
 
@@ -4641,7 +4690,7 @@ class GameNotifier extends Notifier<GameState> {
     _incMission('daily_summon_15', results.length, daily: true);
     _incMission('weekly_summon_120', results.length, daily: false);
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return results;
   }
 
@@ -4650,10 +4699,13 @@ class GameNotifier extends Notifier<GameState> {
     _save.equippedCoasterId = id;
     _save.run.changedEquippedCoaster = true;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
   }
 
-  Future<void> persist() => _persist();
+  /// Public flush — cancels any pending debounced persist and writes
+  /// immediately. Called from app-pause/inactive/detached so the
+  /// debounced burst-coalescing can't leak unsaved state on a force-kill.
+  Future<void> persist() => flushPersist();
 
   // ─────────────────────────────────────────────────────────────────────────
   // Stock market — see docs in region_catalog.dart and stock_market.dart.
@@ -5133,7 +5185,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.market.totalFeesPaid += fee;
     _checkRegionUnlocks();
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return actualShares;
   }
 
@@ -5170,7 +5222,7 @@ class GameNotifier extends Notifier<GameState> {
         (priorBasis + actualShares * price) / newShortShares;
     st.shortShares = newShortShares;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return actualShares;
   }
 
@@ -5206,7 +5258,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.run.stockProfitRealized += realized;
     if (realized > 0) _save.run.goldEarned += realized;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return (sharesClosed: actual, realizedProfit: realized);
   }
 
@@ -5297,7 +5349,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.market.totalFeesPaid += actualFee;
     _checkRegionUnlocks();
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return actualShares;
   }
 
@@ -5334,7 +5386,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.run.stockProfitRealized += realized;
     _save.run.goldEarned += net;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return (sharesSold: actual, netProceeds: net, realizedProfit: realized);
   }
 
@@ -5384,7 +5436,7 @@ class GameNotifier extends Notifier<GameState> {
       );
     }
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return (
       regionsSold: regionsSold,
       sharesSold: sharesSold,
@@ -5407,7 +5459,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.run.stockDividendsClaimed += amount;
     _save.run.goldEarned += amount;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return amount;
   }
 
@@ -5427,7 +5479,7 @@ class GameNotifier extends Notifier<GameState> {
     _save.run.stockDividendsClaimed += total;
     _save.run.goldEarned += total;
     _emit(loaded: true);
-    unawaited(_persist());
+    _schedulePersist();
     return total;
   }
 
