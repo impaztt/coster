@@ -1543,6 +1543,16 @@ class GameNotifier extends Notifier<GameState> {
   bool _powerDirty = true;
   double _cachedTapPower = 1.0;
   double _cachedDps = 0.0;
+  // Perf Phase 2: the 20Hz game tick used to fire `_emit(loaded:true)` on
+  // every iteration, which means every `ref.watch(gameProvider)` widget
+  // (~41 sites) was a rebuild candidate 20 times per second even when
+  // the only thing changing was gold accumulating off DPS. _emitFromTick
+  // now coalesces those into 10Hz, while user-driven mutates (tap/buy/
+  // prestige/skill/…) still call `_emit` directly for immediate response.
+  // `_lastEmitAt` is bumped from inside `_emit` so a tap-then-tick
+  // sequence doesn't double-emit within the throttle window.
+  DateTime _lastEmitAt = DateTime.fromMillisecondsSinceEpoch(0);
+  static const _tickEmitIntervalMs = 100;
   // Perf: every mutate used to call unawaited(_persist()), which hits
   // SharedPreferences on the main isolate. With taps/ticks/missions all
   // doing this, the disk IO was the dominant per-tap stall. Debounce
@@ -1980,7 +1990,7 @@ class GameNotifier extends Notifier<GameState> {
         _stockTickAcc -= ticks * stockPriceTickSeconds;
         _runStockSimulation(now: now, ticksElapsed: ticks);
       }
-      _emit(loaded: true);
+      _emitFromTick();
     });
   }
 
@@ -2114,6 +2124,24 @@ class GameNotifier extends Notifier<GameState> {
         if (_featureUnlocksReady) _evaluateFeatureUnlocks();
       }
     }
+    _lastEmitAt = DateTime.now();
+  }
+
+  /// Throttled `_emit` used by the 20Hz game tick. The tick still
+  /// accumulates `_save.gold` / cycle progress / boost gauge every 50ms
+  /// (accuracy preserved), but only publishes state changes at ~10Hz —
+  /// 100ms is the smallest window the player can't tell apart visually,
+  /// while removing half of the per-second rebuild fan-out.
+  ///
+  /// A user-driven `_emit` (tap, buy, skill, fusion, etc.) updates
+  /// `_lastEmitAt` too, so this method naturally yields right after a
+  /// tap and resumes on its own cadence afterwards.
+  void _emitFromTick() {
+    final now = DateTime.now();
+    if (now.difference(_lastEmitAt).inMilliseconds < _tickEmitIntervalMs) {
+      return;
+    }
+    _emit(loaded: true);
   }
 
   /// Daily exchange usage normalized to "today" — if the saved dayKey is
