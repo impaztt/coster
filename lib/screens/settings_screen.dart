@@ -11,6 +11,7 @@ import '../services/auth_service.dart';
 import '../widgets/feature_unlock_guide.dart';
 import '../widgets/onboarding_dialog.dart';
 import 'achievement_screen.dart';
+import 'stats_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -289,6 +290,14 @@ class _SettingsSummaryView extends StatelessWidget {
           unlocked: game.unlockedAchievements.length,
           total: achievementCatalog.length,
           onTap: onOpenAchievements,
+        ),
+        const SizedBox(height: 8),
+        _StatsLink(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const StatsScreen(),
+            ),
+          ),
         ),
         const SizedBox(height: 8),
         _UnlockGuideHeader(
@@ -941,6 +950,63 @@ class _ToggleRow extends StatelessWidget {
             onChanged: onChanged,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StatsLink extends StatelessWidget {
+  final VoidCallback onTap;
+  const _StatsLink({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.bar_chart, color: Color(0xFF1565C0)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '통계',
+                      style: TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '누적 진행 / 클리커 / 운영 지표',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.black45),
+            ],
+          ),
+        ),
       ),
     );
   }
