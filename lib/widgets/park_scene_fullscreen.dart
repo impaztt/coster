@@ -932,6 +932,28 @@ class _ParkPainter extends CustomPainter {
     return 4; //                T9-T10 — cosmic night
   }
 
+  // Phase-keyed accent for atmospheric layers (lanterns / fireflies /
+  // petal tint). Each phase's color matches the sky group: warm at
+  // first, cooling through dusk, then magenta night, then cosmic
+  // white-violet for the cosmos phase.
+  Color get _phaseAccent => switch (_skyPhase) {
+        0 => const Color(0xFFFFE8B0), // warm lantern yellow (existing)
+        1 => const Color(0xFFFF8A50), // sunset orange
+        2 => const Color(0xFF7AC8F0), // cold cyan
+        3 => const Color(0xFFE91E63), // magenta night
+        _ => const Color(0xFFE1BEE7), // cosmic violet-white
+      };
+
+  // How strongly to recolor in-world details with [_phaseAccent].
+  // Petals stay subtle so the cozy palette doesn't get overwhelmed.
+  double get _phaseTintStrength => switch (_skyPhase) {
+        0 => 0.0,
+        1 => 0.25,
+        2 => 0.40,
+        3 => 0.55,
+        _ => 0.70,
+      };
+
   ({Color top, Color mid, Color bot}) get _skyColors => switch (_skyPhase) {
         0 => const (top: _skyTop, mid: _skyMid, bot: _skyBot),
         1 => const (
@@ -1883,6 +1905,11 @@ class _ParkPainter extends CustomPainter {
       [0.80, 0.86],
     ];
     final pulse = (math.sin(ambient * math.pi * 2) + 1) / 2;
+    // Phase-shifted glow color — warm yellow at phase 0, drifting
+    // through orange / cyan / magenta / cosmic-violet at later phases.
+    final glowColor =
+        Color.lerp(_lanternGlow, _phaseAccent, _phaseTintStrength) ??
+            _lanternGlow;
     for (final p in positions) {
       final cx = w * p[0];
       final cy = h * p[1];
@@ -1908,12 +1935,12 @@ class _ParkPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(cx, cy - 18),
         7 + pulse,
-        Paint()..color = _lanternGlow.withValues(alpha: 0.30 + pulse * 0.10),
+        Paint()..color = glowColor.withValues(alpha: 0.30 + pulse * 0.10),
       );
       canvas.drawCircle(
         Offset(cx, cy - 18),
         3,
-        Paint()..color = _lanternGlow,
+        Paint()..color = glowColor,
       );
     }
   }
@@ -2636,10 +2663,19 @@ class _ParkPainter extends CustomPainter {
   // ═══ Petals + fireflies ═══════════════════════════════════════
 
   void _paintPetals(Canvas canvas, Size size) {
+    // Phase tint — later phases drift petals toward the atmosphere
+    // accent so cosmic skies have white-violet petals instead of
+    // pink/cream. Subtle (lerp strength capped at ~0.7) so the
+    // existing palette still reads.
+    final tintAmount = _phaseTintStrength;
+    final accent = _phaseAccent;
     for (final p in petals) {
       final cx = p.x * size.width + math.sin(p.sway) * 6;
       final cy = p.y * size.height;
-      final paint = Paint()..color = p.color.withValues(alpha: 0.75);
+      final col = tintAmount > 0
+          ? Color.lerp(p.color, accent, tintAmount)!
+          : p.color;
+      final paint = Paint()..color = col.withValues(alpha: 0.75);
       canvas.drawCircle(Offset(cx, cy), p.size, paint);
       // Tiny lighter highlight.
       canvas.drawCircle(
@@ -2651,6 +2687,15 @@ class _ParkPainter extends CustomPainter {
   }
 
   void _paintFireflies(Canvas canvas, Size size) {
+    // Phase tint — keeps the warm yellow firefly base, but mixes with
+    // the phase accent. Night/cosmic phases get cooler/violet sparks.
+    // Also boost the alpha in dark phases so fireflies actually read
+    // against the dim sky.
+    final tintAmount = _phaseTintStrength;
+    final base = tintAmount > 0
+        ? Color.lerp(_firefly, _phaseAccent, tintAmount)!
+        : _firefly;
+    final alphaBoost = _skyPhase >= 3 ? 0.15 : 0.0;
     final paint = Paint();
     for (final f in fireflies) {
       final cx = f.baseX * size.width + math.sin(f.phase) * f.amp * size.width;
@@ -2658,10 +2703,11 @@ class _ParkPainter extends CustomPainter {
           f.baseY * size.height + math.cos(f.phase * 0.7) * f.amp * size.height;
       final twinkle = (math.sin(f.twinklePhase) + 1) / 2;
       // Outer glow halo.
-      paint.color = _firefly.withValues(alpha: 0.20 + twinkle * 0.20);
+      paint.color = base
+          .withValues(alpha: (0.20 + twinkle * 0.20 + alphaBoost).clamp(0.0, 1.0));
       canvas.drawCircle(Offset(cx, cy), 5 + twinkle * 1.5, paint);
       // Core.
-      paint.color = _firefly.withValues(alpha: 0.85);
+      paint.color = base.withValues(alpha: 0.85);
       canvas.drawCircle(Offset(cx, cy), 1.2, paint);
     }
   }
