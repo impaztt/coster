@@ -343,12 +343,11 @@ class _Guest {
   // by leg length so each walk feels like a real step rather than a
   // snap.
   static const _enterWalkTime = 2.8; // entrance gate → queue back
-  // Boarding/exit slowed down from 1.8s / 2.4s. Even with the queue
-  // head moved onto the ramp, boarding still felt rushed against the
-  // queue's leisurely pace — the player perception was "wait wait wait
-  // … sprint." Lengthening these two paths so boarding/exit reads at
-  // roughly the same cadence as queue idle bob, not faster.
-  static const _boardWalkTime = 2.4; // queue front → ramp → cart
+  // Boarding is now a single-leg "step onto the cart" motion (queue
+  // head sits on the ramp); 1.2s is enough to read as a deliberate
+  // step without dragging. Exit keeps its 3-waypoint walkway path, so
+  // 3.0s still lands well there.
+  static const _boardWalkTime = 1.2; // queue front → cart, single step
   static const _exitWalkTime = 3.0; // cart → ramp → exit gate
   static const _slotShiftTime = 0.8; // queue one-step-forward shift
 
@@ -1922,16 +1921,21 @@ class _ParkPainter extends CustomPainter {
       if (g.state != _GuestState.boarding) continue;
       // 2-leg path: queue front → boarding ramp base → cart top.
       // Leg 1 = walking east along the walkway to the ramp.
-      // Leg 2 = walking up the ramp onto the cart.
+      // Single leg: queue head sits right next to the ramp now, so the
+      // 3-waypoint path collapsed to a zero-length walkway leg + a
+      // 6px ramp leg, and distance-weighted timing pinned the whole
+      // walk budget onto the tiny vertical step. Direct queue → cart
+      // path with the size hand-off tracked against the overall
+      // progress reads as a single "step onto the cart" motion.
       final waypoints = [
         _queuePosition(size, g, baseSlot: 0),
-        _boardRampBase(size),
         _boardRampTop(size),
       ];
-      final res = _walkPath(waypoints, _easeInOut(g.progress));
-      // Full size during walkway leg, shrink during ramp leg so they
-      // hand off smoothly to the smaller in-cart rider rendering.
-      final scale = res.leg == 0 ? 1.0 : (1.0 - res.legT * 0.55);
+      final p = _easeInOut(g.progress);
+      final res = _walkPath(waypoints, p);
+      // Shrink across the whole step from full-size pedestrian to
+      // rider-on-cart size.
+      final scale = 1.0 - p * 0.55;
       _paintCharacter(canvas, res.pos, g, scale: scale);
     }
   }
@@ -1947,10 +1951,14 @@ class _ParkPainter extends CustomPainter {
         _exitRampBase(size),
         Offset(size.width + 30, size.height * _yQueueBaseline),
       ];
-      final res = _walkPath(waypoints, _easeInOut(g.progress));
-      // Tiny on the cart, growing to full size by the time they
-      // reach the walkway.
-      final scale = res.leg == 0 ? (0.45 + res.legT * 0.55) : 1.0;
+      final p = _easeInOut(g.progress);
+      final res = _walkPath(waypoints, p);
+      // Scale grows from rider-size to pedestrian-size across the
+      // first 30% of total progress — leg 1 is geometrically tiny
+      // (~22px vs the walkway's ~780px), so distance-weighted timing
+      // would race the scale change in ~0.08s and pop. Anchoring the
+      // ramp-down on global progress keeps the size hand-off readable.
+      final scale = p < 0.30 ? (0.45 + (p / 0.30) * 0.55) : 1.0;
       _paintCharacter(canvas, res.pos, g, scale: scale);
     }
   }
