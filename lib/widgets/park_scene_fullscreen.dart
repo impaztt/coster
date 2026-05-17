@@ -791,14 +791,73 @@ class _ParkPainter extends CustomPainter {
 
   // ═══ Sky ════════════════════════════════════════════════════════
 
+  // Stage → 5-phase atmosphere. Phases group two tiers each, so a tier
+  // boundary every 10 stages flips the sky/cloud palette enough to read
+  // as "park has visibly transformed". Phase 4 (T9-T10) drops to outer-
+  // space night.
+  int get _skyPhase {
+    if (stage <= 10) return 0; // T1-T2 — cozy day
+    if (stage <= 20) return 1; // T3-T4 — bright afternoon
+    if (stage <= 30) return 2; // T5-T6 — cold dusk
+    if (stage <= 40) return 3; // T7-T8 — sunset → night
+    return 4; //                T9-T10 — cosmic night
+  }
+
+  ({Color top, Color mid, Color bot}) get _skyColors => switch (_skyPhase) {
+        0 => const (top: _skyTop, mid: _skyMid, bot: _skyBot),
+        1 => const (
+            top: Color(0xFFFFB8A0), // warm apricot
+            mid: Color(0xFFFFCFAA),
+            bot: Color(0xFFFFE3C4),
+          ),
+        2 => const (
+            top: Color(0xFF8A9FC8), // cold dusk indigo
+            mid: Color(0xFFB7BFD8),
+            bot: Color(0xFFD0D5E4),
+          ),
+        3 => const (
+            top: Color(0xFF2E2452), // sunset → night
+            mid: Color(0xFF6B4577),
+            bot: Color(0xFFC07896),
+          ),
+        _ => const (
+            top: Color(0xFF050818), // cosmic black
+            mid: Color(0xFF131544),
+            bot: Color(0xFF2A1F5E),
+          ),
+      };
+
   void _paintSky(Canvas canvas, Size size) {
+    final c = _skyColors;
     final shader = ui.Gradient.linear(
       const Offset(0, 0),
       Offset(0, size.height * _yGrassStart),
-      const [_skyTop, _skyMid, _skyBot],
+      [c.top, c.mid, c.bot],
       const [0.0, 0.6, 1.0],
     );
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
+    // Phase 3-4 — sprinkle stars in the upper sky band.
+    if (_skyPhase >= 3) {
+      _paintNightStars(canvas, size);
+    }
+  }
+
+  /// Static, deterministic star pattern for night-phase skies. Anchored
+  /// to a fixed seed so it's stable across the static background cache.
+  void _paintNightStars(Canvas canvas, Size size) {
+    final rng = math.Random(stage); // varies subtly per stage
+    final starPaint = Paint()..color = const Color(0xFFFFFFFF);
+    final glowPaint = Paint()
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.32);
+    final count = _skyPhase == 4 ? 60 : 28;
+    final maxY = size.height * _yMountain;
+    for (var i = 0; i < count; i++) {
+      final x = rng.nextDouble() * size.width;
+      final y = rng.nextDouble() * maxY;
+      final r = 0.6 + rng.nextDouble() * 1.4;
+      canvas.drawCircle(Offset(x, y), r + 1.5, glowPaint);
+      canvas.drawCircle(Offset(x, y), r, starPaint);
+    }
   }
 
   void _paintSunHaze(Canvas canvas, Size size) {
@@ -1443,6 +1502,123 @@ class _ParkPainter extends CustomPainter {
       ),
       bufferPaint,
     );
+
+    // Phase-keyed track ornaments — stage 11+ adds a loop, stage 41+
+    // adds a starline running above the rails, stage 46+ adds a
+    // swirling wormhole anchor at the right end. Each lands at a tier
+    // boundary so they coincide with the headline stage milestone.
+    _paintTrackOrnaments(canvas, size, left, right, y);
+  }
+
+  /// Stage-gated decorations layered onto the rail itself. Drawn into the
+  /// static background cache so the per-frame cost is zero.
+  void _paintTrackOrnaments(
+      Canvas canvas, Size size, double left, double right, double y) {
+    final railColor = _stageRailColor;
+    final accent = _stageRailAccent;
+
+    // ─── Loop (T3+, stage 11+) ────────────────────────────────────
+    if (stage >= 11) {
+      final cx = left + (right - left) * 0.42;
+      final loopR = 18.0 + (stage - 11) * 0.20;
+      final loopCenter = Offset(cx, y - loopR);
+      final loopRect = Rect.fromCircle(center: loopCenter, radius: loopR);
+      // Outer rail.
+      canvas.drawCircle(
+        loopCenter,
+        loopR + 2,
+        Paint()
+          ..color = railColor.withValues(alpha: 0.85)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.0,
+      );
+      // Inner rail.
+      canvas.drawCircle(
+        loopCenter,
+        loopR - 2,
+        Paint()
+          ..color = railColor.withValues(alpha: 0.85)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.0,
+      );
+      // Cross ties between the two rings.
+      const tieCount = 18;
+      final tiePaint = Paint()
+        ..color = accent.withValues(alpha: 0.55)
+        ..strokeWidth = 1.0;
+      for (var i = 0; i < tieCount; i++) {
+        final a = (i / tieCount) * math.pi * 2;
+        final inner = Offset(
+          loopCenter.dx + (loopR - 2) * math.cos(a),
+          loopCenter.dy + (loopR - 2) * math.sin(a),
+        );
+        final outer = Offset(
+          loopCenter.dx + (loopR + 2) * math.cos(a),
+          loopCenter.dy + (loopR + 2) * math.sin(a),
+        );
+        canvas.drawLine(inner, outer, tiePaint);
+      }
+      // Soft glow halo when in cold/electric/night phases.
+      if (_skyPhase >= 2) {
+        canvas.drawOval(
+          loopRect.inflate(6),
+          Paint()
+            ..color = accent.withValues(alpha: 0.18)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 6,
+        );
+      }
+    }
+
+    // ─── Starline (T9+, stage 41+) ────────────────────────────────
+    if (stage >= 41) {
+      final rng = math.Random(stage * 31 + 7);
+      final glow = Paint()
+        ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.40);
+      final core = Paint()..color = const Color(0xFFFFFFFF);
+      for (var i = 0; i < 22; i++) {
+        final t = rng.nextDouble();
+        final px = left + (right - left) * t;
+        final py = y - 9 - rng.nextDouble() * 4;
+        final r = 0.8 + rng.nextDouble() * 1.0;
+        canvas.drawCircle(Offset(px, py), r + 1.6, glow);
+        canvas.drawCircle(Offset(px, py), r, core);
+      }
+    }
+
+    // ─── Wormhole (T10, stage 46+) ────────────────────────────────
+    if (stage >= 46) {
+      final whCenter = Offset(right + 12, y - 14);
+      const whR = 16.0;
+      // Outer ring.
+      canvas.drawCircle(
+        whCenter,
+        whR,
+        Paint()
+          ..color = accent.withValues(alpha: 0.85)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.0,
+      );
+      // Concentric spiral rings.
+      for (var i = 0; i < 4; i++) {
+        final r = whR - 3 - i * 3.0;
+        if (r <= 0) break;
+        canvas.drawCircle(
+          whCenter,
+          r,
+          Paint()
+            ..color = railColor.withValues(alpha: 0.55 - i * 0.10)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.4,
+        );
+      }
+      // Center void.
+      canvas.drawCircle(
+        whCenter,
+        2.5,
+        Paint()..color = const Color(0xFF1A0633),
+      );
+    }
   }
 
   // ═══ Station ═══════════════════════════════════════════════════
