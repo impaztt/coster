@@ -593,9 +593,16 @@ class _ParkPainter extends CustomPainter {
   }
 
   int get _cartCarCount {
+    // 1 → 6 cars across the 50 stages, +1 roughly every 9 stages so
+    // the new-car milestone lands inside each phase group and reads
+    // as "the train got longer" alongside the sky/track changes.
     if (stage <= 2) return 1;
-    return math.min(4, 2 + ((stage - 3) ~/ 16));
+    return math.min(6, 1 + ((stage - 1) ~/ 9));
   }
+
+  /// Cart silhouette grows with phase — hyper / night / cosmic tiers
+  /// look bigger than the wooden starter coaster.
+  double get _cartScale => 1.0 + _skyPhase * 0.05;
 
   bool get _hasStageLights => stage >= 4;
   bool get _hasTierPennants => stage >= 5;
@@ -1796,6 +1803,9 @@ class _ParkPainter extends CustomPainter {
 
     canvas.save();
     canvas.translate(pos.dx, pos.dy);
+    // Phase scaling — bigger silhouette in hyper/night/cosmic phases.
+    final s = _cartScale;
+    canvas.scale(s);
 
     // Boost gentle bounce, never harsh.
     final shake = boosted ? math.sin(ambient * math.pi * 22) * 0.4 : 0.0;
@@ -1939,7 +1949,43 @@ class _ParkPainter extends CustomPainter {
       canvas.drawCircle(const Offset(-32, 5), 1.3, sparkle);
     }
 
+    // Phase 3+ (night) → roof lantern over the cart. Phase 4 (cosmic)
+    // gets a second lamp on the lead car too.
+    if (_skyPhase >= 3) {
+      _paintCartLantern(canvas, const Offset(0, -16));
+      if (_skyPhase >= 4) {
+        _paintCartLantern(canvas, const Offset(20, -14));
+      }
+    }
+
     canvas.restore();
+  }
+
+  /// Tiny lantern dangling above the cart for night/cosmic phases.
+  /// Drawn in cart-local coords (after the cart translate/scale).
+  void _paintCartLantern(Canvas canvas, Offset c) {
+    final color = _stageCartLight;
+    // Hanging cord.
+    canvas.drawLine(
+      Offset(c.dx, c.dy - 5),
+      Offset(c.dx, c.dy - 1),
+      Paint()
+        ..color = _stageCartTrim
+        ..strokeWidth = 0.8,
+    );
+    // Halo.
+    canvas.drawCircle(
+      c,
+      4.5,
+      Paint()..color = color.withValues(alpha: 0.35),
+    );
+    // Lamp body.
+    canvas.drawCircle(c, 2.2, Paint()..color = color);
+    canvas.drawCircle(
+      c.translate(-0.6, -0.6),
+      0.8,
+      Paint()..color = Colors.white.withValues(alpha: 0.85),
+    );
   }
 
   void _paintTrailerCar(Canvas canvas, Offset center, int index) {
