@@ -55,11 +55,33 @@ class _ParkAnimState extends ChangeNotifier {
   final List<_Guest> guests = [];
   final List<_Petal> petals = [];
   final List<_Firefly> fireflies = [];
+  // Phase-transition confetti — short-lived particle burst spawned
+  // when a stage upgrade crosses a sky-phase boundary. Lives in anim
+  // state so the same notifyListeners path drives its repaint.
+  final List<_Confetti> confetti = [];
   int waitingCount = 0;
 
   /// Single call site at the end of each frame's update. notifies
   /// listeners (i.e. the painter) so a repaint is scheduled.
   void tick() => notifyListeners();
+}
+
+class _Confetti {
+  double x, y; // normalized (0..1) screen position
+  double vx, vy; // normalized velocity per second
+  double life; // seconds remaining
+  final double maxLife;
+  final Color color;
+  final double size;
+  _Confetti({
+    required this.x,
+    required this.y,
+    required this.vx,
+    required this.vy,
+    required this.life,
+    required this.color,
+    required this.size,
+  }) : maxLife = life;
 }
 
 class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
@@ -72,7 +94,18 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
   double _previousCycle = 0;
   bool _boardedThisCycle = false;
   bool _unloadedThisCycle = false;
+  // Phase transition tracker — initialized lazily on the first _onTick
+  // so we don't fire confetti at app launch when stage > 10.
+  int? _lastSeenSkyPhase;
   final math.Random _random = math.Random(42);
+
+  static int _phaseFor(int stage) {
+    if (stage <= 10) return 0;
+    if (stage <= 20) return 1;
+    if (stage <= 30) return 2;
+    if (stage <= 40) return 3;
+    return 4;
+  }
 
   static const _passengersPerCart = 2;
   static const _queueCapacity = 6;
@@ -167,6 +200,28 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
       _anim.cartCycle = (_anim.cartCycle + cycleDiff * 0.1);
       if (_anim.cartCycle < 0) _anim.cartCycle += 1.0;
       _anim.cartCycle %= 1.0;
+    }
+
+    // Phase-transition confetti — sky phase grouping mirrors the
+    // painter's `_skyPhase`. First tick after a stage upgrade that
+    // crosses a phase boundary spawns a burst.
+    final stage = game.mainCoasterStage;
+    final phase = _phaseFor(stage);
+    final lastPhase = _lastSeenSkyPhase;
+    if (lastPhase != null && phase > lastPhase) {
+      _spawnPhaseConfetti(phase);
+    }
+    _lastSeenSkyPhase = phase;
+
+    // Advance + cull confetti.
+    if (_anim.confetti.isNotEmpty) {
+      for (final c in _anim.confetti) {
+        c.x += c.vx * dtReal;
+        c.y += c.vy * dtReal;
+        c.vy += 0.30 * dtReal; // gravity (normalized units/s²)
+        c.life -= dtReal;
+      }
+      _anim.confetti.removeWhere((c) => c.life <= 0 || c.y > 1.05);
     }
 
     _anim.ambient = (_anim.ambient + dtReal * 0.10) % 1.0;
@@ -268,6 +323,54 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
         // their destination slot.
         g.slot = newSlot;
       }
+    }
+  }
+
+  /// Burst ~28 confetti pieces from above the cart anchor. Colors are
+  /// chosen to match the destination phase so the burst reads as part
+  /// of the new tier rather than a generic celebration.
+  void _spawnPhaseConfetti(int phase) {
+    final colors = switch (phase) {
+      1 => const [
+          Color(0xFFFFAB91),
+          Color(0xFFFFD54F),
+          Color(0xFFFF8A65),
+          Color(0xFFD84315),
+        ],
+      2 => const [
+          Color(0xFFB3E5FC),
+          Color(0xFF03A9F4),
+          Color(0xFFFFEB3B),
+          Color(0xFFFFFFFF),
+        ],
+      3 => const [
+          Color(0xFFE91E63),
+          Color(0xFFFFD54F),
+          Color(0xFF7C4DFF),
+          Color(0xFFFFFFFF),
+        ],
+      _ => const [
+          Color(0xFFFFFFFF),
+          Color(0xFFE1BEE7),
+          Color(0xFF7C4DFF),
+          Color(0xFFFFD54F),
+        ],
+    };
+    // Spawn point: just above the cart's parked spot (X 0.30, mid-Y).
+    const cx = 0.30;
+    const cy = 0.50;
+    for (var i = 0; i < 30; i++) {
+      final ang = (_random.nextDouble() * math.pi) - math.pi; // upward
+      final speed = 0.35 + _random.nextDouble() * 0.50;
+      _anim.confetti.add(_Confetti(
+        x: cx + (_random.nextDouble() - 0.5) * 0.04,
+        y: cy + (_random.nextDouble() - 0.5) * 0.02,
+        vx: math.cos(ang) * speed * 0.35,
+        vy: math.sin(ang) * speed,
+        life: 1.4 + _random.nextDouble() * 0.4,
+        color: colors[_random.nextInt(colors.length)],
+        size: 2.0 + _random.nextDouble() * 2.2,
+      ));
     }
   }
 
@@ -565,6 +668,7 @@ class _ParkPainter extends CustomPainter {
   List<_Guest> get guests => anim.guests;
   List<_Petal> get petals => anim.petals;
   List<_Firefly> get fireflies => anim.fireflies;
+  List<_Confetti> get confetti => anim.confetti;
   int get waitingCount => anim.waitingCount;
 
   // Vertical bands.
@@ -744,7 +848,25 @@ class _ParkPainter extends CustomPainter {
     _paintCapacitySign(canvas, size);
     _paintFireflies(canvas, size);
     _paintPetals(canvas, size);
+    _paintConfetti(canvas, size);
     _paintVignette(canvas, size);
+  }
+
+  /// Phase-transition confetti — fades and falls with gravity. Drawn
+  /// in screen space (after the vignette would be wrong — confetti is
+  /// foreground; we paint it just before the vignette so the soft
+  /// brown rim still sits on top).
+  void _paintConfetti(Canvas canvas, Size size) {
+    if (confetti.isEmpty) return;
+    for (final c in confetti) {
+      final t = (c.life / c.maxLife).clamp(0.0, 1.0);
+      final a = (t * 1.4).clamp(0.0, 1.0); // hold full alpha most of life
+      canvas.drawCircle(
+        Offset(c.x * size.width, c.y * size.height),
+        c.size,
+        Paint()..color = c.color.withValues(alpha: a),
+      );
+    }
   }
 
   // ═══ Walk paths ═══════════════════════════════════════════════
