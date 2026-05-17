@@ -617,15 +617,13 @@ class _ParkPainter extends CustomPainter {
   // Queue front (slot 0) sits just LEFT of the station so guests
   // queue toward the boarding ramp, not away from it. Slots step
   // further left toward the entrance gate.
-  // Pacing fix: pulled the queue-front 4 percentage points closer to the
-  // boarding ramp (was 0.22). The previous gap turned boarding into "long
-  // sprint to the ramp then a tiny step up onto the cart" — even after
-  // distance-aware easing, the two legs felt mismatched because the
-  // ramp leg only covers ~6px vertical while the walkway leg was ~86px
-  // horizontal at typical screen widths. Halving the walkway distance
-  // closes the perceived gap while keeping the queue/ramp/cart layout
-  // legible.
-  static const _xQueueFrontFrac = 0.26;
+  // Pacing fix: queue-front sits 1 percentage point left of the boarding
+  // ramp (0.30). 0.22 → 0.26 was a half-measure — the head was still
+  // ~43px away at typical widths and boarding still read as a sprint to
+  // the ramp. 0.29 puts the head literally next to the ramp; when a
+  // guest's turn comes up they take one step sideways and the ramp leg
+  // (6px vertical) carries them onto the cart at a matching pace.
+  static const _xQueueFrontFrac = 0.29;
   static const _xQueueSlotSpacing = 0.032;
 
   // Phase 4: PictureRecorder cache for the static background layers.
