@@ -1553,6 +1553,18 @@ class GameNotifier extends Notifier<GameState> {
   // sequence doesn't double-emit within the throttle window.
   DateTime _lastEmitAt = DateTime.fromMillisecondsSinceEpoch(0);
   static const _tickEmitIntervalMs = 100;
+  // Perf Phase 3a: GameState used to wrap _save's collections with a
+  // fresh `Map.unmodifiable` / `List.unmodifiable` on every `_emit`. With
+  // tick-driven emits at 10Hz + every mutate publishing too, the wrappers
+  // were brand-new objects every publish — `.select((s) => s.xyz)` could
+  // never see the same reference twice, so it always rebuilt. Caching
+  // them and nulling on mutation lets `.select` actually short-circuit.
+  // Scope: the four highest-traffic collections only; the rest still
+  // wrap per emit (next pass).
+  Map<String, int>? _ownedCoastersView;
+  Map<String, int>? _producerLevelsView;
+  Map<String, int>? _tapUpgradeLevelsView;
+  List<Booster>? _activeBoostersView;
   // Perf: every mutate used to call unawaited(_persist()), which hits
   // SharedPreferences on the main isolate. With taps/ticks/missions all
   // doing this, the disk IO was the dominant per-tap stall. Debounce
@@ -2037,8 +2049,10 @@ class GameNotifier extends Notifier<GameState> {
       prestigeCoins: _save.prestigeCoins,
       prestigeCount: _save.prestigeCount,
       ascensionCoreLevel: _save.ascensionCoreLevel,
-      producerLevels: Map.unmodifiable(_save.producerLevels),
-      tapUpgradeLevels: Map.unmodifiable(_save.tapUpgradeLevels),
+      producerLevels: _producerLevelsView ??=
+          Map.unmodifiable(_save.producerLevels),
+      tapUpgradeLevels: _tapUpgradeLevelsView ??=
+          Map.unmodifiable(_save.tapUpgradeLevels),
       prestigeUpgradeLevels: Map.unmodifiable(_save.prestigeUpgradeLevels),
       totalTaps: _save.stats.totalTaps,
       playTimeSeconds: _save.stats.playTimeSeconds,
@@ -2055,7 +2069,8 @@ class GameNotifier extends Notifier<GameState> {
       reduceTapHaptics: _save.settings.reduceTapHaptics,
       ticket: _save.ticket,
       essence: _save.essence,
-      ownedCoasters: Map.unmodifiable(_save.ownedCoasters),
+      ownedCoasters: _ownedCoastersView ??=
+          Map.unmodifiable(_save.ownedCoasters),
       equippedCoasterId: _save.equippedCoasterId,
       summonsSinceHighRare: _save.summonsSinceHighRare,
       unlockedAchievements: Set.unmodifiable(_save.unlockedAchievements),
@@ -2066,7 +2081,8 @@ class GameNotifier extends Notifier<GameState> {
       dailyStreak: _save.dailyStreak,
       maxDailyStreak: _save.stats.maxDailyStreak,
       lastDailyClaimAt: _save.lastDailyClaimAt,
-      activeBoosters: List.unmodifiable(_save.activeBoosters),
+      activeBoosters: _activeBoostersView ??=
+          List.unmodifiable(_save.activeBoosters),
       tapsUntilSlime: (slimeSpawnEvery - _save.tapsSinceSlime)
           .clamp(0, slimeSpawnEvery)
           .toInt(),
@@ -2702,8 +2718,21 @@ class GameNotifier extends Notifier<GameState> {
   /// that changes a level / equipment / formation / booster / coaster /
   /// prestige spec / main coaster stage. Cheap (one bool assignment) —
   /// the recompute happens lazily on next read.
+  ///
+  /// Phase 3a: also invalidates the four high-traffic collection wrappers
+  /// (`ownedCoasters` / `producerLevels` / `tapUpgradeLevels` /
+  /// `activeBoosters`). The user-driven mutate set is nearly identical
+  /// to "things that change those collections", and co-locating means
+  /// every existing `_markPowerDirty()` call site participates without
+  /// further audit. Overshoots are cheap — a buyProducer also nulls the
+  /// ownedCoasters wrapper once, but a 20Hz tick (which never marks
+  /// dirty) keeps every wrapper memoized so `.select` actually hits.
   void _markPowerDirty() {
     _powerDirty = true;
+    _ownedCoastersView = null;
+    _producerLevelsView = null;
+    _tapUpgradeLevelsView = null;
+    _activeBoostersView = null;
   }
 
   /// §3.1 v1 — additive bonus pool (collection + set, both tap-specific

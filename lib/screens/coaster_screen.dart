@@ -201,8 +201,12 @@ class _HeaderBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ticket = ref.watch(gameProvider).ticket;
-    final owned = ref.watch(gameProvider).ownedCoasters.length;
+    // Phase 3a/b: subscribe to specific fields, not the whole state — the
+    // header re-renders only when ticket or the coaster-owned count
+    // actually changes (gold ticks no longer thrash it).
+    final ticket = ref.watch(gameProvider.select((s) => s.ticket));
+    final owned =
+        ref.watch(gameProvider.select((s) => s.ownedCoasters.length));
     final total = coasterCatalog.length;
     final bonus = ref.read(gameProvider.notifier).collectionBonusFraction;
     return Padding(
@@ -340,7 +344,13 @@ class _CollectionViewState extends ConsumerState<_CollectionView> {
 
   @override
   Widget build(BuildContext context) {
-    final game = ref.watch(gameProvider);
+    // Phase 3a/b: subscribe to the specific fields the collection cares
+    // about. `ownedCoasters` identity is preserved across non-coaster
+    // mutates, so this view no longer rebuilds on every gold tick.
+    final ownedMap =
+        ref.watch(gameProvider.select((s) => s.ownedCoasters));
+    final equippedId =
+        ref.watch(gameProvider.select((s) => s.equippedCoasterId));
     // Highest tier first so the showcase grades sit at the top.
     final tiers = CoasterTier.values.reversed.toList();
 
@@ -353,7 +363,7 @@ class _CollectionViewState extends ConsumerState<_CollectionView> {
         final owned = <CoasterDef>[];
         final unowned = <CoasterDef>[];
         for (final d in defs) {
-          if (game.ownsCoaster(d.id)) {
+          if ((ownedMap[d.id] ?? 0) > 0) {
             owned.add(d);
           } else {
             unowned.add(d);
@@ -372,8 +382,8 @@ class _CollectionViewState extends ConsumerState<_CollectionView> {
               _collapsed.add(tier);
             }
           }),
-          equippedId: game.equippedCoasterId,
-          levelOf: game.coasterLevel,
+          equippedId: equippedId,
+          levelOf: (id) => ownedMap[id] ?? 0,
           onTapCard: (def) => _showDetail(context, def),
         );
       },
@@ -400,13 +410,21 @@ class _FusionView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final game = ref.watch(gameProvider);
+    // Phase 3a/b: ownedCoasters identity preserved across non-coaster
+    // mutates, so `canAfford` (gold-dependent) is the only field that
+    // still triggers a per-tap rebuild — and it should, because the
+    // button enable/disable state depends on it.
+    final ownedMap =
+        ref.watch(gameProvider.select((s) => s.ownedCoasters));
+    final equippedId =
+        ref.watch(gameProvider.select((s) => s.equippedCoasterId));
+    final gold = ref.watch(gameProvider.select((s) => s.gold));
     final notifier = ref.read(gameProvider.notifier);
     // Tier desc → ascending: showcase rare-tier candidates first.
     final candidates = <CoasterDef>[];
     for (final tier in CoasterTier.values.reversed) {
       for (final def in coasterCatalog.where((d) => d.tier == tier)) {
-        final lv = game.coasterLevel(def.id);
+        final lv = ownedMap[def.id] ?? 0;
         if (lv >= fusionLevelCost) candidates.add(def);
       }
     }
@@ -451,10 +469,11 @@ class _FusionView extends ConsumerWidget {
         for (final def in candidates) ...[
           _FusionCandidateTile(
             def: def,
-            level: game.coasterLevel(def.id),
+            level: ownedMap[def.id] ?? 0,
             cost: notifier.fusionGoldCost(def.id),
-            canAfford: notifier.canFuseCoaster(def.id),
-            equipped: game.equippedCoasterId == def.id,
+            canAfford: gold >= notifier.fusionGoldCost(def.id) &&
+                equippedId != def.id,
+            equipped: equippedId == def.id,
             onFuse: () => _confirmFusion(context, ref, def),
           ),
           const SizedBox(height: 6),
@@ -734,7 +753,11 @@ class _FormationView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final game = ref.watch(gameProvider);
+    // Phase 3a/b: only re-render when the owned-coaster count or
+    // identity actually changes (gold ticks no longer rebuild the
+    // formation tab).
+    final ownedEmpty = ref
+        .watch(gameProvider.select((s) => s.ownedCoasters.isEmpty));
     final notifier = ref.read(gameProvider.notifier);
     final slots = notifier.formationCoasterIds;
     final summary = notifier.formationSummary;
@@ -744,8 +767,7 @@ class _FormationView extends ConsumerWidget {
       children: [
         _FormationSummaryCard(
           summary: summary,
-          onAuto:
-              game.ownedCoasters.isEmpty ? null : notifier.autoFillFormation,
+          onAuto: ownedEmpty ? null : notifier.autoFillFormation,
           onClear: summary.filledSlots == 0 ? null : notifier.clearFormation,
         ),
         const SizedBox(height: 12),
