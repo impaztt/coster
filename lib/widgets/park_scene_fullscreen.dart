@@ -44,6 +44,14 @@ class ParkSceneFullscreen extends ConsumerStatefulWidget {
 /// frames).
 class _ParkAnimState extends ChangeNotifier {
   double ambient = 0;
+  // Client-side interpolated cycle position for the cart. The
+  // authoritative `game.cycleProgress` publishes at the 10Hz emit
+  // throttle, so reading it directly into the painter makes the cart
+  // step every ~100ms. We integrate `dt / cycleSeconds * boostMult`
+  // every 60Hz frame instead, and resync to the authoritative value
+  // only when drift gets significant — keeps motion sub-pixel smooth
+  // while still honoring tap-driven cycle skips and prestige resets.
+  double cartCycle = 0;
   final List<_Guest> guests = [];
   final List<_Petal> petals = [];
   final List<_Firefly> fireflies = [];
@@ -132,6 +140,34 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
     // by [game.cycleProgress] elsewhere and is unaffected by this dt.
     final dt = dtReal;
     final cycle = game.cycleProgress;
+    final boostedNow = game.boostGauge > 0;
+
+    // Integrate the cart's *visual* cycle at 60Hz. The game-state
+    // cycleProgress only updates at the 10Hz emit cadence; reading it
+    // directly here made the cart jump every ~100ms. Cycle speed in
+    // sim time is `1 / cycleSeconds`, multiplied by the boost factor
+    // when active — mirrors the same formula the game tick uses.
+    final cycleSpeed =
+        (boostedNow ? boostTimeMultiplier : 1.0) / cycleSeconds;
+    _anim.cartCycle = (_anim.cartCycle + dtReal * cycleSpeed) % 1.0;
+    // Resync to the authoritative cycle. Wrap diff into [-0.5, 0.5] so
+    // a cycle that just rolled over (0.98 → 0.02) doesn't read as a
+    // huge jump.
+    var cycleDiff = cycle - _anim.cartCycle;
+    if (cycleDiff > 0.5) cycleDiff -= 1.0;
+    if (cycleDiff < -0.5) cycleDiff += 1.0;
+    if (cycleDiff.abs() > 0.15) {
+      // Hard sync — tap-driven cycle skip, prestige reset, or a long
+      // stall where the integrator drifted too far. Snap to truth.
+      _anim.cartCycle = cycle;
+    } else {
+      // Soft correction — pull 10% of the way toward the authoritative
+      // value each frame. Invisible at typical drift sizes (<5%) and
+      // smooths over the integrator's small accumulator error.
+      _anim.cartCycle = (_anim.cartCycle + cycleDiff * 0.1);
+      if (_anim.cartCycle < 0) _anim.cartCycle += 1.0;
+      _anim.cartCycle %= 1.0;
+    }
 
     _anim.ambient = (_anim.ambient + dtReal * 0.10) % 1.0;
 
@@ -246,11 +282,11 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
 
   @override
   Widget build(BuildContext context) {
-    // Phase 5b: narrow watch — only rebuild when one of the three game-
-    // state values the painter renders changes. cycleProgress ticks at
-    // the 10Hz emit cadence; that's tolerable. ambient/guests/petals
-    // are driven by the painter's repaint listenable, not by build.
-    final cycle = ref.watch(gameProvider.select((s) => s.cycleProgress));
+    // Phase 5b/cart-pacing: narrow watch. cycleProgress is *not*
+    // bound anymore — the painter reads the 60Hz-interpolated value
+    // from `_anim.cartCycle` via its repaint listenable. boostGauge
+    // still matters for things like the Ride Time tint, and stage
+    // governs track coloring.
     final boostGauge =
         ref.watch(gameProvider.select((s) => s.boostGauge));
     final stage =
@@ -261,7 +297,6 @@ class _ParkSceneFullscreenState extends ConsumerState<ParkSceneFullscreen>
       child: CustomPaint(
         painter: _ParkPainter(
           anim: _anim,
-          cycle: cycle,
           boosted: boostGauge > 0,
           stage: stage,
           queueCapacity: _queueCapacity,
@@ -509,14 +544,12 @@ class _ParkPainter extends CustomPainter {
   // without forcing a widget rebuild — pedestrian motion stays smooth
   // because nothing above this paint pass churns at 60Hz anymore.
   final _ParkAnimState anim;
-  final double cycle;
   final bool boosted;
   final int stage;
   final int queueCapacity;
 
   _ParkPainter({
     required this.anim,
-    required this.cycle,
     required this.boosted,
     required this.stage,
     required this.queueCapacity,
@@ -524,9 +557,11 @@ class _ParkPainter extends CustomPainter {
 
   // Convenience read-through onto [anim]. Existing paint helpers use
   // bare `ambient` / `guests` / `petals` / `fireflies` / `waitingCount`
-  // identifiers — keeping these as getters means none of those call
-  // sites had to change.
+  // / `cycle` identifiers — keeping these as getters means none of
+  // those call sites had to change. `cycle` is the *interpolated* cart
+  // cycle, integrated at 60Hz, not the 10Hz authoritative value.
   double get ambient => anim.ambient;
+  double get cycle => anim.cartCycle;
   List<_Guest> get guests => anim.guests;
   List<_Petal> get petals => anim.petals;
   List<_Firefly> get fireflies => anim.fireflies;
@@ -2511,11 +2546,10 @@ class _ParkPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _ParkPainter old) {
     // anim is the same instance across rebuilds (its `notifyListeners`
-    // drives repaint directly via super(repaint:)). cycle/boosted/stage
-    // only flip when the game state actually changes (10Hz emit at
-    // most), so the per-rebuild comparison stays cheap.
-    return old.cycle != cycle ||
-        old.boosted != boosted ||
-        old.stage != stage;
+    // drives repaint directly via super(repaint:), and that's the
+    // signal that carries the interpolated cycle/ambient/guests).
+    // boosted/stage flip rarely (boost toggle, enhance), so the
+    // per-rebuild comparison stays cheap.
+    return old.boosted != boosted || old.stage != stage;
   }
 }
